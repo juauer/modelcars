@@ -1,0 +1,22 @@
+blacklist:
+- rplidar_ros
+- realsense_camera
+- detect_roof_rectangles
+- visual_gps
+- control
+build_space: build_car
+catkin_make_args: []
+cmake_args: []
+devel_layout: merged
+devel_space: devel_car
+extend_path: /opt/ros/indigo
+install: false
+install_space: install_car
+isolate_install: false
+jobs_args: []
+log_space: logs_car
+make_args: []
+source_space: ../model_car/catkin_ws/src
+use_env_cache: false
+use_internal_make_jobserver: true
+whitelist: []
