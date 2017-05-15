@@ -1,4 +1,9 @@
 Header header
-float64[] intrinsics
-float64[] distortion
-float64[] extrinsics
+float32 cx
+float32 cy
+float32 flx
+float32 fly
+float32 dcrx
+float32 dcry
+float32 dctx
+float32 dcty

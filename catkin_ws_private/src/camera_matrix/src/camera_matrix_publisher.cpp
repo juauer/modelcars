@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 		ros::spinOnce();
 
 		if(auto_calibration_enabled)
-			camera_matrix.calibrate_online_update();
+			camera_matrix.update_calibration();
 
 		pub.publish(camera_matrix.serialize() );
 	}

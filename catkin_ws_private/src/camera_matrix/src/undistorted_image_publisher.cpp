@@ -17,7 +17,6 @@ void callback_image(const sensor_msgs::ImageConstPtr& msg) {
 
 	img = camera_matrix.undistort(img);
 
-
 	pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg() );
 }
 
