@@ -1,2 +1,3 @@
 #!/bin/sh
-sudo cp ./install/Toolchain-arm-linux-gnueabihf.cmake /opt/
+
+catkin config --cmake-args --DCMAKE_TOOLCHAIN_FILE=`pwd`/install/Toolchain-arm-linux-gnueabihf.cmake
