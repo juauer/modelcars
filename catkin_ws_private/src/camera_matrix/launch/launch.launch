@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="path" default="$(find test)/../../../captures/test.jpg" />
+	<node name="test_node" pkg="test" type="test_node" args="$(arg path)" output="screen" />
+</launch>
