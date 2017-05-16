@@ -23,9 +23,10 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1095365210" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1738010311" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel_x86/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel_arm/include&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.343267829" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.343267829" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.836553542" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.180263465" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
