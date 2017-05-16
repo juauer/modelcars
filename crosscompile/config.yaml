@@ -1,8 +1,7 @@
 blacklist: []
 build_space: build_arm
 catkin_make_args: []
-cmake_args:
-- -DCMAKE_TOOLCHAIN_FILE=/opt/Toolchain-arm-linux-gnueabihf.cmake
+cmake_args: []
 devel_layout: merged
 devel_space: devel_arm
 extend_path: /opt/odroid-x2/sdk/opt/ros/indigo

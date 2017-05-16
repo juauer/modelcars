@@ -15,7 +15,5 @@ catkin_ws_private/.catkin_tools/profiles/kinetic_x86/packages
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/build.yaml
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/devel_collisions.txt
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/packages
-catkin_ws_private/.catkin_tools/profiles/indigo_arm/build.yaml
-catkin_ws_private/.catkin_tools/profiles/indigo_arm/devel_collisions.txt
-catkin_ws_private/.catkin_tools/profiles/indigo_arm/packages
+catkin_ws_private/.catkin_tools/profiles/indigo_arm/*
 catkin_ws_private/.settings
