@@ -39,7 +39,8 @@ int main(int argc, char **argv) {
 
 	ros::Subscriber sub_cm              = nh.subscribe("/usb_cam/camera_matrix", 1, &callback_camera_matrix);
 	image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_raw", 1, &callback_image);
-	image_transport::Publisher pub      = it.advertise("/usb_cam/image_undistorted", 1);
+
+	pub = it.advertise("/usb_cam/image_undistorted", 1);
 
 	ros::spin();
 }
