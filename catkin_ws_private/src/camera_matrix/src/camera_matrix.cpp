@@ -1,3 +1,7 @@
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/calib3d.hpp>
 
@@ -22,16 +26,26 @@ CameraMatrix::CameraMatrix() {
 	D = (cv::Mat_<float>(4, 1) << 0, 0, 0, 0);
 }
 
-CameraMatrix::CameraMatrix(char* config) {
+CameraMatrix::CameraMatrix(const char *path) {
+	std::ifstream file;
+	std::string line_str;
+	float cx, cy, flx, fly, dcrx, dcry, dctx, dcty;
 
-	// TODO load from config file
+	file.open(path, std::ios::in);
+	getline(file, line_str);
+
+	std::stringstream line_ss(line_str);
+
+	line_ss >> cx >> cy >> flx >> fly >> dcrx >> dcry >> dctx >> dcty;
+
+	file.close();
 
 	K = (cv::Mat_<float>(3, 3) <<
-					1, 0, 1,
-					0, 1, 1,
-					0, 0, 1);
+					flx,   0, cx,
+					  0, fly, cy,
+					  0,   0,  1);
 
-	D = (cv::Mat_<float>(4, 1) << 0, 0, 0, 0);
+	D = (cv::Mat_<float>(4, 1) << dcrx, dcry, dctx, dcty);
 }
 
 CameraMatrix::CameraMatrix(camera_matrix_msgs::CameraMatrix msg) {
@@ -69,9 +83,8 @@ bool CameraMatrix::update_calibration() {
 	return false;
 }
 
-cv::Mat CameraMatrix::undistort(cv::Mat &img) {
-	cv::Mat dst;
-	cv::fisheye::undistortImage(img, dst, K, D, K);
+cv::Mat CameraMatrix::undistort(cv::Mat &src, cv::Mat &dst) {
+	cv::fisheye::undistortImage(src, dst, K, D, K);
 	return dst;
 }
 

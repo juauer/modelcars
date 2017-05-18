@@ -1,3 +1,9 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <ros/ros.h>
+#include <ros/console.h>
+#include <ros/package.h>
 #include <opencv2/highgui.hpp>
 
 #include "camera_matrix.hpp"
@@ -29,17 +35,27 @@ void apply(int, void*) {
 			dist_val.dcrx / 10 - 4, dist_val.dcry / 10 - 4,
 			dist_val.dctx / 10 - 4, dist_val.dcty / 10 - 4);
 
-	img_undistorted = cm.undistort(img);
+	cm.undistort(img, img_undistorted);
 	cv::imshow("undistorted", img_undistorted);
 }
 
-int main(int, char**) {
+int main(int argc, char **argv) {
+	ros::init(argc, argv, "calibration");
 
-	// TODO add switch for auto calibration
+	if(argc < 3) {
+		ROS_ERROR("Missing argument(s).");
+		return 1;
+	}
 
-	// TODO parse path from cl
+	std::string path_img   = ros::package::getPath("camera_matrix") + std::string("/../../../captures/") + std::string(argv[1]);
+	std::string path_calib = ros::package::getPath("camera_matrix") + std::string("/config/") + std::string(argv[2]);
 
-	img = cv::imread("../captures/test.jpg");
+	if(access(path_img.c_str(), F_OK ) == -1) {
+		ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/.\n", path_img.c_str() );
+		return 1;
+	}
+
+	img = cv::imread(path_img);
 
 	int width  = img.cols;
 	int height = img.rows;
@@ -74,7 +90,14 @@ int main(int, char**) {
 	apply(0, (void*)0);
 	cv::waitKey(0);
 
-	// TODO save to config/
+	std::ofstream file;
+	file.open(path_calib.c_str(), std::ios::out | std::ios::trunc);
 
+	file << int_val.cx << " " << int_val.cy << " " << int_val.flx << " " << int_val.fly << " "
+			<< dist_val.dcrx / 10 - 4 << " " << dist_val.dcry / 10 - 4
+			<< " " << dist_val.dctx / 10 - 4 << " " << dist_val.dcty / 10 - 4 << std::endl;
+
+	file.close();
+	ROS_INFO("Calibration written to %s.", path_calib.c_str() );
 	return 0;
 }
