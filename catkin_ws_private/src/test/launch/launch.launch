@@ -1,5 +1,8 @@
-<?xml version="1.0"?>
 <launch>
-	<arg name="path" default="$(find test)/../../../captures/test.jpg" />
-	<node name="test_node" pkg="test" type="test_node" args="$(arg path)" output="screen" />
+	<!-- arg <filename>: name of a bag file in catkin_ws/../logs/ -->
+	<arg name="filename" default="test" />
+	
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find test)/config/config.rviz" />
+	
+	<include file="$(find logging)/launch/log_player.launch" args="$(arg filename)" />
 </launch>

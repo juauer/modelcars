@@ -46,7 +46,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/camera_matrix/src"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/test/src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/logging/src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -73,5 +73,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/auto_extra"/>
+		</configuration>
+	</storageModule>
 </cproject>
