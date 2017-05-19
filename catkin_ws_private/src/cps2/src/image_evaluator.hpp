@@ -12,7 +12,7 @@ public:
 
 	float evaluate(cv::Mat &img, cv::Point3f &particle);
 
-	const int resize_scale = 1;
+	const int resize_scale = 3;
 
 private:
 	Map map;

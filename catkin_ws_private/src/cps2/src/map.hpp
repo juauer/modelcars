@@ -7,10 +7,11 @@ namespace cps2 {
 
 class Map {
 public:
-	Map();
+	Map(const char *path);
 	virtual ~Map();
 
-	cv::Mat img;
+	cv::Mat img_bgr;
+	cv::Mat img_gray;
 };
 
 } /* namespace cps2 */
