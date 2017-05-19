@@ -32,8 +32,8 @@ DistortionCoefs dist_max;
 
 void apply(int, void*) {
 	CameraMatrix cm(int_val.cx, int_val.cy, int_val.flx, int_val.fly,
-			dist_val.dcrx / 10 - 4, dist_val.dcry / 10 - 4,
-			dist_val.dctx / 10 - 4, dist_val.dcty / 10 - 4);
+			dist_val.dcrx / 10.0 - 4, dist_val.dcry / 10.0 - 4,
+			dist_val.dctx / 10.0 - 4, dist_val.dcty / 10.0 - 4);
 
 	cm.undistort(img, img_undistorted);
 	cv::imshow("undistorted", img_undistorted);
@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
 	file.open(path_calib.c_str(), std::ios::out | std::ios::trunc);
 
 	file << int_val.cx << " " << int_val.cy << " " << int_val.flx << " " << int_val.fly << " "
-			<< dist_val.dcrx / 10 - 4 << " " << dist_val.dcry / 10 - 4
-			<< " " << dist_val.dctx / 10 - 4 << " " << dist_val.dcty / 10 - 4 << std::endl;
+			<< dist_val.dcrx / 10.0 - 4 << " " << dist_val.dcry / 10.0 - 4
+			<< " " << dist_val.dctx / 10.0 - 4 << " " << dist_val.dcty / 10.0 - 4 << std::endl;
 
 	file.close();
 	ROS_INFO("Calibration written to %s.", path_calib.c_str() );
