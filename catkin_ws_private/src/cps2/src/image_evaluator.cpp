@@ -123,7 +123,7 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 			if(mappiece.at<uchar>(r, c) == 0)
 				--pixels;
 			else
-				result += abs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c));
+				result += abs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
 
 	result /= 255 * pixels;
 
@@ -133,30 +133,57 @@ cv::resize(mappiece, d_win_img(cv::Rect(380 ,0, 360, 240) ), d_win_size, 0, 0, c
 cv::imshow("test", d_win_img);
 
 cv::Moments moments_particle = cv::moments(mappiece, false);
-cv::Moments moments_image = cv::moments(img_tf, false);
+cv::Moments moments_image    = cv::moments(img_tf, false);
 
-printf("\n======== Moments: =======\n");
-printf("M00: %f\n", moments_particle.m00 - moments_image.m00);
-printf("M01: %f\n", moments_particle.m01 - moments_image.m01);
-printf("M10: %f\n", moments_particle.m10 - moments_image.m10);
-printf("M11: %f\n", moments_particle.m11 - moments_image.m11);
-printf("M02: %f\n", moments_particle.m02 - moments_image.m02);
-printf("M20: %f\n", moments_particle.m20 - moments_image.m20);
-printf("M12: %f\n", moments_particle.m12 - moments_image.m12);
-printf("M21: %f\n", moments_particle.m21 - moments_image.m21);
+printf("\n======== Raw Moments: ==========\n");
+printf("moment, image, particle, difference\n");
+printf("M01: %f, %f, %f\n", moments_image.m01, moments_particle.m01, moments_particle.m01 - moments_image.m01);
+printf("M10: %f, %f, %f\n", moments_image.m10, moments_particle.m10, moments_particle.m10 - moments_image.m10);
+printf("M11: %f, %f, %f\n", moments_image.m11, moments_particle.m11, moments_particle.m11 - moments_image.m11);
+printf("M02: %f, %f, %f\n", moments_image.m02, moments_particle.m02, moments_particle.m02 - moments_image.m02);
+printf("M20: %f, %f, %f\n", moments_image.m20, moments_particle.m20, moments_particle.m20 - moments_image.m20);
+
+float mcx_particle = moments_particle.m10 / moments_particle.m00;
+float mcy_particle = moments_particle.m01 / moments_particle.m00;
+float mcx_image    = moments_image.m10 / moments_image.m00;
+float mcy_image    = moments_image.m01 / moments_image.m00;
+
+printf("======== Centroid: =============\n");
+printf("img: (%f, %f)\n", mcx_image, mcy_image);
+printf("par: (%f, %f)\n", mcx_particle, mcy_particle);
+printf("dif: (%f, %f)\n", mcx_particle - mcx_image, mcy_particle - mcy_image);
+
+printf("======== Central Moments: ======\n");
+printf("moment, image, particle, difference\n");
+printf("m11: %f, %f, %f\n",
+		moments_image.m11 - mcx_image * moments_image.m01,
+		moments_particle.m11 - mcx_particle * moments_particle.m01,
+		moments_particle.m11 - mcx_particle * moments_particle.m01 -
+		moments_image.m11 + mcx_image * moments_image.m01);
+printf("m20: %f, %f, %f\n",
+		moments_image.m20 - mcx_image * moments_image.m10,
+		moments_particle.m20 - mcx_particle * moments_particle.m10,
+		moments_particle.m20 - mcx_particle * moments_particle.m10 -
+		moments_image.m20 + mcx_image * moments_image.m10);
+printf("m02: %f, %f, %f\n",
+		moments_image.m02 - mcx_image * moments_image.m01,
+		moments_particle.m02 - mcx_particle * moments_particle.m01,
+		moments_particle.m02 - mcx_particle * moments_particle.m01 -
+		moments_image.m02 + mcx_image * moments_image.m01);
 
 double hu_particle[7], hu_image[7];
 cv::HuMoments(moments_particle, hu_particle);
 cv::HuMoments(moments_image, hu_image);
 
-printf("====== Hu-Moments: ======\n");
-printf("I1:  %f\n", hu_particle[0] - hu_image[0]);
-printf("I2:  %f\n", hu_particle[1] - hu_image[1]);
-printf("I3:  %f\n", hu_particle[2] - hu_image[2]);
-printf("I4:  %f\n", hu_particle[3] - hu_image[3]);
-printf("I5:  %f\n", hu_particle[4] - hu_image[4]);
-printf("I6:  %f\n", hu_particle[5] - hu_image[5]);
-printf("I7:  %f\n", hu_particle[6] - hu_image[6]);
+printf("======== Hu-Moments: ======\n");
+printf("moment, image, particle, difference\n");
+printf("I1:  %f, %f, %f\n", hu_image[0], hu_particle[0], hu_particle[0] - hu_image[0]);
+printf("I2:  %f, %f, %f\n", hu_image[1], hu_particle[1], hu_particle[1] - hu_image[1]);
+printf("I3:  %f, %f, %f\n", hu_image[2], hu_particle[2], hu_particle[2] - hu_image[2]);
+printf("I4:  %f, %f, %f\n", hu_image[3], hu_particle[3], hu_particle[3] - hu_image[3]);
+printf("I5:  %f, %f, %f\n", hu_image[4], hu_particle[4], hu_particle[4] - hu_image[4]);
+printf("I6:  %f, %f, %f\n", hu_image[5], hu_particle[5], hu_particle[5] - hu_image[5]);
+printf("I7:  %f, %f, %f\n", hu_image[6], hu_particle[6], hu_particle[6] - hu_image[6]);
 #endif
 
 	return result;

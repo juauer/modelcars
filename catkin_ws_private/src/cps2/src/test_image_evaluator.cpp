@@ -28,8 +28,8 @@ void apply(int, void*) {
 
 	cv::Point3f p(px, py, pt * M_PI / 4);
 	float w = cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
-	printf("======= pixelwise: ======\n");
-	printf("d:   %f\n\n", w);
+	printf("======== pixelwise: ============\n");
+	printf("dif: %f\n\n", w);
 }
 
 int main(int, char**) {
