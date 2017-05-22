@@ -27,16 +27,14 @@ void apply(int, void*) {
 		return;
 
 	cv::Point3f p(px, py, pt * M_PI / 4);
-	float w = cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
-	printf("======== pixelwise: ============\n");
-	printf("dif: %f\n\n", w);
+	cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
 }
 
 int main(int, char**) {
 	std::string path = ros::package::getPath("cps2") + std::string("/../../../captures/(200,200,0).jpg");
 
 	map = new cps2::Map(path.c_str() );
-	img = cv::Mat(map->img_bgr, cv::Rect(0, 0, 200, 150) );
+	img = cv::Mat(map->img_bgr, cv::Rect(0, 100, 200, 150) );
 
 	cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
 	cv::createTrackbar("particle x   ", "test", &px, max_px, apply);

@@ -69,9 +69,9 @@ ImageEvaluator::ImageEvaluator(Map &_map, int _resize_scale, int _kernal_size, f
 }
 
 ImageEvaluator::ImageEvaluator(Map &_map) : map(_map) {
-	resize_scale  = 20;
-	kernel_size   = 3;
-	kernel_stddev = 1;
+	resize_scale  = 25;
+	kernel_size   = 5;
+	kernel_stddev = 1.5;
 
 	generateKernel();
 }
@@ -81,8 +81,8 @@ ImageEvaluator::~ImageEvaluator() {
 }
 
 float ImageEvaluator::evaluateDummy(cv::Mat &img, cv::Point3f &particle) {
-	float d = abs(particle.z * 180 / M_PI);
-	return abs(particle.x) + abs(particle.y) + (d <= 180 ? d : 360 - d);
+	float d = fabs(particle.z * 180 / M_PI);
+	return fabs(particle.x) + fabs(particle.y) + (d <= 180 ? d : 360 - d);
 }
 
 float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
@@ -115,17 +115,17 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 		for(int c = 0; c < dim_x; ++c)
 			img_tf.at<uchar>(r, c) = applyKernel(img_gray, resize_scale * c, resize_scale * r);
 
-	float result = 0;
-	int pixels   = dim_x * dim_y;
+	float pixelerror = 0;
+	int pixels       = dim_x * dim_y;
 
 	for(int r = 0; r < dim_y; ++r)
 		for(int c = 0; c < dim_x; ++c)
 			if(mappiece.at<uchar>(r, c) == 0)
 				--pixels;
 			else
-				result += abs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
+				pixelerror += abs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
 
-	result /= 255 * pixels;
+	pixelerror /= 127 * pixels;
 
 #ifdef DEBUG_IE
 cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
@@ -152,6 +152,8 @@ printf("======== Centroid: =============\n");
 printf("img: (%f, %f)\n", mcx_image, mcy_image);
 printf("par: (%f, %f)\n", mcx_particle, mcy_particle);
 printf("dif: (%f, %f)\n", mcx_particle - mcx_image, mcy_particle - mcy_image);
+printf("err: %f\n", fabs(mcx_particle - mcx_image) / dim_x +
+		fabs(mcy_particle - mcy_image) / dim_y);
 
 printf("======== Central Moments: ======\n");
 printf("moment, image, particle, difference\n");
@@ -184,9 +186,12 @@ printf("I4:  %f, %f, %f\n", hu_image[3], hu_particle[3], hu_particle[3] - hu_ima
 printf("I5:  %f, %f, %f\n", hu_image[4], hu_particle[4], hu_particle[4] - hu_image[4]);
 printf("I6:  %f, %f, %f\n", hu_image[5], hu_particle[5], hu_particle[5] - hu_image[5]);
 printf("I7:  %f, %f, %f\n", hu_image[6], hu_particle[6], hu_particle[6] - hu_image[6]);
+
+printf("======== pixelwise: ============\n");
+printf("dif: %f\n\n", pixelerror);
 #endif
 
-	return result;
+	return pixelerror;
 }
 
 } /* namespace cps2 */
