@@ -131,6 +131,32 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
 cv::resize(mappiece, d_win_img(cv::Rect(380 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
 cv::imshow("test", d_win_img);
+
+cv::Moments moments_particle = cv::moments(mappiece, false);
+cv::Moments moments_image = cv::moments(img_tf, false);
+
+printf("\n======== Moments: =======\n");
+printf("M00: %f\n", moments_particle.m00 - moments_image.m00);
+printf("M01: %f\n", moments_particle.m01 - moments_image.m01);
+printf("M10: %f\n", moments_particle.m10 - moments_image.m10);
+printf("M11: %f\n", moments_particle.m11 - moments_image.m11);
+printf("M02: %f\n", moments_particle.m02 - moments_image.m02);
+printf("M20: %f\n", moments_particle.m20 - moments_image.m20);
+printf("M12: %f\n", moments_particle.m12 - moments_image.m12);
+printf("M21: %f\n", moments_particle.m21 - moments_image.m21);
+
+double hu_particle[7], hu_image[7];
+cv::HuMoments(moments_particle, hu_particle);
+cv::HuMoments(moments_image, hu_image);
+
+printf("====== Hu-Moments: ======\n");
+printf("I1:  %f\n", hu_particle[0] - hu_image[0]);
+printf("I2:  %f\n", hu_particle[1] - hu_image[1]);
+printf("I3:  %f\n", hu_particle[2] - hu_image[2]);
+printf("I4:  %f\n", hu_particle[3] - hu_image[3]);
+printf("I5:  %f\n", hu_particle[4] - hu_image[4]);
+printf("I6:  %f\n", hu_particle[5] - hu_image[5]);
+printf("I7:  %f\n", hu_particle[6] - hu_image[6]);
 #endif
 
 	return result;

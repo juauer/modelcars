@@ -23,8 +23,13 @@ const int max_sz = 21;
 const int max_de = 10;
 
 void apply(int, void*) {
+	if(px == 0 || py == 0 || sc == 0 || sz == 0 || de == 0)
+		return;
+
 	cv::Point3f p(px, py, pt * M_PI / 4);
-	printf("weight: %f\n", cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p) );
+	float w = cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
+	printf("======= pixelwise: ======\n");
+	printf("d:   %f\n\n", w);
 }
 
 int main(int, char**) {
