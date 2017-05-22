@@ -125,7 +125,7 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 			else
 				pixelerror += abs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
 
-	pixelerror /= 127 * pixels;
+	pixelerror /= 255 * pixels;
 
 #ifdef DEBUG_IE
 cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <ros/package.h>
 #include <opencv2/core.hpp>
@@ -30,11 +31,14 @@ void apply(int, void*) {
 	cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
 }
 
-int main(int, char**) {
+int main(int argc, char **argv) {
+	if(argc < 5)
+		printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator [x:=..] [y:=..] [w:=..] [h:=..]'.\n");
+
 	std::string path = ros::package::getPath("cps2") + std::string("/../../../captures/(200,200,0).jpg");
 
 	map = new cps2::Map(path.c_str() );
-	img = cv::Mat(map->img_bgr, cv::Rect(0, 100, 200, 150) );
+	img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4])) );
 
 	cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
 	cv::createTrackbar("particle x   ", "test", &px, max_px, apply);
