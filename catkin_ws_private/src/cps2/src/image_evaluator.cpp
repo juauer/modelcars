@@ -14,7 +14,7 @@ namespace cps2 {
 int d_img_width  = 360;
 int d_img_height = 240;
 cv::Size d_win_size(d_img_width, d_img_height);
-cv::Mat d_win_img(d_img_height, 2 * d_img_width, CV_8UC1);
+cv::Mat d_win_img(d_img_height, 2 * d_img_width + 20, CV_8UC1);
 #endif
 
 void ImageEvaluator::generateKernel() {
@@ -128,8 +128,8 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 	result /= 255 * pixels;
 
 #ifdef DEBUG_IE
-cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size);
-cv::resize(mappiece, d_win_img(cv::Rect(360 ,0, 360, 240) ), d_win_size );
+cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
+cv::resize(mappiece, d_win_img(cv::Rect(380 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
 cv::imshow("test", d_win_img);
 #endif
 
