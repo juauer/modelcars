@@ -13,6 +13,7 @@ public:
 	ImageEvaluator(Map &map);
 	virtual ~ImageEvaluator();
 
+	float evaluateDummy(cv::Mat &img, cv::Point3f &particle);
 	float evaluate(cv::Mat &img, cv::Point3f &particle);
 
 private:

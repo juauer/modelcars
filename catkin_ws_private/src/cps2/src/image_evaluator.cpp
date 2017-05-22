@@ -80,6 +80,11 @@ ImageEvaluator::~ImageEvaluator() {
 
 }
 
+float ImageEvaluator::evaluateDummy(cv::Mat &img, cv::Point3f &particle) {
+	float d = abs(particle.z * 180 / M_PI);
+	return abs(particle.x) + abs(particle.y) + (d <= 180 ? d : 360 - d);
+}
+
 float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 	int dim_y = img.rows / resize_scale;
 	int dim_x = img.cols / resize_scale;
