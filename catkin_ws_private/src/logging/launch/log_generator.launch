@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-	<node name="log_generator" pkg="logging" type="log_generator" output="screen" />
+	<!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
+	<arg name="mapfile" default="map_test.png" />
+	
+	<node name="log_generator" pkg="logging" type="log_generator" args="$(arg mapfile)" output="screen" />
 </launch>
