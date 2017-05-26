@@ -8,23 +8,23 @@
 namespace cps2 {
 
 class ImageEvaluator {
-public:
-	ImageEvaluator(Map &map, int resize_scale, int kernel_size, float kernel_stddev);
-	ImageEvaluator(Map &map);
-	virtual ~ImageEvaluator();
+ public:
+  ImageEvaluator(Map &map, int resize_scale, int kernel_size, float kernel_stddev);
+  ImageEvaluator(Map &map);
+  virtual ~ImageEvaluator();
 
-	float evaluateDummy(cv::Mat &img, cv::Point3f &particle);
-	float evaluate(cv::Mat &img, cv::Point3f &particle);
+  float evaluateDummy(cv::Mat &img, cv::Point3f &particle);
+  float evaluate(cv::Mat &img, cv::Point3f &particle);
 
-private:
-	void generateKernel();
-	int applyKernel(cv::Mat &img, int x, int y);
+ private:
+  void generateKernel();
+  int applyKernel(cv::Mat &img, int x, int y);
 
-	Map map;
-	cv::Mat kernel;
-	int resize_scale;
-	int kernel_size;
-	float kernel_stddev;
+  Map map;
+  cv::Mat kernel;
+  int resize_scale;
+  int kernel_size;
+  float kernel_stddev;
 };
 
 } /* namespace cps2 */

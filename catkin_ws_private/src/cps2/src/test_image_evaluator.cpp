@@ -24,30 +24,30 @@ const int max_sz = 21;
 const int max_de = 10;
 
 void apply(int, void*) {
-	if(px == 0 || py == 0 || sc == 0 || sz == 0 || de == 0)
-		return;
+  if(px == 0 || py == 0 || sc == 0 || sz == 0 || de == 0)
+    return;
 
-	cv::Point3f p(px, py, pt * M_PI / 4);
-	cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
+  cv::Point3f p(px, py, pt * M_PI / 4);
+  cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
 }
 
 int main(int argc, char **argv) {
-	if(argc < 5)
-		printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator [x:=..] [y:=..] [w:=..] [h:=..]'.\n");
+  if(argc < 5)
+    printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator [x:=..] [y:=..] [w:=..] [h:=..]'.\n");
 
-	std::string path = ros::package::getPath("cps2") + std::string("/../../../captures/(200,200,0).jpg");
+  std::string path = ros::package::getPath("cps2") + std::string("/../../../captures/(200,200,0).jpg");
 
-	map = new cps2::Map(path.c_str() );
-	img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4])) );
+  map = new cps2::Map(path.c_str() );
+  img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4])) );
 
-	cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
-	cv::createTrackbar("particle x   ", "test", &px, max_px, apply);
-	cv::createTrackbar("particle y   ", "test", &py, max_py, apply);
-	cv::createTrackbar("particle th  ", "test", &pt, max_pt, apply);
-	cv::createTrackbar("downscale    ", "test", &sc, max_sc, apply);
-	cv::createTrackbar("kernel size  ", "test", &sz, max_sz, apply);
-	cv::createTrackbar("std deviation", "test", &de, max_de, apply);
+  cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
+  cv::createTrackbar("particle x   ", "test", &px, max_px, apply);
+  cv::createTrackbar("particle y   ", "test", &py, max_py, apply);
+  cv::createTrackbar("particle th  ", "test", &pt, max_pt, apply);
+  cv::createTrackbar("downscale    ", "test", &sc, max_sc, apply);
+  cv::createTrackbar("kernel size  ", "test", &sz, max_sz, apply);
+  cv::createTrackbar("std deviation", "test", &de, max_de, apply);
 
-	apply(0, (void*)0);
-	cv::waitKey(0);
+  apply(0, (void*)0);
+  cv::waitKey(0);
 }

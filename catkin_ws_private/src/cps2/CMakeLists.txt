@@ -3,8 +3,10 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  roscpp image_transport
+  roslaunch roscpp image_transport
 )
+
+roslaunch_add_file_check(launch)
 
 find_package( OpenCV REQUIRED )
 
@@ -17,6 +19,6 @@ catkin_package(
   CATKIN_DEPENDS image_transport
 )
 
-add_executable( test_evaluator src/test_image_evaluator.cpp src/image_evaluator.cpp src/map.cpp )
+add_executable( test_evaluator src/image_evaluator.cpp src/test_image_evaluator.cpp src/particle3f.cpp src/map.cpp)
 target_compile_definitions( test_evaluator PUBLIC DEBUG_IE )
 target_link_libraries( test_evaluator ${catkin_LIBRARIES} ${OpenCV_LIBS} )

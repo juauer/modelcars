@@ -3,8 +3,10 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( logging )
 
 find_package( catkin REQUIRED COMPONENTS
-  roscpp rosbag cv_bridge image_transport
+  roscpp rosbag cv_bridge image_transport roslaunch
 )
+
+roslaunch_add_file_check(launch)
 
 find_package( OpenCV REQUIRED )
 
