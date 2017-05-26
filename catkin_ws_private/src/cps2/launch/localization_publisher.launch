@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="localization_cp2_publisher" pkg="cps2" type="publisher" output="screen" />
+</launch>
