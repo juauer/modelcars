@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include <cv.h>
+#include <cv.hpp>
 
 namespace cps2 {
 
@@ -12,12 +12,16 @@ class ParticleFilter {
  public:
   int particleCount;
   std::vector<ParticleType> particles;
+  cv::Mat map;
 
-  ParticleFilter(int size);
-  void evaluateParticles() {
+  ParticleFilter(cv::Mat &_map, int _particleCount): map(_map), particleCount(_particleCount){
+    addNewRandomParticles();
+  }
+
+  void eval(cv::Mat &img, cv::Point3f &pos) {
     std::for_each (particles.begin(),
                    particles.end(),
-                   &ParticleType::eval);
+                   &ParticleType::eval(img,pos));
   }
 
   double sumBeliefs(){
@@ -92,11 +96,11 @@ class ParticleFilter {
   
 };
 
-template<typename ParticleType>
-ParticleFilter<ParticleType>::ParticleFilter(int size) {
-  particleCount = size;
-  particles = std::vector<ParticleType>(size);
-}
+// template<typename ParticleType>
+// ParticleFilter<ParticleType>::ParticleFilter(int size) {
+//   particleCount = size;
+//   particles = std::vector<ParticleType>(size);
+// }
 
 class Particle {
  public:

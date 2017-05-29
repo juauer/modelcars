@@ -10,7 +10,7 @@
 bool ready = false;
 
 cps2::Map map;
-cps2::ParticleFilter3f pf(map);
+cps2::ParticleFilter3f pf(map,1000);
 
 cv::Mat image;
 cv::Point3f pose;
@@ -23,6 +23,11 @@ Particle3f convOdomMsg2Particle3f(nav_msgs::Odometry msg) {
   p.p.x = msg.pose.position.x;
   p.p.y = msg.pose.position.y;
   p.p.z = msg.pose.position.z;
+
+  //msg.twist.twist.linear.x  = vx;
+  //msg.twist.twist.linear.y  = vy;
+  //msg.twist.twist.angular.z = 0.0;
+  
   return p;
 }
 
