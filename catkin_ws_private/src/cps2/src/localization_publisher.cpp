@@ -37,7 +37,10 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     return;
 
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
-  particleFilter.evaluate(image, msg_odo);
+
+  // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
+  particleFilter.evaluate(image, 0, 0);
+
   cps2::Particle3f pose  = particleFilter.getBest();
 
   msg_pose.header.seq = msg->header.seq;
