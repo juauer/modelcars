@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <vector>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -12,8 +13,8 @@
 
 bool ready = false;
 
-cps2::Map map;
-cps2::ParticleFilter3f particleFilter(map);
+cps2::Map *map;
+cps2::ParticleFilter3f *particleFilter;
 
 cv::Mat image;
 cps2::Particle3f pose;
@@ -39,9 +40,9 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
 
   // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
-  particleFilter.evaluate(image, 0, 0);
+  particleFilter->evaluate(image, 0, 0);
 
-  cps2::Particle3f pose  = particleFilter.getBest();
+  cps2::Particle3f pose  = particleFilter->getBest();
 
   msg_pose.header.seq = msg->header.seq;
   msg_pose.header.stamp = msg->header.stamp;
@@ -68,6 +69,27 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 }
 
 int main(int argc, char **argv) {
+	if(argc < 4) {
+		ROS_ERROR("Please use roslaunch as entry point.");
+		return 1;
+	}
+
+	std::string path_map = ros::package::getPath("cps2") + std::string("/../../../captures/") + std::string(argv[1]);
+	int particles_num    = atoi(argv[2]);
+	int particles_keep   = atof(argv[3]);
+	int particle_stddev  = atof(argv[4]);
+
+	if(access(path_map.c_str(), R_OK ) == -1) {
+		ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/.\n", path_map.c_str() );
+		return 1;
+	}
+
+	map = new cps2::Map(path_map);
+
+	// TODO pass args
+	// particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
+	particleFilter = new cps2::ParticleFilter3f(map);
+
   ros::init(argc, argv, "localization_cps2_publisher");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
