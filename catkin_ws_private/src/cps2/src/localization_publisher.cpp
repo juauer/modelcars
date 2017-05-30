@@ -1,3 +1,4 @@
+#include <vector>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <image_transport/image_transport.h>
@@ -6,31 +7,27 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <tf/tf.h>
-#include "particle3f.hpp"
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+#include "map.hpp"
+#include "particle_filter.hpp"
 
 bool ready = false;
-
+const unsigned int particleNum = 1000;
 cps2::Map *map;
-cps2::ParticleFilter3f pf(*map,1000);
+cps2::ParticleFilter3f *particleFilter = new cps2::ParticleFilter3f(map, particleNum, 1.0f);
 
 cv::Mat image;
-cv::Point3f pose;
+cps2::Particle3f pose;
 geometry_msgs::PoseStamped msg_pose;
 nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
 
-cps2::Particle3f convOdomMsg2Particle3f(nav_msgs::Odometry msg) {
-  cps2::Particle3f p(map);
-  p.p.x = msg.pose.pose.position.x;
-  p.p.y = msg.pose.pose.position.y;
-  p.p.z = msg.pose.pose.position.z;
-
-  //msg.twist.twist.linear.x  = vx;
-  //msg.twist.twist.linear.y  = vy;
-  //msg.twist.twist.angular.z = 0.0;
-  
-  return p;
-}
+#ifdef DEBUG_PF
+visualization_msgs::Marker markers[particleNum];
+visualization_msgs::MarkerArray msg_markers;
+ros::Publisher pub_markers;
+#endif
 
 void callback_odometry(const nav_msgs::Odometry &msg) {
   msg_odo = msg;
@@ -42,14 +39,34 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     return;
 
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
-  pf.eval(image, convOdomMsg2Particle3f(msg_odo));
-  cps2::Particle3f pose = pf.getBest();
+
+  // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
+  particleFilter->eval(image, 0, 0);
+
+  cps2::Particle3f pose  = particleFilter->getBest();
+
   msg_pose.header.seq = msg->header.seq;
   msg_pose.header.stamp = msg->header.stamp;
   msg_pose.pose.position.x = pose.p.x;
   msg_pose.pose.position.y = pose.p.y;
   //msg_pose.pose.orientation = tf::createQuaternionFromYaw(pose.p.z);
   pub.publish(msg_pose);
+
+#ifdef DEBUG_PF
+  for(int i = 0; i < particleFilter->particleCount; ++i) {
+	  tf::Quaternion q = tf::createQuaternionFromYaw(pose.p.z);
+	  visualization_msgs::Marker marker = markers[i];
+	  marker.id = i;
+	  marker.pose.position.x = pose.p.x;
+	  marker.pose.position.y = pose.p.y;
+	  marker.pose.orientation.x = q.getX();
+	  marker.pose.orientation.y = q.getY();
+	  marker.pose.orientation.z = q.getZ();
+	  marker.pose.orientation.w = q.getW();
+  }
+
+  pub_markers.publish(msg_markers);
+#endif
 }
 
 int main(int argc, char **argv) {
@@ -68,6 +85,29 @@ int main(int argc, char **argv) {
 
   msg_pose.pose.position.z = 0;
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
+
+#ifdef DEBUG_PF
+  pub_markers = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
+  //msg_markers.markers = markers; //TODO: convert Point3f into markers and copy all into marker list
+
+  for(int i = 0; i < particleFilter->particleCount; ++i) {
+	  tf::Quaternion q = tf::createQuaternionFromYaw(pose.p.z);
+	  visualization_msgs::Marker marker = markers[i];
+	  marker.header.frame_id = "base_link";
+	  marker.header.stamp = ros::Time::now();
+	  marker.ns = "cps2";
+	  marker.type = visualization_msgs::Marker::ARROW;
+	  marker.action = visualization_msgs::Marker::ADD;
+	  marker.pose.position.z = 0;
+	  marker.scale.x = 0.5;
+	  marker.scale.y = 0.5;
+	  marker.scale.z = 0.5;
+	  marker.color.a = 1.0;
+	  marker.color.r = 0.0;
+	  marker.color.g = 1.0;
+	  marker.color.b = 0.0;
+  }
+#endif
 
   ros::spin();
 }

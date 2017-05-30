@@ -4,24 +4,27 @@
 #include <vector>
 #include <algorithm>
 #include <cv.hpp>
+#include "map.hpp"
+#include "particle3f.hpp"
 
 namespace cps2 {
 
-template <typename ParticleType>
-class ParticleFilter {
+class ParticleFilter3f {
  public:
   int particleCount;
-  std::vector<ParticleType> particles;
-  cv::Mat map;
+  std::vector<Particle3f> particles;
+  cps2::Map *map;
+  float sigma;
 
-  ParticleFilter(cv::Mat &_map, int _particleCount): map(_map), particleCount(_particleCount){
+  ParticleFilter3f(cps2::Map *_map, int _particleCount,
+                 float _sigma): map(_map), particleCount(_particleCount),
+                                sigma(_sigma){
     addNewRandomParticles();
   }
 
-  void eval(cv::Mat &img, cv::Point3f &pos) {
-    std::for_each (particles.begin(),
-                   particles.end(),
-                   &ParticleType::eval(img,pos));
+  void eval(cv::Mat &img, float sx, float sy) { 
+    for(Particle3f i : particles)
+      i.eval(img,sx,sy);
   }
 
   double sumBeliefs(){
@@ -61,10 +64,10 @@ class ParticleFilter {
     }
 
     // distribute new particles near good particles
-    std::vector<ParticleType> newParticles;
+    std::vector<Particle3f> newParticles;
     for (unsigned int i = 0; i < hits.size(); ++i) {
       // printf ("hit[%d]=%d\r\n", i,hits[i]);
-      ParticleType &p = particles[i];
+      Particle3f &p = particles[i];
       for (unsigned int h = 0; h < hits[i]; ++h) {
         if (h == 0){// && hits[i]>1) { // left original particle TODO use ID
           newParticles.push_back(p);
@@ -79,39 +82,21 @@ class ParticleFilter {
   void addNewRandomParticles(){
     // distribute random particles
     const int nRandom = particleCount - particles.size();
-    std::vector<ParticleType> inserts(nRandom);
+    std::vector<Particle3f> inserts(nRandom);
     
     particles.insert(particles.end(),
                      inserts.begin(),
                      inserts.end());
   }
   
-  ParticleType getBest(){
+  Particle3f getBest(){
     //sort()
     std::sort(particles.begin(), particles.end(),
-              std::greater<ParticleType>());
+              std::greater<Particle3f>());
     //return first item in list
     return particles.front();
   }
-  
 };
-
-// template<typename ParticleType>
-// ParticleFilter<ParticleType>::ParticleFilter(int size) {
-//   particleCount = size;
-//   particles = std::vector<ParticleType>(size);
-// }
-
-class Particle {
- public:
-  Particle(){};
-  virtual ~Particle(){};
-
-  double belief;
-
-  virtual void eval(cv::Mat &img, cv::Point3f &particle) = 0;
-};
-
 
 } // namespace cps2
 

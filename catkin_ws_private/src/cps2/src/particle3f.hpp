@@ -3,21 +3,26 @@
 
 #include <cv.h>
 #include <limits.h>
-#include "particle_filter.hpp"
 #include "image_evaluator.hpp"
 #include "map.hpp"
 #include <iostream>
 
 namespace cps2 {
 
-class Particle3f : public Particle {
+class Particle3f{
  public:
-  Particle3f(cv::Mat _map):map(_map){
+  Particle3f(){
     initRND();
   }
-  virtual ~Particle3f(){};
+  ~Particle3f(){};
+
+  void operator=(const Particle3f& p){
+    this->p = p.p;
+    this->map = map;
+    this->belief = p.belief;
+  }
   
-  virtual void eval(cv::Mat &img, cv::Point3f &particle){
+  void eval(cv::Mat &img, float sx, float sy){
     std::cout << "eval/n";
     // sum = 0.0;
     // for (i in range(len(p)): # calculate mean error
@@ -28,8 +33,14 @@ class Particle3f : public Particle {
     // return sum / float(len(p))
   }
 
+  Particle3f getNearbyParticle(){
+    // do nothing yet
+    return Particle3f();
+  }
+
   cv::Point3f p;
   cv::Mat map;
+  double belief;
  protected:
   void initRND(){
     CvRNG rng = cvRNG(-1);
@@ -39,7 +50,11 @@ class Particle3f : public Particle {
   }
 };
 
-typedef ParticleFilter<Particle3f> ParticleFilter3f;
+bool operator>(const Particle3f& lhs, const Particle3f& rhs){
+  return lhs.belief > rhs.belief;
+}
+
+
 // class Particle: ImageEvaluator {
 //  public:
 //   ParticleFilter(Map &map, int resize_scale,
