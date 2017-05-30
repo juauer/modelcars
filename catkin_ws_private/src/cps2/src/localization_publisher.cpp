@@ -17,7 +17,7 @@
 bool ready = false;
 
 cps2::Map *map;
-cps2::ParticleFilter3f *particleFilter; // = new cps2::ParticleFilter3f(map, particleNum, 1.0f);
+cps2::ParticleFilter3f *particleFilter;
 
 cv::Mat image;
 cps2::Particle3f pose;

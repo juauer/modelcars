@@ -11,7 +11,7 @@ namespace cps2 {
 
 class ParticleFilter3f {
  public:
-  int particle_num;
+  int particles_num;
   int particle_keep;
   float particle_stdev;
   std::vector<Particle3f> particles;
@@ -19,12 +19,12 @@ class ParticleFilter3f {
 
   ParticleFilter3f(cps2::Map *_map, int _particle_num,
                    int _particle_keep, float _particle_stdev):
-      map(_map), particle_num(_particle_num), particle_keep(_particle_keep),
+      map(_map), particles_num(_particle_num), particle_keep(_particle_keep),
       particle_stdev(_particle_stdev) {
     addNewRandomParticles();
   }
 
-  void eval(cv::Mat &img, float sx, float sy) { 
+  void evaluate(cv::Mat &img, float sx, float sy) {
     for(Particle3f i : particles)
       i.eval(img,sx,sy);
   }
@@ -83,7 +83,7 @@ class ParticleFilter3f {
   
   void addNewRandomParticles(){
     // distribute random particles
-    const int nRandom = particle_num - particles.size();
+    const int nRandom = particles_num - particles.size();
     std::vector<Particle3f> inserts(nRandom);
     
     particles.insert(particles.end(),
@@ -91,12 +91,12 @@ class ParticleFilter3f {
                      inserts.end());
   }
   
-  Particle3f getBest(){
+  cv::Point3f getBest(){
     //sort()
     std::sort(particles.begin(), particles.end(),
               std::greater<Particle3f>());
     //return first item in list
-    return particles.front();
+    return map->map2world(particles.front().p);
   }
 };
 
