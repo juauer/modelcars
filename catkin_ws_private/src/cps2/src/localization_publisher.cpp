@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <vector>
+#include <ros/package.h>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <image_transport/image_transport.h>
@@ -26,7 +27,6 @@ nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
 
 #ifdef DEBUG_PF
-visualization_msgs::Marker markers[particleFilter.particleCount];
 visualization_msgs::MarkerArray msg_markers;
 ros::Publisher pub_markers;
 #endif
@@ -47,25 +47,30 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   dummy::Particle pose = particleFilter->getBest();
   // FIXME cps2::Particle3f pose = particleFilter->getBest();
+  tf::Quaternion q = tf::createQuaternionFromYaw(pose.p.z);
 
   msg_pose.header.seq = msg->header.seq;
   msg_pose.header.stamp = msg->header.stamp;
-  msg_pose.pose.position.x = pose.p.x;
-  msg_pose.pose.position.y = pose.p.y;
-  msg_pose.pose.orientation = tf::createQuaternionFromYaw(pose.p.z);
+  msg_pose.pose.position.x = pose.p.x / 100;
+  msg_pose.pose.position.y = pose.p.y / 100;
+  msg_pose.pose.orientation.x = q.getX();
+  msg_pose.pose.orientation.y = q.getY();
+  msg_pose.pose.orientation.z = q.getZ();
+  msg_pose.pose.orientation.w = q.getW();
   pub.publish(msg_pose);
 
 #ifdef DEBUG_PF
-  for(int i = 0; i < particleFilter.particleCount; ++i) {
-	  tf::Quaternion q = tf::createQuaternionFromYaw(pose.p.z);
-	  visualization_msgs::Marker marker = markers[i];
-	  marker.id = i;
-	  marker.pose.position.x = pose.p.x;
-	  marker.pose.position.y = pose.p.y;
-	  marker.pose.orientation.x = q.getX();
-	  marker.pose.orientation.y = q.getY();
-	  marker.pose.orientation.z = q.getZ();
-	  marker.pose.orientation.w = q.getW();
+  for(int i = 0; i < particleFilter->particles_num; ++i) {
+	  tf::Quaternion q = tf::createQuaternionFromYaw(particleFilter->particles[i].p.z);
+	  visualization_msgs::Marker *marker = &msg_markers.markers[i];
+	  marker->header.seq = msg->header.seq;
+	  marker->header.stamp = msg->header.stamp;
+	  marker->pose.position.x = particleFilter->particles[i].p.x / 100;
+	  marker->pose.position.y = particleFilter->particles[i].p.y / 100;
+	  marker->pose.orientation.x = q.getX();
+	  marker->pose.orientation.y = q.getY();
+	  marker->pose.orientation.z = q.getZ();
+	  marker->pose.orientation.w = q.getW();
   }
 
   pub_markers.publish(msg_markers);
@@ -100,29 +105,29 @@ int main(int argc, char **argv) {
   image_transport::Subscriber sub_img =
       it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
 
+  msg_pose.header.frame_id = "base_link";
   msg_pose.pose.position.z = 0;
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
 #ifdef DEBUG_PF
   pub_markers = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
-  msg_markers.markers = markers;
 
-  for(int i = 0; i < particleFilter.particleCount; ++i) {
-	  tf::Quaternion q = tf::createQuaternionFromYaw(pose.p.z);
-	  visualization_msgs::Marker marker = markers[i];
+  for(int i = 0; i < particleFilter->particles_num; ++i) {
+	  visualization_msgs::Marker marker;
 	  marker.header.frame_id = "base_link";
-	  marker.header.stamp = 0;
 	  marker.ns = "cps2";
+	  marker.id = i;
 	  marker.type = visualization_msgs::Marker::ARROW;
 	  marker.action = visualization_msgs::Marker::ADD;
 	  marker.pose.position.z = 0;
-	  marker.scale.x = 0.5;
-	  marker.scale.y = 0.5;
-	  marker.scale.z = 0.5;
+	  marker.scale.x = 0.1;
+	  marker.scale.y = 0.1;
+	  marker.scale.z = 0.1;
 	  marker.color.a = 1.0;
 	  marker.color.r = 0.0;
 	  marker.color.g = 1.0;
 	  marker.color.b = 0.0;
+	  msg_markers.markers.push_back(marker);
   }
 #endif
 

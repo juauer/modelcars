@@ -3,7 +3,7 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslaunch roscpp image_transport
+  roslaunch roscpp image_transport cv_bridge
 )
 
 roslaunch_add_file_check(launch)
