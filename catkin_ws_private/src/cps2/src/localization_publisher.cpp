@@ -7,21 +7,20 @@
 #include <nav_msgs/Odometry.h>
 #include <opencv2/core.hpp>
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include "particle_filter_dummy.hpp"
-// FIXME #include "particle_filter.hpp"
+#include "map.hpp"
+#include "particle_filter.hpp"
 
 bool ready = false;
 
 cps2::Map *map;
-dummy::ParticleFilter *particleFilter;
-// FIXME cps2::ParticleFilter3f *particleFilter;
+cps2::ParticleFilter3f *particleFilter; // = new cps2::ParticleFilter3f(map, particleNum, 1.0f);
 
 cv::Mat image;
-dummy::Particle pose;
-// FIXME cps2::Particle3f pose;
+cps2::Particle3f pose;
 geometry_msgs::PoseStamped msg_pose;
 nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
@@ -93,9 +92,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	map = new cps2::Map(path_map.c_str());
-	particleFilter = new dummy::ParticleFilter(map, particles_num, particles_keep, particle_stddev);
-	// FIXME particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
+  map = new cps2::Map(path_map.c_str());
+  particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
 
   ros::init(argc, argv, "localization_cps2_publisher");
   ros::NodeHandle nh;

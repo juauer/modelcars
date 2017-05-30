@@ -16,7 +16,7 @@ include_directories(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS image_transport
+  CATKIN_DEPENDS cv_bridge image_transport
 )
 
 add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
