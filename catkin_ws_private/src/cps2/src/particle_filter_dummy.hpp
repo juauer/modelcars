@@ -49,8 +49,8 @@ void evaluate(cv::Mat img, float dx, float dy) {
 	resample();
 }
 
-Particle getBest() {
-	return best;
+cv::Point3f getBest() {
+	return map->map2world(best.p);
 }
 
 void resample() {

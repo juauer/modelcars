@@ -47,7 +47,8 @@ nav_msgs::Odometry createOdometryMsg(float x, float y, float th, float vx, float
 }
 
 sensor_msgs::ImagePtr createImgMsg(float x, float y, float th) {
-	y   = map.rows - y;
+	x  *= 100;
+	y   = map.rows - 100 * y;
 	th -= M_PI / 2;
 
 	int dim_y = 240;
@@ -76,7 +77,7 @@ sensor_msgs::ImagePtr createImgMsg(float x, float y, float th) {
 void createDataPoint(float x1, float x2, float y1, float y2, float th1, float th2) {
 	poses.push_back(createPoseMsg(x1, y1, th1) );
 	odos.push_back(createOdometryMsg(x1, y1, th1, 5 * (x1 - x2), 5 * (y1 - y2), 5 * (th1 - th2) ) );
-	images.push_back(createImgMsg(100 * x1, 100 * y1, th1) );
+	images.push_back(createImgMsg(x1, y1, th1) );
 }
 
 int main(int argc, char **argv) {
