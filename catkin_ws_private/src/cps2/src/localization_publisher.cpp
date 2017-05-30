@@ -9,15 +9,18 @@
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include "particle3f.hpp"
+#include "particle_filter_dummy.hpp"
+// FIXME #include "particle_filter.hpp"
 
 bool ready = false;
 
 cps2::Map *map;
-cps2::ParticleFilter3f *particleFilter;
+dummy::ParticleFilter *particleFilter;
+// FIXME cps2::ParticleFilter3f *particleFilter;
 
 cv::Mat image;
-cps2::Particle3f pose;
+dummy::Particle pose;
+// FIXME cps2::Particle3f pose;
 geometry_msgs::PoseStamped msg_pose;
 nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
@@ -42,7 +45,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
   particleFilter->evaluate(image, 0, 0);
 
-  cps2::Particle3f pose  = particleFilter->getBest();
+  dummy::Particle pose = particleFilter->getBest();
+  // FIXME cps2::Particle3f pose = particleFilter->getBest();
 
   msg_pose.header.seq = msg->header.seq;
   msg_pose.header.stamp = msg->header.stamp;
@@ -84,11 +88,9 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	map = new cps2::Map(path_map);
-
-	// TODO pass args
-	// particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
-	particleFilter = new cps2::ParticleFilter3f(map);
+	map = new cps2::Map(path_map.c_str());
+	particleFilter = new dummy::ParticleFilter(map, particles_num, particles_keep, particle_stddev);
+	// FIXME particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
 
   ros::init(argc, argv, "localization_cps2_publisher");
   ros::NodeHandle nh;
