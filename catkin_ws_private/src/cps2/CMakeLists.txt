@@ -3,7 +3,7 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslaunch roscpp cv_bridge image_transport
+  roslaunch roscpp image_transport cv_bridge
 )
 
 roslaunch_add_file_check(launch)
@@ -19,10 +19,10 @@ catkin_package(
   CATKIN_DEPENDS cv_bridge image_transport
 )
 
-add_executable( localization_publisher src/localization_publisher.cpp src/particle_filter.hpp src/image_evaluator.cpp src/map.cpp )
+add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
 target_link_libraries( localization_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
-add_executable( localization_publisher_debug src/localization_publisher.cpp src/particle_filter.hpp src/image_evaluator.cpp src/map.cpp )
+add_executable( localization_publisher_debug src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
 target_compile_definitions( localization_publisher_debug PUBLIC DEBUG_PF )
 target_link_libraries( localization_publisher_debug ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 

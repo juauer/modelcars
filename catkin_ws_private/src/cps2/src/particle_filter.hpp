@@ -11,14 +11,16 @@ namespace cps2 {
 
 class ParticleFilter3f {
  public:
-  int particleCount;
+  int particle_num;
+  int particle_keep;
+  float particle_stdev;
   std::vector<Particle3f> particles;
   cps2::Map *map;
-  float sigma;
 
-  ParticleFilter3f(cps2::Map *_map, int _particleCount,
-                 float _sigma): map(_map), particleCount(_particleCount),
-                                sigma(_sigma){
+  ParticleFilter3f(cps2::Map *_map, int _particle_num,
+                   int _particle_keep, float _particle_stdev):
+      map(_map), particle_num(_particle_num), particle_keep(_particle_keep),
+      particle_stdev(_particle_stdev) {
     addNewRandomParticles();
   }
 
@@ -81,7 +83,7 @@ class ParticleFilter3f {
   
   void addNewRandomParticles(){
     // distribute random particles
-    const int nRandom = particleCount - particles.size();
+    const int nRandom = particle_num - particles.size();
     std::vector<Particle3f> inserts(nRandom);
     
     particles.insert(particles.end(),
