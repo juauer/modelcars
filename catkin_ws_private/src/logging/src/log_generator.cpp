@@ -41,7 +41,7 @@ nav_msgs::Odometry createOdometryMsg(float x, float y, float th, float vx, float
   msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(th);
   msg.twist.twist.linear.x  = vx;
   msg.twist.twist.linear.y  = vy;
-  msg.twist.twist.angular.z = 0.0;
+  msg.twist.twist.angular.z = vth;
 
   return msg;
 }
