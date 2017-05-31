@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include <opencv2/core.hpp>
+#include <cv.hpp>
 #include "map.hpp"
 #include "particle3f.hpp"
 

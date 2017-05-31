@@ -1,7 +1,10 @@
 #ifndef SRC_PARTICLE3F_HPP_
 #define SRC_PARTICLE3F_HPP_
-
-#include <opencv2/core.hpp>
+#define _USE_MATH_DEFINES
+ 
+#include <cmath>
+//#include <opencv2/core.hpp>
+#include <random>
 #include <limits.h>
 #include "image_evaluator.hpp"
 #include "map.hpp"
@@ -44,32 +47,22 @@ class Particle3f{
   float std_dev;
  protected:
   void initRND(){
-    CvRNG rng = cvRNG(-1);
-    p.x = cvRandReal(&rng) * map->img_gray.size().height;
-    p.y = cvRandReal(&rng) * map->img_gray.size().width;
-    p.z = cvRandReal(&rng) * CV_2PI;
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> rand_x(1, map->img_gray.size().height);
+    std::uniform_int_distribution<> rand_y(1, map->img_gray.size().width);
+    std::uniform_real_distribution<> rand_r(1, CV_2PI);
+
+    //CvRNG rng = cvRNG(-1);
+    p.x = rand_x(gen);
+    p.y = rand_y(gen);
+    p.z = rand_r(gen);
   }
 };
 
 bool operator>(const Particle3f& lhs, const Particle3f& rhs){
   return lhs.belief > rhs.belief;
 }
-
-
-// class Particle: ImageEvaluator {
-//  public:
-//   ParticleFilter(Map &map, int resize_scale,
-//                  int kernel_size, float kernel_stddev);
-//   ParticleFilter(Map &map);
-
-//   float evaluate(cv::Mat &img, cv::Point3f &particle){
-//     ImageEvaluator.evaluate(img,this);
-//   }
-
-//  protected:
-//   cv::Mat &img;
-//   IamgeEvalua;
-// };
 
 } // namespace cps2
 
