@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-	<node name="undistorted_image_publisher" pkg="camera_matrix" type="undistorted_image_publisher" output="screen" />
+  <node name="undistorted_image_publisher" pkg="camera_matrix" type="undistorted_image_publisher" output="screen" />
 </launch>

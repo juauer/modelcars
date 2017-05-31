@@ -11,8 +11,8 @@ roslaunch_add_file_check(launch)
 find_package( OpenCV REQUIRED )
 
 catkin_package(
-	LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS cv_bridge image_transport message_runtime
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS cv_bridge image_transport message_runtime
 )
 
 include_directories(
