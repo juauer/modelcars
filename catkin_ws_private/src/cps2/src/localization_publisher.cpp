@@ -20,9 +20,11 @@ cps2::Map *map;
 cps2::ParticleFilter3f *particleFilter;
 
 cv::Mat image;
-cps2::Particle3f pose;
+cv::Point3f pose;
+cv::Point3f pose_velocities;
+cv::Point3f origin_map;
+ros::Time stamp_last_callback;
 geometry_msgs::PoseStamped msg_pose;
-nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
 
 #ifdef DEBUG_PF
@@ -31,20 +33,34 @@ ros::Publisher pub_markers;
 #endif
 
 void callback_odometry(const nav_msgs::Odometry &msg) {
-  msg_odo = msg;
-  ready = true;
+  pose_velocities.x = msg.twist.twist.linear.x;
+  pose_velocities.y = msg.twist.twist.linear.y;
+  pose_velocities.z = msg.twist.twist.angular.z;
+  pose_velocities   = map->world2map(pose_velocities) - origin_map;
+  ready             = true;
 }
 
 void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   if (!ready)
     return;
 
+  if(!stamp_last_callback.isValid()) {
+    stamp_last_callback = msg->header.stamp;
+    return;
+  }
+
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-  // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
-  particleFilter->evaluate(image, 0, 0);
+  ros::Time now     = msg->header.stamp;
+  ros::Duration dif = now - stamp_last_callback;
 
-  cv::Point3f pose = particleFilter->getBest();
+  float dt = dif.sec + dif.nsec / 1000000000.0;
+
+  particleFilter->evaluate(image, dt * pose_velocities.x, dt * pose_velocities.y);
+
+  pose                = particleFilter->getBest();
+  stamp_last_callback = now;
+
   tf::Quaternion q = tf::createQuaternionFromYaw(pose.z);
 
   msg_pose.header.seq = msg->header.seq;
@@ -98,12 +114,16 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
+  cv::Point3f origin_world(0, 0, 0);
 
-  ros::Subscriber sub_odo = nh.subscribe("/odom", 1, &callback_odometry);
-  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
-
+  stamp_last_callback.sec  = 0;
+  stamp_last_callback.nsec = 0;
+  origin_map               = map->world2map(origin_world);
   msg_pose.header.frame_id = "base_link";
   msg_pose.pose.position.z = 0;
+
+  ros::Subscriber sub_odo             = nh.subscribe("/odom", 1, &callback_odometry);
+  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
 
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
