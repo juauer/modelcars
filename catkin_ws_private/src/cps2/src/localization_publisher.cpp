@@ -41,7 +41,7 @@ void callback_odometry(const nav_msgs::Odometry &msg) {
 }
 
 void callback_image(const sensor_msgs::ImageConstPtr &msg) {
-  if (!ready)
+  if(!ready)
     return;
 
   if(!stamp_last_callback.isValid()) {
@@ -63,10 +63,10 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   tf::Quaternion q = tf::createQuaternionFromYaw(pose.z);
 
-  msg_pose.header.seq = msg->header.seq;
-  msg_pose.header.stamp = msg->header.stamp;
-  msg_pose.pose.position.x = pose.x;
-  msg_pose.pose.position.y = pose.y;
+  msg_pose.header.seq         = msg->header.seq;
+  msg_pose.header.stamp       = msg->header.stamp;
+  msg_pose.pose.position.x    = pose.x;
+  msg_pose.pose.position.y    = pose.y;
   msg_pose.pose.orientation.x = q.getX();
   msg_pose.pose.orientation.y = q.getY();
   msg_pose.pose.orientation.z = q.getZ();
@@ -75,13 +75,14 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
 #ifdef DEBUG_PF
   for(int i = 0; i < particleFilter->particles_num; ++i) {
-    cv::Point3f p = map->map2world(particleFilter->particles[i].p);
-    tf::Quaternion q = tf::createQuaternionFromYaw(p.z);
+    cv::Point3f p                      = map->map2world(particleFilter->particles[i].p);
+    tf::Quaternion q                   = tf::createQuaternionFromYaw(p.z);
     visualization_msgs::Marker *marker = &msg_markers.markers[i];
-    marker->header.seq = msg->header.seq;
-    marker->header.stamp = msg->header.stamp;
-    marker->pose.position.x = p.x;
-    marker->pose.position.y = p.y;
+
+    marker->header.seq         = msg->header.seq;
+    marker->header.stamp       = msg->header.stamp;
+    marker->pose.position.x    = p.x;
+    marker->pose.position.y    = p.y;
     marker->pose.orientation.x = q.getX();
     marker->pose.orientation.y = q.getY();
     marker->pose.orientation.z = q.getZ();
