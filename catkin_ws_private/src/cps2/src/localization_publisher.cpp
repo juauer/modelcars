@@ -20,7 +20,7 @@ cps2::Map *map;
 cps2::ParticleFilter3f *particleFilter;
 
 cv::Mat image;
-cps2::Particle3f pose;
+//cps2::Particle3f pose;
 geometry_msgs::PoseStamped msg_pose;
 nav_msgs::Odometry msg_odo;
 ros::Publisher pub;
@@ -44,7 +44,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   // TODO transform odometry velocities (world coords) to (dx, dy) (image coords)
   particleFilter->evaluate(image, 0, 0);
 
-  cv::Point3f pose = particleFilter->getBest();
+  cps2::Particle3f p = particleFilter->getBest();
+  cv::Point3f pose = map->map2world(p.p);
   tf::Quaternion q = tf::createQuaternionFromYaw(pose.z);
 
   msg_pose.header.seq = msg->header.seq;

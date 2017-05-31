@@ -11,7 +11,7 @@ namespace cps2 {
 
 class Particle3f{
  public:
-  Particle3f(){
+  Particle3f(cps2::Map *_map, float _std_dev):map(_map),std_dev(_std_dev){
     initRND();
   }
   ~Particle3f(){};
@@ -22,8 +22,8 @@ class Particle3f{
     this->belief = p.belief;
   }
   
-  void eval(cv::Mat &img, float sx, float sy){
-    std::cout << "eval/n";
+  void evaluate(cv::Mat &img, float sx, float sy){
+
     // sum = 0.0;
     // for (i in range(len(p)): # calculate mean error
     //     dx = (p[i].x - r.x + (world_size/2.0)) % world_size - (world_size/2.0)
@@ -33,19 +33,20 @@ class Particle3f{
     // return sum / float(len(p))
   }
 
-  Particle3f getNearbyParticle(){
+  cps2::Particle3f getNearbyParticle(){
     // do nothing yet
-    return Particle3f();
+    return *this;
   }
 
   cv::Point3f p;
-  cv::Mat map;
+  cps2::Map *map;
   double belief;
+  float std_dev;
  protected:
   void initRND(){
     CvRNG rng = cvRNG(-1);
-    p.x = cvRandReal(&rng) * std::numeric_limits<float>::max();
-    p.y = cvRandReal(&rng) * std::numeric_limits<float>::max();
+    p.x = cvRandReal(&rng) * map->img_gray.size().height;
+    p.y = cvRandReal(&rng) * map->img_gray.size().width;
     p.z = cvRandReal(&rng) * CV_2PI;
   }
 };
