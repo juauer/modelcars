@@ -3,7 +3,6 @@
 #define _USE_MATH_DEFINES
  
 #include <cmath>
-//#include <opencv2/core.hpp>
 #include <random>
 #include <limits.h>
 #include "image_evaluator.hpp"
@@ -53,7 +52,6 @@ class Particle3f{
     std::uniform_int_distribution<> rand_y(1, map->img_gray.size().width);
     std::uniform_real_distribution<> rand_r(1, CV_2PI);
 
-    //CvRNG rng = cvRNG(-1);
     p.x = rand_x(gen);
     p.y = rand_y(gen);
     p.z = rand_r(gen);
