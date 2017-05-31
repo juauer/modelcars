@@ -25,8 +25,10 @@ class ParticleFilter {
   virtual ~ParticleFilter();
 
   void initializeParticles();
+
   void evaluateParticles() {
     typename std::vector<ParticleType>::iterator it;
+
     for (it = particles.begin(); it != particles.end(); it++) {
       it->evaluate();
     }
@@ -35,6 +37,7 @@ class ParticleFilter {
   void resampleParticles(int percent) {
     if (percent > 100)
       percent = 100;
+
     if (percent < 0)
       percent = 0;
 
@@ -51,8 +54,10 @@ class ParticleFilter {
     double sum = 0.0;
     double ptr = cvRandReal(&rng);
     unsigned int i, j = 0;
+
     for (i = 0; i < particles.size(); i++) {
       sum += particles[i].belief / sumBel * n;
+
       while (sum > ptr) {
         hits[i]++;
         j++;
@@ -62,9 +67,11 @@ class ParticleFilter {
 
     // distribute new particles near good particles
     std::vector<ParticleType> newParticles;
+
     for (unsigned int i = 0; i < hits.size(); ++i) {
       // printf ("hit[%d]=%d\r\n", i,hits[i]);
       ParticleType &p = particles[i];
+
       for (unsigned int h = 0; h < hits[i]; ++h) {
         if (h == 0){// && hits[i]>1) { // left original particle TODO use ID
           newParticles.push_back(p);
@@ -73,18 +80,20 @@ class ParticleFilter {
         }
       }
     }
+
     particles = newParticles;
   }
 
-  void addNewRandomParticles(){
+  void addNewRandomParticles() {
     // distribute random particles
     const int nRandom = particleCount - particles.size();
+
     for (int i = 0; i < nRandom; ++i) {
       particles.push_back(ParticleType());
     }
   }
 
-  void applyShitFactor2(){  //works on the assumption of sorted particles
+  void applyShitFactor2() {  //works on the assumption of sorted particles
     memset(idShitArr,0,sizeof(idShitArr));
 
     for (unsigned int i = 0; i < particles.size(); ++i) {
@@ -92,7 +101,9 @@ class ParticleFilter {
       id = particles[i].ID;
       idShitArr[id] += 1;
     }
+
     unsigned int idCount[NUMIDS]={0};
+
     for (unsigned int i = 0; i < particles.size(); ++i) {
       int id;
       id = particles[i].ID;
@@ -109,58 +120,65 @@ class ParticleFilter {
     for (unsigned int i = 0; i < particles.size(); ++i) {
       int px,py;
       particles[i].getShitCoordinates(px,py);
-      //			printf("(%d,%d)",px,py);
+      //      printf("(%d,%d)",px,py);
       shitGrid[px][py] += 1;
     }
+
     for (unsigned int i = 0; i < particles.size(); ++i) {
       int px,py;
       particles[i].getShitCoordinates(px,py);
       particles[i].belief /= shitGrid[px][py];
     }
 
-    //		IplImage *img = cvCreateImageHeader(cvSize(100,100),IPL_DEPTH_8U,1);
-    //		img->imageData = (char*)shitGrid;
-    //		cvShowImage("shit",img);
+    // IplImage *img = cvCreateImageHeader(cvSize(100,100),IPL_DEPTH_8U,1);
+    // img->imageData = (char*)shitGrid;
+    // cvShowImage("shit",img);
   }
 
   double sumBeliefs(){
     double sumBel = 0.0;
+
     for (unsigned int i = 0; i < particles.size(); ++i) {
       sumBel += particles[i].belief;
     }
+
     return sumBel;
   }
 
   double bestBelief(){
     double maxBel = 0.0;
+
     for (unsigned int i = 0; i < particles.size(); ++i) {
       maxBel = maxBel > particles[i].belief ? maxBel : particles[i].belief;
     }
+
     return maxBel;
   }
 
   double getBest(){
     //sort()
-    //return first item in list    
+    //return first item in list
+    return 0.0;
   }
   
   void sortParticles(){
     std::vector<ParticleType> newParticles;
     typename std::vector<ParticleType>::iterator itOld,itNew;
 
-    for ( itOld = particles.begin( ) ; itOld != particles.end( ) ; itOld++ ){
+    for ( itOld = particles.begin( ) ; itOld != particles.end( ) ; itOld++ ) {
       for (itNew = newParticles.begin( );
-           itNew  != newParticles.end( ) && itNew->belief > itOld->belief; itNew++);
-      newParticles.insert(itNew,*itOld);
+          itNew != newParticles.end( ) && itNew->belief > itOld->belief; itNew++);
+        newParticles.insert(itNew,*itOld);
     }
-    particles=newParticles;
 
+    particles=newParticles;
   }
   
   void mergeIDs(){
     CvPoint3D32f clusters[NUMIDS];
     unsigned int parent[NUMIDS];
     float widths [NUMIDS];
+
     //initialize the variables
     for (unsigned int i = 0; i < NUMIDS; ++i) {
       clusters[i].x = 0;
@@ -187,19 +205,30 @@ class ParticleFilter {
     
     //check for overlapping clusters
     for (unsigned int i = 0; i < NUMIDS; ++i) {
-      if (clusters[i].z <= 0) continue;
+      if (clusters[i].z <= 0)
+        continue;
+
       for (unsigned int j = i+1; j < NUMIDS; ++j) {
-        if(clusters[j].z <= 0) continue;
+        if(clusters[j].z <= 0)
+          continue;
+
         float dist = fabs(clusters[i].x-clusters[j].x) + fabs(clusters[i].y - clusters[j].y);
-        if (dist < widths[i] * 0.5 && parent[i] == i) parent[i]=j;
+
+        if (dist < widths[i] * 0.5 && parent[i] == i)
+          parent[i]=j;
       }
     }
 
     //find the top most parent of the node
     for (unsigned int i = 0; i < NUMIDS; ++i) {
-      if (clusters[i].z <= 0) continue;
+      if (clusters[i].z <= 0)
+        continue;
+
       unsigned int finalParent = parent[i];
-      while (parent[finalParent] != finalParent) finalParent = parent[finalParent];
+
+      while (parent[finalParent] != finalParent)
+        finalParent = parent[finalParent];
+
       parent[i]=finalParent;
     }
 
@@ -212,6 +241,7 @@ class ParticleFilter {
   void splitIDs(){ //finds IDs spread too much and split them
     CvPoint3D32f clusters[NUMIDS];
     unsigned int parent[NUMIDS];
+
     //initialize the variables
     for (unsigned int i = 0; i < NUMIDS; ++i) {
       clusters[i].x = 0;
@@ -228,7 +258,7 @@ class ParticleFilter {
     }
     
     for (unsigned int i = 0; i < NUMIDS; ++i) {
-      if (clusters[i].z > 0){
+      if (clusters[i].z > 0) {
         clusters[i].x /= clusters[i].z;
         clusters[i].y /= clusters[i].z;
       }
@@ -236,9 +266,11 @@ class ParticleFilter {
     
     //compare particles to the average if too far, receive a new ID
     for (unsigned int i = 0; i < particles.size(); ++i) {
-      float dist = fabs(clusters[particles[i].ID].x - particles[i].x)+
-          fabs(clusters[particles[i].ID].y - particles[i].y);
-      if (dist > /*20*/ particles[i].width * 0.8) particles[i].ID = (rand() % NUMIDS);
+      float dist = fabs(clusters[particles[i].ID].x - particles[i].x)
+          + fabs(clusters[particles[i].ID].y - particles[i].y);
+
+      if (dist > /*20*/ particles[i].width * 0.8)
+        particles[i].ID = (rand() % NUMIDS);
     }
   }
 };
@@ -246,12 +278,14 @@ class ParticleFilter {
 template<class ParticleType>
 ParticleFilter<ParticleType>::ParticleFilter(int size) {
   particleCount = size;
+
   for (int i = 0; i < size; i++) {
     ParticleType p;
     p.initializeRandom();
     particles.push_back(p);
   }
 }
+
 template<class ParticleType>
 ParticleFilter<ParticleType>::~ParticleFilter() {
   particles.clear();

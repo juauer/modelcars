@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
   map = new cps2::Map(path.c_str());
   img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]),
-                                       atoi(argv[3]), atoi(argv[4])));
+                                       atoi(argv[3]), atoi(argv[4]) ) );
 
   cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
   cv::createTrackbar("particle x   ", "test", &px, max_px, apply);

@@ -1,7 +1,7 @@
 #ifndef SRC_PARTICLE3F_HPP_
 #define SRC_PARTICLE3F_HPP_
 
-#include <cv.h>
+#include <opencv2/core.hpp>
 #include <limits.h>
 #include "image_evaluator.hpp"
 #include "map.hpp"
