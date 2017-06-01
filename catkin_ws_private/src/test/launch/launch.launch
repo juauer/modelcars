@@ -9,6 +9,9 @@
   <!-- arg <m_mapfile>: filename of a map image in catkin_ws/../captures/ -->
   <arg name="m_mapfile" default="map_test.png" />
   
+  <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
+  <arg name="errorfunction" default="0" />
+  
   <!-- arg <pf_particles_num>: Number of particles -->
   <arg name="pf_particles_num" default="100" />
   

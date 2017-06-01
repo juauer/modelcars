@@ -17,10 +17,10 @@ struct Particle {
 class ParticleFilter {
 public:
 
-ParticleFilter(cps2::Map *_map, int _particles_num, float particles_keep, float particle_stddev) {
+ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num, float particles_keep, float particle_stddev) {
   particles_num = _particles_num;
   map           = _map;
-  ie            = new cps2::ImageEvaluator(*map);
+  ie            = new cps2::ImageEvaluator(*map, errorfunction);
 
   std::uniform_real_distribution<float> distx(0, map->img_gray.cols);
   std::uniform_real_distribution<float> disty(0, map->img_gray.rows);

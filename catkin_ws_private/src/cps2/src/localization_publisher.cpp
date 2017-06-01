@@ -95,15 +95,16 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 }
 
 int main(int argc, char **argv) {
-  if(argc < 4) {
+  if(argc < 6) {
     ROS_ERROR("Please use roslaunch as entry point.");
     return 1;
   }
 
   std::string path_map = ros::package::getPath("cps2") + std::string("/../../../captures/") + std::string(argv[1]);
-  int particles_num    = atoi(argv[2]);
-  int particles_keep   = atof(argv[3]);
-  int particle_stddev  = atof(argv[4]);
+  int errorfunction    = atoi(argv[2]);
+  int particles_num    = atoi(argv[3]);
+  int particles_keep   = atof(argv[4]);
+  int particle_stddev  = atof(argv[5]);
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/.\n", path_map.c_str() );
@@ -111,7 +112,7 @@ int main(int argc, char **argv) {
   }
 
   map            = new cps2::Map(path_map.c_str());
-  particleFilter = new cps2::ParticleFilter3f(map, particles_num, particles_keep, particle_stddev);
+  particleFilter = new cps2::ParticleFilter3f(map, errorfunction, particles_num, particles_keep, particle_stddev);
 
   ros::init(argc, argv, "localization_cps2_publisher");
   ros::NodeHandle nh;

@@ -17,7 +17,7 @@ class ParticleFilter3f {
   float particle_stdev;
   std::vector<Particle3f> particles;
 
-  ParticleFilter3f(cps2::Map *_map, int _particle_num,
+  ParticleFilter3f(cps2::Map *_map, int errorfunction, int _particle_num,
                    int _particle_keep, float _particle_stdev):
       map(_map), particles_num(_particle_num), particle_keep(_particle_keep),
       particle_stdev(_particle_stdev) {

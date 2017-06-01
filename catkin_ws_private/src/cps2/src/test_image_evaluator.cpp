@@ -28,7 +28,7 @@ void apply(int, void *) {
     return;
 
   cv::Point3f p(px, py, pt * M_PI / 4);
-  cps2::ImageEvaluator(*map, sc, sz, de).evaluate(img, p);
+  cps2::ImageEvaluator(*map, cps2::IE_MODE_PIXELS, sc, sz, de).evaluate(img, p);
 }
 
 int main(int argc, char **argv) {

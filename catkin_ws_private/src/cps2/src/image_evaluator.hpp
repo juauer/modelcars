@@ -7,13 +7,15 @@
 
 namespace cps2 {
 
+const int IE_MODE_PIXELS    = 0;
+const int IE_MODE_CENTROIDS = 1;
+
 class ImageEvaluator {
  public:
-  ImageEvaluator(Map &map, int resize_scale, int kernel_size, float kernel_stddev);
-  ImageEvaluator(Map &map);
+  ImageEvaluator(Map &map, int mode, int resize_scale, int kernel_size, float kernel_stddev);
+  ImageEvaluator(Map &map, int mode);
   virtual ~ImageEvaluator();
 
-  float evaluateDummy(cv::Mat &img, cv::Point3f &particle);
   float evaluate(cv::Mat &img, cv::Point3f &particle);
 
  private:
@@ -22,6 +24,7 @@ class ImageEvaluator {
 
   Map map;
   cv::Mat kernel;
+  int mode;
   int resize_scale;
   int kernel_size;
   float kernel_stddev;
