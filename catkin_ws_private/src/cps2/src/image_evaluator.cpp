@@ -128,7 +128,8 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
         else
           error_pixels += fabs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
 
-    error_pixels /= 255 * pixels;
+    if(pixels != 0)
+      error_pixels /= 255 * pixels;
   }
 
   float error_centroids = 0;
