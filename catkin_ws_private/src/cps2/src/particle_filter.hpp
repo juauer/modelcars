@@ -89,11 +89,14 @@ class ParticleFilter3f {
   void addNewRandomParticles(){
     // distribute random particles
     const int nRandom = particles_num - particles.size();
-    std::vector<Particle3f> inserts(nRandom, Particle3f(map, particle_stdev));
-    
+
+    std::vector<Particle3f> gen;
+    for(int i=0;i<nRandom;i++){
+      gen.push_back(Particle3f(map, particle_stdev));
+    }
     particles.insert(particles.end(),
-                     inserts.begin(),
-                     inserts.end());
+                     gen.begin(),
+                     gen.end());
   }
   
   cps2::Particle3f getBest(){
