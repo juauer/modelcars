@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <random>
 #include <cv.hpp>
 #include "map.hpp"
 #include "particle3f.hpp"
@@ -25,7 +26,7 @@ class ParticleFilter3f {
   }
 
   void evaluate(cv::Mat &img, float sx, float sy) {
-    for(Particle3f i : particles)
+    for(auto i : particles)
       i.evaluate(img,sx,sy);
   }
 
@@ -46,6 +47,10 @@ class ParticleFilter3f {
     // number of particles to sample
     const int n = percent * particles.size() / 100;
 
+    // std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    // std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    // std::normal_distribution<> rand_x(1, n);
+    
     CvRNG rng = cvRNG(-1);
     std::vector<uint32_t> hits(particles.size(), 0);
 
