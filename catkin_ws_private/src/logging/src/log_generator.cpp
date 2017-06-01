@@ -81,19 +81,22 @@ void createDataPoint(float x1, float x2, float y1, float y2, float th1, float th
 }
 
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "log_generator");
+
   if(argc < 2) {
-    ROS_ERROR("Please use roslaunch as entry point.");
+    ROS_ERROR("Please use roslaunch: 'roslaunch logging log_generator.launch [mapfile:=FILE]'");
     return 1;
   }
 
   std::string path_map = ros::package::getPath("logging") + std::string("/../../../captures/") + std::string(argv[1]);
 
-  if(access(path_map.c_str(), F_OK ) == -1) {
-    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/.\n", path_map.c_str() );
+  if(access(path_map.c_str(), R_OK ) == -1) {
+    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
     return 1;
   }
 
-  ros::init(argc, argv, "log_generator");
+  ROS_INFO("localization_cps2_publisher: Using mapfile: %s", path_map.c_str() );
+
   ros::NodeHandle nh;
   rosbag::Bag bag;
   nav_msgs::Path path;

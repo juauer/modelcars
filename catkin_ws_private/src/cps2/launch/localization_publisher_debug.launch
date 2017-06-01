@@ -7,7 +7,7 @@
   <arg name="errorfunction" default="0" />
    
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="100" />
+  <arg name="particles_num" default="500" />
   
   <!-- arg <particles_keep_percent>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep_percent" default="0.75" />

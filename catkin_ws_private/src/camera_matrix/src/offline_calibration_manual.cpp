@@ -43,17 +43,21 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "calibration");
 
   if(argc < 3) {
-    ROS_ERROR("Missing argument(s).");
+    ROS_ERROR("Please use roslaunch: 'roslaunch camera_matrix calibrate_offline_manual.launch "
+              "[img:=FILE] [calib:=FILE]'");
     return 1;
   }
 
   std::string path_img   = ros::package::getPath("camera_matrix") + std::string("/../../../captures/") + std::string(argv[1]);
   std::string path_calib = ros::package::getPath("camera_matrix") + std::string("/config/") + std::string(argv[2]);
 
-  if(access(path_img.c_str(), F_OK ) == -1) {
-    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/.\n", path_img.c_str() );
+  if(access(path_img.c_str(), R_OK ) == -1) {
+    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_img.c_str() );
     return 1;
   }
+
+  ROS_INFO("calibration: using imagefile %s", path_img.c_str() );
+  ROS_INFO("calibration: using calibrationfile: %s", path_calib.c_str() );
 
   img = cv::imread(path_img);
 

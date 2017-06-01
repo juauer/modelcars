@@ -4,19 +4,22 @@
 #include "camera_matrix.hpp"
 
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "camera_matrix_publisher");
+
   if(argc < 2) {
-    ROS_ERROR("Missing argument: path to camera matrix .calib file");
+    ROS_ERROR("Please use roslaunch: 'roslaunch camera_matrix camera_matrix_publisher.launch "
+              "[calib:=FILE]'");
     return 1;
   }
 
   std::string path = ros::package::getPath("camera_matrix") + std::string("/config/") + std::string(argv[1]);
 
-  if(access(path.c_str(), F_OK ) == -1) {
-    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/src/camera_matrix/config/.\n", path.c_str() );
+  if(access(path.c_str(), R_OK ) == -1) {
+    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/src/camera_matrix/config/", path.c_str() );
     return 1;
   }
 
-  ros::init(argc, argv, "camera_matrix_publisher");
+  ROS_INFO("camera_matrix_publisher: using calibrationfile: %s", path.c_str() );
 
   bool auto_calibration_enabled = false;
 
