@@ -1,10 +1,10 @@
-#include "image_evaluator.hpp"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <ros/package.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include "image_evaluator.hpp"
 
 cps2::Map *map;
 cv::Mat img;
@@ -33,8 +33,8 @@ void apply(int, void *) {
 
 int main(int argc, char **argv) {
   if (argc < 5)
-    printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator [x:=..] "
-           "[y:=..] [w:=..] [h:=..]'.\n");
+    printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator.launch "
+           "[x:=INT] [y:=INT] [w:=INT] [h:=INT]'\n");
 
   std::string path = ros::package::getPath("cps2") +
                      std::string("/../../../captures/(200,200,0).jpg");
@@ -42,6 +42,9 @@ int main(int argc, char **argv) {
   map = new cps2::Map(path.c_str());
   img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]),
                                        atoi(argv[3]), atoi(argv[4]) ) );
+
+  printf("test_image_evaluator: Using x: %d, y: %d, w: %d, h: %d\n",
+      atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]) );
 
   cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
   cv::createTrackbar("particle x   ", "test", &px, max_px, apply);

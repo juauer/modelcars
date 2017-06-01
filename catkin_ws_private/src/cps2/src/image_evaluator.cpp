@@ -72,7 +72,7 @@ ImageEvaluator::ImageEvaluator(Map &_map, int _mode, int _resize_scale, int _ker
 ImageEvaluator::ImageEvaluator(Map &_map, int _mode) : map(_map), mode(_mode) {
   resize_scale  = 25;
   kernel_size   = 5;
-  kernel_stddev = 1.5;
+  kernel_stddev = 2.5;
 
   generateKernel();
 }
