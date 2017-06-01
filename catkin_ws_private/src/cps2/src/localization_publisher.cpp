@@ -44,21 +44,18 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   if(!ready)
     return;
 
-  if(!stamp_last_callback.isValid()) {
-    stamp_last_callback = msg->header.stamp;
+  ros::Time now     = msg->header.stamp;
+  ros::Duration dif = now - stamp_last_callback;
+  float dt          = dif.sec + dif.nsec / 1000000000.0;
+
+  stamp_last_callback = now;
+
+  if(dt > 2 || dt < 0)
     return;
-  }
 
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-  ros::Time now     = msg->header.stamp;
-  ros::Duration dif = now - stamp_last_callback;
-
-  float dt = dif.sec + dif.nsec / 1000000000.0;
-
   particleFilter->evaluate(image, dt * pose_velocities.x, dt * pose_velocities.y);
-
-  stamp_last_callback = now;
 
   cps2::Particle3f p = particleFilter->getBest();
   pose = map->map2world(p.p);
