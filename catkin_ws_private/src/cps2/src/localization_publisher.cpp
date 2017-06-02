@@ -17,7 +17,7 @@
 bool ready = false;
 
 cps2::Map *map;
-cps2::ParticleFilter3f *particleFilter;
+cps2::ParticleFilter *particleFilter;
 
 cv::Mat image;
 cv::Point3f pose;
@@ -54,9 +54,11 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     return;
 
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
-  particleFilter->evaluate(image, dt * pose_velocities.x, dt * pose_velocities.y);
-  cps2::Particle3f p = particleFilter->getBest();
-  //particleFilter->resampleParticles();
+
+  particleFilter->motion_update(dt * pose_velocities.x, dt * pose_velocities.y, dt * pose_velocities.z);
+  particleFilter->resample();
+  particleFilter->evaluate(image);
+  cps2::Particle p = particleFilter->getBest();
   
   pose = map->map2world(p.p);
   tf::Quaternion q = tf::createQuaternionFromYaw(pose.z);
@@ -71,14 +73,13 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   msg_pose.pose.orientation.w = q.getW();
   pub.publish(msg_pose);
 
-  std::cout << "belief: ";
-  for (auto p: particleFilter->particles)
-    std::cout << p.belief << " ";
-  std::cout << std::endl;
 #ifdef DEBUG_PF
-  for(int i = 0; i < particleFilter->particles_num; ++i) {
-    cv::Point3f p    = map->map2world(particleFilter->particles[i].p);
-    tf::Quaternion q = tf::createQuaternionFromYaw(p.z);
+  int i = 0;
+
+  for(std::vector<cps2::Particle>::iterator it = particleFilter->particles.begin();
+      it < particleFilter->particles.end(); ++it) {
+    cv::Point3f p     = map->map2world(it->p);
+    tf::Quaternion q  = tf::createQuaternionFromYaw(p.z);
     visualization_msgs::Marker *marker = &msg_markers.markers[i];
 
     marker->header.seq         = msg->header.seq;
@@ -89,6 +90,10 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     marker->pose.orientation.y = q.getY();
     marker->pose.orientation.z = q.getZ();
     marker->pose.orientation.w = q.getW();
+    marker->color.r = 1 - it->belief;
+    marker->color.g = it->belief;
+
+    ++i;
   }
 
   pub_markers.publish(msg_markers);
@@ -120,7 +125,7 @@ int main(int argc, char **argv) {
       (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_stddev);
 
   map            = new cps2::Map(path_map.c_str());
-  particleFilter = new cps2::ParticleFilter3f(map, errorfunction, particles_num, particles_keep, particle_stddev);
+  particleFilter = new cps2::ParticleFilter(map, errorfunction, particles_num, particles_keep, particle_stddev);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
@@ -152,8 +157,6 @@ int main(int argc, char **argv) {
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
     marker.color.b = 0.0;
     msg_markers.markers.push_back(marker);
   }

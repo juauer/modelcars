@@ -1,131 +1,152 @@
 #ifndef SRC_PARTICLEFILTER_HPP_
 #define SRC_PARTICLEFILTER_HPP_
 
+#include <math.h>
 #include <vector>
-#include <algorithm>
 #include <random>
-#include <cv.hpp>
 #include "map.hpp"
-#include "particle3f.hpp"
+#include "image_evaluator.hpp"
 
 namespace cps2 {
 
-class ParticleFilter3f {
+class Particle {
+public:
+  Particle(float x, float y, float th) :
+      p(x, y, th), belief(0)
+  {}
+
+  ~Particle() {}
+
+  cv::Point3f p;
+  float belief;
+};
+
+class ParticleFilter {
  public:
   cps2::Map *map;
-  int particles_num;
-  int particle_keep;
-  float particle_stdev;
-  std::vector<Particle3f> particles;
+  cps2::ImageEvaluator *evaluator;
+
+  const int particles_num;
+  const int particles_keep;
+  const float particle_stdev;
+
+  std::vector<Particle> particles;
+  Particle best;
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen; //Standard mersenne_twister_engine
-  std::normal_distribution<> rand_p;
-  std::normal_distribution<> rand_mw;
 
-  ParticleFilter3f(cps2::Map *_map, int errorfunction, int _particles_num,
-                   int _particle_keep, float _particle_stdev):
-      map(_map), particles_num(_particles_num), particle_keep(_particle_keep),
-      particle_stdev(_particle_stdev) {
+  // distributions for random particles
+  std::uniform_real_distribution<float> udist_x;
+  std::uniform_real_distribution<float> udist_y;
+  std::uniform_real_distribution<float> udist_t;
+
+  ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num,
+      float _particles_keep, float _particle_stdev):
+          map(_map),
+          particles_num(_particles_num),
+          particles_keep( (int)(_particles_keep * _particles_num) ),
+          particle_stdev(_particle_stdev),
+          gen(rd() ),
+          udist_x(0, _map->img_gray.cols - 1),
+          udist_y(0, _map->img_gray.rows - 1),
+          udist_t(0, 2 * M_PI),
+          best(0, 0, 0)
+  {
+    evaluator = new ImageEvaluator(*map, errorfunction);
+
     addNewRandomParticles();
-
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::normal_distribution<> rand_p(1, particles_num);
-    std::normal_distribution<> rand_mw(1, 1);
-   }
-
-  void evaluate(cv::Mat &img, float sx, float sy) {
-    for(auto i : particles)
-      i.evaluate(img,sx,sy);
-
-    unsigned int index = rand_p(gen);
-    float beta = 0.0f;
-    auto max = std::max_element (std::begin(particles),std::end(particles));
-    float mw = max->belief;
-    std::vector<Particle3f> new_particles;
-    for(int i = 0; i < particles.size(); i++) {
-      beta += rand_mw(gen) * 2.0 * mw;
-      while(beta > particles[index].belief){
-        beta -= particles[index].belief;
-        index = (index +1)%particles_num;
-      }
-      new_particles.push_back(particles[index]);      
-    }
-    particles = new_particles;
   }
 
-  double sumBeliefs(){
-    double sumBel = 0.0;
-    for (unsigned int i = 0; i < particles.size(); ++i) {
-      sumBel += particles[i].belief;
+  ~ParticleFilter() {}
+
+  void addNewRandomParticles() {
+    for(int i = 0; i < particles_num - particles.size(); ++i) {
+      Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+      particles.push_back(p);
     }
-    return sumBel;
+  }
+
+  void motion_update(float dx, float dy, float dt) {
+    for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
+      it->p.x = fmax(0, fmin(map->img_gray.cols - 1, it->p.x + dx) );
+      it->p.y = fmax(0, fmin(map->img_gray.rows - 1, it->p.y + dy) );
+      it->p.z = it->p.z + dt;
+    }
+  }
+
+  void evaluate(cv::Mat &img) {
+    best.belief = 0;
+
+    for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
+      it->belief = 1 - evaluator->evaluate(img, it->p);
+
+      if(it->belief > best.belief)
+        best = *it;
+    }
   }
   
-  void resampleParticles() {
-    // number of particles to sample
-    const int n = particles_num;
-
-     CvRNG rng = cvRNG(-1);
-    std::vector<uint32_t> hits(particles.size(), 0);
-
-    double sumBel = sumBeliefs();
-    if (sumBel==0) return;
-
+  void resample() {
     // stochastic universal sampling
-    double sum = 0.0;
-    double ptr = cvRandReal(&rng);
-    unsigned int i, j = 0;
-    for (i = 0; i < particles.size(); i++) {
-      sum += particles[i].belief / sumBel * n;
-      while (sum > ptr) {
-        hits[i]++;
-        j++;
-        ptr += 1.0;
+    std::vector<uint32_t> hits(particles_num, 0);
+
+    float sum_beliefs = 0;
+
+    for(std::vector<Particle>::const_iterator it = particles.begin(); it < particles.end(); ++it)
+      sum_beliefs += it->belief;
+
+    if(sum_beliefs == 0.0)
+      return;
+
+    float step = sum_beliefs / particles_keep;
+
+    std::uniform_real_distribution<float> rnd(0, step);
+
+    float current = rnd(gen); // random number between 0 and 'step'
+    float target  = 0;
+    int i         = 0;
+
+    for(std::vector<Particle>::const_iterator it = particles.begin(); it < particles.end(); ++it){
+      target += it->belief;
+
+      while(current < target) {
+        ++hits[i];
+        current += step;
       }
+
+      ++i;
     }
 
-    // // distribute new particles near good particles
-    // std::vector<Particle3f> newParticles;
-    // for (unsigned int i = 0; i < hits.size(); ++i) {
-    //   // printf ("hit[%d]=%d\r\n", i,hits[i]);
-    //   Particle3f &p = particles[i];
-    //   for (unsigned int h = 0; h < hits[i]; ++h) {
-    //     if (h == 0){// && hits[i]>1) { // left original particle TODO use ID
-    //       newParticles.push_back(p);
-    //     } else { // resample nearby particles
-    //       newParticles.push_back(p.getNearbyParticle());
-    //     }
-    //   }
-    // }
-    // particles = newParticles;
-    //TODO: use NearbyParticle to choose range for new particles
+    // distribute new particles near good particles
+    std::vector<Particle> new_particles;
+
+    for(int i = 0; i < particles_num; ++i) {
+       Particle p = particles[i];
+
+       for(int h = 0; h < hits[i]; ++h)
+         if(h == 0)
+           new_particles.push_back(p);
+         else {
+           std::normal_distribution<float> ndist_x(p.p.x, particle_stdev * p.belief);
+           std::normal_distribution<float> ndist_y(p.p.y, particle_stdev * p.belief);
+           std::normal_distribution<float> ndist_t(p.p.z, p.belief);
+
+           Particle new_particle(
+               fmax(0, fmin(map->img_gray.cols - 1, ndist_x(gen) ) ),
+               fmax(0, fmin(map->img_gray.rows - 1, ndist_y(gen) ) ),
+               ndist_t(gen) );
+
+           new_particles.push_back(new_particle);
+         }
+     }
+
+    // randomize the remainder
+    particles = new_particles;
+
     addNewRandomParticles();
   }
   
-  void addNewRandomParticles(){
-    // distribute random particles
-    const int nRandom = particles_num - particles.size();
-    // erase bad particles
-    particles.erase(particles.begin()+(particles_num - nRandom), particles.end());
-
-    // generate new one
-    std::vector<Particle3f> gen;
-    for(int i=0;i<nRandom;i++){
-      gen.push_back(Particle3f(map, particle_stdev));
-    }
-
-    // insert into particle vector
-    particles.insert(particles.end(),
-                     gen.begin(),
-                     gen.end());
-  }
-  
-  cps2::Particle3f getBest(){
-    // sort
-    std::sort(particles.begin(), particles.end(),
-              std::greater<cps2::Particle3f>());
-    //return first item in list
-    return particles.front();
+  Particle getBest(){
+    return best;
   }
 };
 
