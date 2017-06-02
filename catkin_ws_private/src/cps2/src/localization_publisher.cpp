@@ -90,8 +90,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     marker->pose.orientation.y = q.getY();
     marker->pose.orientation.z = q.getZ();
     marker->pose.orientation.w = q.getW();
-    marker->color.r = 1 - it->belief;
-    marker->color.g = it->belief;
+    marker->color.r            = 1 - it->belief;
+    marker->color.g            = it->belief;
 
     ++i;
   }
