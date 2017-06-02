@@ -9,11 +9,11 @@
   <!-- arg <particles_num>: Number of particles -->
   <arg name="particles_num" default="500" />
   
-  <!-- arg <particles_keep_percent>: Percent of particles to keep. The rest is resampled randomly -->
-  <arg name="particles_keep_percent" default="0.75" />
+  <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
+  <arg name="particles_keep" default="0.75" />
   
   <!-- arg <particle_stddev>: Standard deviation (in px) of distribution which is used to resample near a kept particle. -->
   <arg name="particle_stddev" default="5" />
 
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep_percent) $(arg particle_stddev)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev)" output="screen" />
 </launch>

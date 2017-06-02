@@ -15,8 +15,8 @@
   <!-- arg <particles_num>: Number of particles -->
   <arg name="particles_num" default="500" />
   
-  <!-- arg <particles_keep_percent>: Percent of particles to keep. The rest is resampled randomly -->
-  <arg name="particles_keep_percent" default="0.75" />
+  <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
+  <arg name="particles_keep" default="0.75" />
   
   <!-- arg <particle_stddev>: Standard deviation (in px) of distribution which is used to resample near a kept particle. -->
   <arg name="particle_stddev" default="5" />
@@ -33,7 +33,7 @@
     <arg name="mapfile" value="$(arg mapfile)" />
     <arg name="errorfunction" value="$(arg errorfunction)" />
     <arg name="particles_num" value="$(arg particles_num)" />
-    <arg name="particles_keep_percent" value="$(arg particles_keep_percent)" />
+    <arg name="particles_keep" value="$(arg particles_keep)" />
     <arg name="particle_stddev" value="$(arg particle_stddev)" />
   </include>
   

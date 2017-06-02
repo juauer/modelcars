@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
   if(argc < 6) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep_percent:=FLOAT] [particle_stddev:=FLOAT]'");
+              "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep:=FLOAT] [particle_stddev:=FLOAT]'");
     return 1;
   }
 
