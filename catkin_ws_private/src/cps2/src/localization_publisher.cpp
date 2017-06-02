@@ -55,8 +55,9 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   image = cv_bridge::toCvShare(msg, "bgr8")->image;
   particleFilter->evaluate(image, dt * pose_velocities.x, dt * pose_velocities.y);
+
+  particleFilter->resampleParticles();
   cps2::Particle3f p = particleFilter->getBest();
-  //particleFilter->resampleParticles();
   
   pose = map->map2world(p.p);
   tf::Quaternion q = tf::createQuaternionFromYaw(pose.z);
@@ -71,10 +72,6 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   msg_pose.pose.orientation.w = q.getW();
   pub.publish(msg_pose);
 
-  std::cout << "belief: ";
-  for (auto p: particleFilter->particles)
-    std::cout << p.belief << " ";
-  std::cout << std::endl;
 #ifdef DEBUG_PF
   for(int i = 0; i < particleFilter->particles_num; ++i) {
     cv::Point3f p    = map->map2world(particleFilter->particles[i].p);

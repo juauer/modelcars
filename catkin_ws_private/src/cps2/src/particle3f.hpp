@@ -25,10 +25,10 @@ class Particle3f{
   }
   
   void evaluate(cv::Mat &img, float sx, float sy){
-    p.x += sx;
-    p.y += sy;
-    this->belief = ie.evaluate(img, p);
-    std::cout << this->belief << " ";
+    cv::Point3f move = p;
+    move.x += sx;
+    move.y += sy;
+    belief = ie.evaluate(img, move);
   }
 
   cps2::Particle3f getNearbyParticle(){

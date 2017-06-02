@@ -34,23 +34,23 @@ class ParticleFilter3f {
    }
 
   void evaluate(cv::Mat &img, float sx, float sy) {
-    for(auto i : particles)
-      i.evaluate(img,sx,sy);
+    for(auto i = particles.begin(); i != particles.end(); i++)
+      i->evaluate(img,sx,sy);
 
-    unsigned int index = rand_p(gen);
-    float beta = 0.0f;
-    auto max = std::max_element (std::begin(particles),std::end(particles));
-    float mw = max->belief;
-    std::vector<Particle3f> new_particles;
-    for(int i = 0; i < particles.size(); i++) {
-      beta += rand_mw(gen) * 2.0 * mw;
-      while(beta > particles[index].belief){
-        beta -= particles[index].belief;
-        index = (index +1)%particles_num;
-      }
-      new_particles.push_back(particles[index]);      
-    }
-    particles = new_particles;
+    // unsigned int index = rand_p(gen);
+    // float beta = 0.0f;
+    // auto max = std::max_element (std::begin(particles),std::end(particles));
+    // float mw = max->belief;
+    // std::vector<Particle3f> new_particles;
+    // for(int i = 0; i < particles.size(); i++) {
+    //   beta += rand_mw(gen) * 2.0 * mw;
+    //   while(beta > particles[index].belief){
+    //     beta -= particles[index].belief;
+    //     index = (index +1)%particles_num;
+    //   }
+    //   new_particles.push_back(particles[index]);      
+    // }
+    // particles = new_particles;
   }
 
   double sumBeliefs(){
@@ -84,22 +84,22 @@ class ParticleFilter3f {
       }
     }
 
-    // // distribute new particles near good particles
-    // std::vector<Particle3f> newParticles;
-    // for (unsigned int i = 0; i < hits.size(); ++i) {
-    //   // printf ("hit[%d]=%d\r\n", i,hits[i]);
-    //   Particle3f &p = particles[i];
-    //   for (unsigned int h = 0; h < hits[i]; ++h) {
-    //     if (h == 0){// && hits[i]>1) { // left original particle TODO use ID
-    //       newParticles.push_back(p);
-    //     } else { // resample nearby particles
-    //       newParticles.push_back(p.getNearbyParticle());
-    //     }
-    //   }
-    // }
-    // particles = newParticles;
+    // distribute new particles near good particles
+    std::vector<Particle3f> newParticles;
+    for (unsigned int i = 0; i < hits.size(); ++i) {
+      // printf ("hit[%d]=%d\r\n", i,hits[i]);
+      Particle3f &p = particles[i];
+      for (unsigned int h = 0; h < hits[i]; ++h) {
+        if (h == 0){// && hits[i]>1) { // left original particle TODO use ID
+          newParticles.push_back(p);
+        } else { // resample nearby particles
+          newParticles.push_back(p.getNearbyParticle());
+        }
+      }
+    }
+    particles = newParticles;
     //TODO: use NearbyParticle to choose range for new particles
-    addNewRandomParticles();
+    //addNewRandomParticles();
   }
   
   void addNewRandomParticles(){
