@@ -126,9 +126,9 @@ class ParticleFilter {
          if(h == 0)
            new_particles.push_back(p);
          else {
-           std::normal_distribution<float> ndist_x(p.p.x, particle_stdev * p.belief);
-           std::normal_distribution<float> ndist_y(p.p.y, particle_stdev * p.belief);
-           std::normal_distribution<float> ndist_t(p.p.z, p.belief);
+           std::normal_distribution<float> ndist_x(p.p.x, particle_stdev * (1 - p.belief) );
+           std::normal_distribution<float> ndist_y(p.p.y, particle_stdev * (1 - p.belief) );
+           std::normal_distribution<float> ndist_t(p.p.z, 1 - p.belief);
 
            Particle new_particle(
                fmax(0, fmin(map->img_gray.cols - 1, ndist_x(gen) ) ),
