@@ -28,7 +28,8 @@ class ParticleFilter {
 
   const int particles_num;
   const int particles_keep;
-  const float particle_stdev;
+  const float particle_stdev_lin;
+  const float particle_stdev_ang;
   const bool hamid_sampling;
 
   std::vector<Particle> particles;
@@ -42,11 +43,12 @@ class ParticleFilter {
   std::uniform_real_distribution<float> udist_t;
 
   ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num,
-      float _particles_keep, float _particle_stdev, bool _hamid_sampling):
+      float _particles_keep, float _particle_stdev_lin, float _particle_stdev_ang, bool _hamid_sampling):
           map(_map),
           particles_num(_particles_num),
           particles_keep( (int)(_particles_keep * _particles_num) ),
-          particle_stdev(_particle_stdev),
+          particle_stdev_lin(_particle_stdev_lin),
+          particle_stdev_ang(_particle_stdev_ang),
           gen(rd() ),
           udist_x(0, _map->img_gray.cols - 1),
           udist_y(0, _map->img_gray.rows - 1),
@@ -128,9 +130,9 @@ class ParticleFilter {
          if(hamid_sampling && h == 0)
            new_particles.push_back(p);
          else {
-           std::normal_distribution<float> ndist_x(p.p.x, particle_stdev * (1 - p.belief) );
-           std::normal_distribution<float> ndist_y(p.p.y, particle_stdev * (1 - p.belief) );
-           std::normal_distribution<float> ndist_t(p.p.z, 1 - p.belief);
+           std::normal_distribution<float> ndist_x(p.p.x, particle_stdev_lin * (1 - p.belief) );
+           std::normal_distribution<float> ndist_y(p.p.y, particle_stdev_lin * (1 - p.belief) );
+           std::normal_distribution<float> ndist_t(p.p.z, particle_stdev_ang * (1 - p.belief) );
 
            Particle new_particle(
                fmax(0, fmin(map->img_gray.cols - 1, ndist_x(gen) ) ),

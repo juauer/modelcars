@@ -12,11 +12,14 @@
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="0.75" />
   
-  <!-- arg <particle_stddev>: Standard deviation (in px) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev" default="5" />
+  <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_lin" default="20" />
+  
+  <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_ang" default="1.5" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
 
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev) $(arg hamid_sampling)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling)" output="screen" />
 </launch>
