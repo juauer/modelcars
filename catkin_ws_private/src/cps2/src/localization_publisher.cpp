@@ -103,7 +103,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 6) {
+  if(argc < 7) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
               "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep:=FLOAT] [particle_stddev:=FLOAT]'");
     return 1;
@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
   int particles_num     = atoi(argv[3]);
   float particles_keep  = atof(argv[4]);
   float particle_stddev = atof(argv[5]);
+  bool hamid_sampling   = atoi(argv[6]) != 0;
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
@@ -121,11 +122,12 @@ int main(int argc, char **argv) {
   }
 
   ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
-  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_stddev: %.2f",
-      (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_stddev);
+  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_stddev: %.2f, hamid_sampling: %s",
+      (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_stddev,
+      hamid_sampling ? "on" : "off");
 
   map            = new cps2::Map(path_map.c_str());
-  particleFilter = new cps2::ParticleFilter(map, errorfunction, particles_num, particles_keep, particle_stddev);
+  particleFilter = new cps2::ParticleFilter(map, errorfunction, particles_num, particles_keep, particle_stddev, hamid_sampling);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);

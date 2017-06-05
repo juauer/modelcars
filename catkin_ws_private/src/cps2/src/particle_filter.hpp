@@ -29,6 +29,7 @@ class ParticleFilter {
   const int particles_num;
   const int particles_keep;
   const float particle_stdev;
+  const bool hamid_sampling;
 
   std::vector<Particle> particles;
   Particle best;
@@ -41,7 +42,7 @@ class ParticleFilter {
   std::uniform_real_distribution<float> udist_t;
 
   ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num,
-      float _particles_keep, float _particle_stdev):
+      float _particles_keep, float _particle_stdev, bool _hamid_sampling):
           map(_map),
           particles_num(_particles_num),
           particles_keep( (int)(_particles_keep * _particles_num) ),
@@ -50,7 +51,8 @@ class ParticleFilter {
           udist_x(0, _map->img_gray.cols - 1),
           udist_y(0, _map->img_gray.rows - 1),
           udist_t(0, 2 * M_PI),
-          best(0, 0, 0)
+          best(0, 0, 0),
+          hamid_sampling(_hamid_sampling)
   {
     evaluator = new ImageEvaluator(*map, errorfunction);
 
@@ -123,7 +125,7 @@ class ParticleFilter {
        Particle p = particles[i];
 
        for(int h = 0; h < hits[i]; ++h)
-         if(h == 0)
+         if(hamid_sampling && h == 0)
            new_particles.push_back(p);
          else {
            std::normal_distribution<float> ndist_x(p.p.x, particle_stdev * (1 - p.belief) );
