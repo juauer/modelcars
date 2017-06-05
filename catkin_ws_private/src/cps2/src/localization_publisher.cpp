@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
     marker.type = visualization_msgs::Marker::ARROW;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose.position.z = 0;
-    marker.scale.x = 0.1;
+    marker.scale.x = 0.2;
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
