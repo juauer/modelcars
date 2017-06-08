@@ -21,5 +21,8 @@
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
 
+  <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
+  <arg name="punishEdgeParticlesRate" default="0.5" />
+  
   <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling)" output="screen" />
 </launch>
