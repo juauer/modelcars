@@ -6,20 +6,9 @@
 #include <random>
 #include "map.hpp"
 #include "image_evaluator.hpp"
+#include "particle.hpp"
 
 namespace cps2 {
-
-class Particle {
-public:
-  Particle(float x, float y, float th) :
-      p(x, y, th), belief(0)
-  {}
-
-  ~Particle() {}
-
-  cv::Point3f p;
-  float belief;
-};
 
 class ParticleFilter {
  public:
