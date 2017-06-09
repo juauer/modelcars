@@ -18,6 +18,7 @@ class ParticleFilter {
 
   const int particles_num;
   const int particles_keep;
+  const float particle_belief_scale;
   const float particle_stdev_lin;
   const float particle_stdev_ang;
   const float punishEdgeParticlesRate;
@@ -34,11 +35,13 @@ class ParticleFilter {
   std::uniform_real_distribution<float> udist_t;
 
   ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num,
-                 float _particles_keep, float _particle_stdev_lin, float _particle_stdev_ang,
+                 float _particles_keep, float _particle_belief_scale,
+                 float _particle_stdev_lin, float _particle_stdev_ang,
                  bool _hamid_sampling, float _punishEdgeParticlesRate):
           map(_map),
           particles_num(_particles_num),
           particles_keep( (int)(_particles_keep * _particles_num) ),
+          particle_belief_scale(_particle_belief_scale * _particle_belief_scale),
           particle_stdev_lin(_particle_stdev_lin),
           particle_stdev_ang(_particle_stdev_ang),
           gen(rd() ),
@@ -82,7 +85,9 @@ class ParticleFilter {
     best.belief = 0;
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
-      it->belief = 1 - evaluator->evaluate(img, it->p);
+      float e = evaluator->evaluate(img, it->p);
+
+      it->belief = expf(-particle_belief_scale * (e * e) );
 
       // punish particles that are outside the map
       if (it->p.x >= (map->img_gray.cols - 1) ||

@@ -18,6 +18,9 @@
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="0.75" />
   
+  <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
+  <arg name="particle_belief_scale" default="4" />
+  
   <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
   <arg name="particle_stddev_lin" default="20" />
   
@@ -43,6 +46,7 @@
     <arg name="errorfunction" value="$(arg errorfunction)" />
     <arg name="particles_num" value="$(arg particles_num)" />
     <arg name="particles_keep" value="$(arg particles_keep)" />
+    <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />
     <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
     <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
     <arg name="hamid_sampling" value="$(arg hamid_sampling)" />

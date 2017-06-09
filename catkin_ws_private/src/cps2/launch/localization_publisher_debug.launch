@@ -12,6 +12,9 @@
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="0.75" />
   
+  <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
+  <arg name="particle_belief_scale" default="4" />
+  
   <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
   <arg name="particle_stddev_lin" default="20" />
   
@@ -24,5 +27,5 @@
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
   <arg name="punishEdgeParticlesRate" default="0.5" />
 
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg punishEdgeParticlesRate)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg punishEdgeParticlesRate)" output="screen" />
 </launch>
