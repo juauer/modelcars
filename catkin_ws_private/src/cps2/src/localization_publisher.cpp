@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
   }
 
   ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
-  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, punishEdgeParticleRate",
+  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, punishEdgeParticleRate %.2f",
            (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", punishEdgeParticlesRate);
 
   map            = new cps2::Map(path_map.c_str());

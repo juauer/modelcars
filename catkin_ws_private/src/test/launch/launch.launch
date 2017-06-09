@@ -26,6 +26,9 @@
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
+
+  <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
+  <arg name="punishEdgeParticlesRate" default="0.5" />
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find test)/config/config.rviz" />
     
@@ -43,6 +46,7 @@
     <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
     <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
     <arg name="hamid_sampling" value="$(arg hamid_sampling)" />
+    <arg name="punishEdgeParticlesRate" value="$(arg punishEdgeParticlesRate)" />
   </include>
   
   <include file="$(find logging)/launch/log_player.launch" >

@@ -24,5 +24,5 @@
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
   <arg name="punishEdgeParticlesRate" default="0.5" />
 
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg punishEdgeParticlesRate)" output="screen" />
 </launch>

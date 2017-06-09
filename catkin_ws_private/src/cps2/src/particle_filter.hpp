@@ -7,6 +7,7 @@
 #include "map.hpp"
 #include "image_evaluator.hpp"
 #include "particle.hpp"
+#include "dbscan.hpp"
 
 namespace cps2 {
 
@@ -64,9 +65,10 @@ class ParticleFilter {
 
   void motion_update(float dx, float dy, float dt) {
     for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
-      it->p.x = fmax(-1, fmin(map->img_gray.cols - 1, it->p.x + dx) );
-      it->p.y = fmax(-1, fmin(map->img_gray.rows - 1, it->p.y + dy) );
+      it->p.x + dx;
+      it->p.y + dy;
       it->p.z = it->p.z + dt;
+
       // punish particles that are outside the map
       if (it->p.x >= (map->img_gray.cols - 1) ||
           it->p.y >= (map->img_gray.rows - 1) ||
@@ -155,6 +157,7 @@ class ParticleFilter {
   }
   
   Particle getBest(){
+    auto cluster = dbscan3D(particles, 0.001, 1);
     return best;
   }
 };
