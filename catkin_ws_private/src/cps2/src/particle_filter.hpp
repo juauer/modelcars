@@ -71,13 +71,6 @@ class ParticleFilter {
       it->p.x += dx;
       it->p.y += dy;
       it->p.z = it->p.z + dt;
-
-      // punish particles that are outside the map
-      if (it->p.x >= (map->img_gray.cols - 1) ||
-          it->p.y >= (map->img_gray.rows - 1) ||
-          it->p.x < 0|| it->p.y < 0){
-        it->belief *= punishEdgeParticlesRate;
-      }
     }
   }
 
