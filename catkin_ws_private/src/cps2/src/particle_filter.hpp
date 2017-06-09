@@ -65,8 +65,8 @@ class ParticleFilter {
 
   void motion_update(float dx, float dy, float dt) {
     for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
-      it->p.x + dx;
-      it->p.y + dy;
+      it->p.x += dx;
+      it->p.y += dy;
       it->p.z = it->p.z + dt;
 
       // punish particles that are outside the map
