@@ -28,3 +28,6 @@ target_link_libraries( inverse_perspective_publisher ${catkin_LIBRARIES} ${OpenC
 
 add_executable( undistorted_image_publisher src/undistorted_image_publisher.cpp src/camera_matrix.cpp )
 target_link_libraries( undistorted_image_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+add_executable( test1 src/offline_calibration_ortho.cpp )
+target_link_libraries( test1 ${catkin_LIBRARIES} ${OpenCV_LIBS} )
