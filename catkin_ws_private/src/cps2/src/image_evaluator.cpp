@@ -126,15 +126,12 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
         if(mappiece.at<uchar>(r, c) == 0)
           --pixels;
         else
-          error_pixels += fabs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
+          error_pixels += fabs( (float)mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
 
     if(pixels == 0)
       error_pixels = 1;
     else
-      error_pixels /= 127.5 * pixels;
-
-    if(error_pixels > 1)
-      error_pixels=1;
+      error_pixels /= 255 * pixels;
   }
 
   float error_centroids = 0;
@@ -161,11 +158,8 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
         img_m01 += img_tf.at<uchar>(r, c) * r;
       }
 
-    error_centroids = 2 * (fabs(map_m10 / map_m00 - img_m10 / img_m00) / dim_x
-      + fabs(map_m01 / map_m00 - img_m01 / img_m00) / dim_y);
-
-    if(error_centroids > 1)
-      error_centroids = 1;
+    error_centroids = fabs(map_m10 / map_m00 - img_m10 / img_m00) / dim_x
+      + fabs(map_m01 / map_m00 - img_m01 / img_m00) / dim_y;
   }
 
 #ifdef DEBUG_IE
