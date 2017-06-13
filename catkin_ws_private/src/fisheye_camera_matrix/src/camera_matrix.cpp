@@ -46,7 +46,7 @@ CameraMatrix::CameraMatrix(const char *path) {
 
   std::stringstream line_ss(line_str);
 
-  line_ss >> fl >> ceil_height >> scale;
+  line_ss >> _width >> _height >> _cx >> _cy >> _fl >> _ceil_height >> _scale;
 
   file.close();
 

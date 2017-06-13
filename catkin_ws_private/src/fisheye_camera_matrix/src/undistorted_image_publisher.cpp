@@ -22,6 +22,9 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   img_raw = cv_bridge::toCvShare(msg, "bgr8")->image;
 
+  if(img_raw.rows != img_undistorted.rows || img_raw.cols != img_undistorted.cols)
+    img_undistorted = cv::Mat(img_raw.rows, img_raw.cols, CV_8UC3);
+
   camera_matrix.undistort(img_raw, img_undistorted);
 
   msg_undistorted = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_undistorted).toImageMsg();
