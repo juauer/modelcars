@@ -123,7 +123,7 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 
     for(int r = 0; r < dim_y; ++r)
       for(int c = 0; c < dim_x; ++c)
-        if(mappiece.at<uchar>(r, c) == 0)
+        if(mappiece.at<uchar>(r, c) == 0 || img_tf.at<uchar>(r, c) == 0)
           --pixels;
         else
           error_pixels += fabs( (float)mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
@@ -150,12 +150,17 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 
     for(int r = 0; r < dim_y; ++r)
       for(int c = 0; c < dim_x; ++c) {
-        map_m00 += mappiece.at<uchar>(r, c);
-        map_m10 += mappiece.at<uchar>(r, c) * c;
-        map_m01 += mappiece.at<uchar>(r, c) * r;
-        img_m00 += img_tf.at<uchar>(r, c);
-        img_m10 += img_tf.at<uchar>(r, c) * c;
-        img_m01 += img_tf.at<uchar>(r, c) * r;
+        if(mappiece.at<uchar>(r, c) != 0) {
+          map_m00 += mappiece.at<uchar>(r, c);
+          map_m10 += mappiece.at<uchar>(r, c) * c;
+          map_m01 += mappiece.at<uchar>(r, c) * r;
+        }
+
+        if(img_tf.at<uchar>(r, c) != 0) {
+          img_m00 += img_tf.at<uchar>(r, c);
+          img_m10 += img_tf.at<uchar>(r, c) * c;
+          img_m01 += img_tf.at<uchar>(r, c) * r;
+        }
       }
 
     error_centroids = fabs(map_m10 / map_m00 - img_m10 / img_m00) / dim_x

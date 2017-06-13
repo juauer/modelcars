@@ -17,9 +17,9 @@ int cx;
 int cy;
 
 int fl              = 320;
-int fl_max          = 640;
+int fl_max          = 960;
 int ceil_height     = 200;
-int ceil_height_max = 300;
+int ceil_height_max = 350;
 int scale           = 10;
 int scale_max       = 30;
 
