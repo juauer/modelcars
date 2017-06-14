@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <ros/package.h>
-
-#include "camera_matrix.hpp"
+#include "fisheye_camera_matrix/camera_matrix.hpp"
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "camera_matrix_publisher");

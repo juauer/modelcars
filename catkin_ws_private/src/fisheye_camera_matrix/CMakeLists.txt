@@ -9,12 +9,7 @@ find_package( catkin REQUIRED COMPONENTS
 find_package( OpenCV REQUIRED )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
-)
-
-catkin_package(
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS cv_bridge image_transport message_runtime fisheye_camera_matrix_msgs
+  include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 )
 
 add_executable( offline_calibration_manual src/offline_calibration_manual.cpp src/camera_matrix.cpp )
@@ -25,3 +20,24 @@ target_link_libraries( camera_matrix_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS
 
 add_executable( undistorted_image_publisher src/undistorted_image_publisher.cpp src/camera_matrix.cpp )
 target_link_libraries( undistorted_image_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+add_library( fisheye_camera_matrix src/camera_matrix.cpp )
+target_link_libraries( fisheye_camera_matrix ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+catkin_package(
+  LIBRARIES ${PROJECT_NAME}
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
+  CATKIN_DEPENDS cv_bridge image_transport message_runtime fisheye_camera_matrix_msgs
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)

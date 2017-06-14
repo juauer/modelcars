@@ -5,7 +5,7 @@
 #include <ros/package.h>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include "camera_matrix.hpp"
+#include "fisheye_camera_matrix/camera_matrix.hpp"
 
 fisheye_camera_matrix::CameraMatrix camera_matrix;
 cv::Mat img;

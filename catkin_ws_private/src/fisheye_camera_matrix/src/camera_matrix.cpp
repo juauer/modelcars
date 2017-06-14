@@ -3,8 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
-#include "camera_matrix.hpp"
+#include "fisheye_camera_matrix/camera_matrix.hpp"
 
 namespace fisheye_camera_matrix {
 

@@ -1,8 +1,7 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
-
-#include "camera_matrix.hpp"
+#include "fisheye_camera_matrix/camera_matrix.hpp"
 
 bool ready = false;
 
