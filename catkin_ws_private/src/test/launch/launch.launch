@@ -4,45 +4,53 @@
   <arg name="bagfile" default="test" />
   
   <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
-  <arg name="calib" default="test" />
+  <arg name="calib" default="default" />
   
   <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test.png" />
+  <arg name="mapfile" default="map_test_2.png" />
   
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
   
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="500" />
+  <arg name="particles_num" default="150" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="0.75" />
   
-  <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_lin" default="20" />
+  <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
+  <arg name="particle_belief_scale" default="4" />
+  
+  <!-- arg <particle_stddev_lin>: Linear standard deviation (in m) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_lin" default="0.2" />
   
   <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_ang" default="1.5" />
+  <arg name="particle_stddev_ang" default="0.7" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
+
+  <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
+  <arg name="punishEdgeParticlesRate" default="0.5" />
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find test)/config/config.rviz" />
     
-  <include file="$(find camera_matrix)/launch/camera_matrix_publisher.launch" >
+  <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
     <arg name="calib" value="$(arg calib)" />
   </include>
   
-  <include file="$(find camera_matrix)/launch/undistorted_image_publisher.launch" />
+  <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
   
   <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
     <arg name="mapfile" value="$(arg mapfile)" />
     <arg name="errorfunction" value="$(arg errorfunction)" />
     <arg name="particles_num" value="$(arg particles_num)" />
     <arg name="particles_keep" value="$(arg particles_keep)" />
+    <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />
     <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
     <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
     <arg name="hamid_sampling" value="$(arg hamid_sampling)" />
+    <arg name="punishEdgeParticlesRate" value="$(arg punishEdgeParticlesRate)" />
   </include>
   
   <include file="$(find logging)/launch/log_player.launch" >

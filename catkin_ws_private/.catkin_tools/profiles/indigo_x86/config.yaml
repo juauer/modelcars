@@ -5,7 +5,7 @@ cmake_args: []
 devel_layout: merged
 devel_space: devel_x86
 extend_path: /opt/ros/indigo
-install: false
+install: true
 install_space: install_x86
 isolate_install: false
 jobs_args: []

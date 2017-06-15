@@ -3,8 +3,6 @@
 
 #include <opencv2/core.hpp>
 
-#include "map.hpp"
-
 namespace cps2 {
 
 const int IE_MODE_PIXELS    = 0;
@@ -12,17 +10,17 @@ const int IE_MODE_CENTROIDS = 1;
 
 class ImageEvaluator {
  public:
-  ImageEvaluator(Map &map, int mode, int resize_scale, int kernel_size, float kernel_stddev);
-  ImageEvaluator(Map &map, int mode);
+  ImageEvaluator(int mode, int resize_scale, int kernel_size, float kernel_stddev);
+  ImageEvaluator(int mode);
   virtual ~ImageEvaluator();
 
-  float evaluate(cv::Mat &img, cv::Point3f &particle);
+  cv::Mat transform(const cv::Mat &img, const cv::Point3f &pos_image, cv::Size onePieceMapSizeHACK);
+  float evaluate(cv::Mat &img1, cv::Mat &img2);
 
  private:
   void generateKernel();
-  int applyKernel(cv::Mat &img, int x, int y);
+  int applyKernel(const cv::Mat &img, int x, int y);
 
-  Map map;
   cv::Mat kernel;
   int mode;
   int resize_scale;

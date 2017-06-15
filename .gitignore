@@ -1,4 +1,5 @@
 model_car
+logs/*
 catkin_ws_user
 catkin_ws_private/build_x86
 catkin_ws_private/build_arm

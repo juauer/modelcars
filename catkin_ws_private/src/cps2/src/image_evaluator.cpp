@@ -36,7 +36,7 @@ void ImageEvaluator::generateKernel() {
   this->kernel = kernel;
 }
 
-int ImageEvaluator::applyKernel(cv::Mat &img, int x, int y) {
+int ImageEvaluator::applyKernel(const cv::Mat &img, int x, int y) {
   int ks2     = kernel_size / 2;
   int x_lb    = std::max(0, x - ks2);
   int x_ub    = std::min(img.cols, x + ks2 + 1);
@@ -59,17 +59,17 @@ int ImageEvaluator::applyKernel(cv::Mat &img, int x, int y) {
   return (int)(acc_v / acc_k);
 }
 
-ImageEvaluator::ImageEvaluator(Map &_map, int _mode, int _resize_scale, int _kernel_size, float _kernel_stddev) :
-    map(_map),
+ImageEvaluator::ImageEvaluator(int _mode, int _resize_scale, int _kernel_size, float _kernel_stddev) :
     mode(_mode),
     resize_scale(_resize_scale),
     kernel_stddev(_kernel_stddev)
 {
   kernel_size = 2 * (_kernel_size / 2) + 1;
+
   generateKernel();
 }
 
-ImageEvaluator::ImageEvaluator(Map &_map, int _mode) : map(_map), mode(_mode) {
+ImageEvaluator::ImageEvaluator(int _mode) : mode(_mode) {
   resize_scale  = 25;
   kernel_size   = 5;
   kernel_stddev = 2.5;
@@ -81,36 +81,37 @@ ImageEvaluator::~ImageEvaluator() {
 
 }
 
-float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
-  int dim_y = img.rows / resize_scale;
-  int dim_x = img.cols / resize_scale;
+cv::Mat ImageEvaluator::transform(const cv::Mat &img, const cv::Point3f &pos_image, cv::Size onePieceMapSizeHACK) {
+
+  // TODO replace the parameterized size with (img.rows, img.cols)
+  // as soon as the onePieceMap is gone.
+
+  int dim_y = onePieceMapSizeHACK.height / resize_scale;
+  int dim_x = onePieceMapSizeHACK.width  / resize_scale;
   int cx    = dim_x / 2;
   int cy    = dim_y / 2;
 
-  cv::Mat mappiece(dim_y, dim_x, CV_8UC1);
-
-  for(int r = 0; r < dim_y; ++r)
-    for(int c = 0; c < dim_x; ++c) {
-      int sx  = c - cx;
-      int sy  = r - cy;
-      float x = resize_scale * (sx * cos(particle.z) - sy * sin(particle.z) ) + particle.x;
-      float y = resize_scale * (sx * sin(particle.z) + sy * cos(particle.z) ) + particle.y;
-
-      if(x >= 0 && y >= 0 && x < map.img_gray.cols && y < map.img_gray.rows)
-        mappiece.at<uchar>(r, c) = applyKernel(map.img_gray, (int)x, (int)y);
-      else
-        mappiece.at<uchar>(r, c) = 0;
-    }
-
-  cv::Mat img_gray;
   cv::Mat img_tf(dim_y, dim_x, CV_8UC1);
 
-  cv::cvtColor(img, img_gray, CV_BGR2GRAY);
+  for(int c = 0; c < dim_x; ++c) {
+    int sx = c - cx;
 
-  for(int r = 0; r < dim_y; ++r)
-    for(int c = 0; c < dim_x; ++c)
-      img_tf.at<uchar>(r, c) = applyKernel(img_gray, resize_scale * c, resize_scale * r);
+    for(int r = 0; r < dim_y; ++r) {
+      int sy  = r - cy;
+      float x = resize_scale * (sx * cosf(pos_image.z) - sy * sinf(pos_image.z) ) + pos_image.x;
+      float y = resize_scale * (sx * sinf(pos_image.z) + sy * cosf(pos_image.z) ) + pos_image.y;
 
+      if(x >= 0 && y >= 0 && x < img.cols && y < img.rows)
+        img_tf.at<uchar>(r, c) = applyKernel(img, (int)x, (int)y);
+      else
+        img_tf.at<uchar>(r, c) = 0;
+    }
+  }
+
+  return img_tf;
+}
+
+float ImageEvaluator::evaluate(cv::Mat &img1, cv::Mat &img2) {
   float error_pixels = 0;
 
 #ifdef DEBUG_IE
@@ -119,22 +120,19 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
 #endif
 
   if(mode == IE_MODE_PIXELS) {
-    int pixels = dim_x * dim_y;
+    int pixels = img1.rows * img1.cols;
 
-    for(int r = 0; r < dim_y; ++r)
-      for(int c = 0; c < dim_x; ++c)
-        if(mappiece.at<uchar>(r, c) == 0)
+    for(int r = 0; r < img1.rows; ++r)
+      for(int c = 0; c < img1.cols; ++c)
+        if(img1.at<uchar>(r, c) == 0 || img2.at<uchar>(r, c) == 0)
           --pixels;
         else
-          error_pixels += fabs(mappiece.at<uchar>(r, c) - img_tf.at<uchar>(r, c) );
+          error_pixels += fabs( (float)img1.at<uchar>(r, c) - img2.at<uchar>(r, c) );
 
     if(pixels == 0)
       error_pixels = 1;
     else
-      error_pixels /= 127.5 * pixels;
-
-    if(error_pixels > 1)
-      error_pixels=1;
+      error_pixels /= 255 * pixels;
   }
 
   float error_centroids = 0;
@@ -151,26 +149,28 @@ float ImageEvaluator::evaluate(cv::Mat &img, cv::Point3f &particle) {
     float img_m10 = 0;
     float img_m01 = 0;
 
-    for(int r = 0; r < dim_y; ++r)
-      for(int c = 0; c < dim_x; ++c) {
-        map_m00 += mappiece.at<uchar>(r, c);
-        map_m10 += mappiece.at<uchar>(r, c) * c;
-        map_m01 += mappiece.at<uchar>(r, c) * r;
-        img_m00 += img_tf.at<uchar>(r, c);
-        img_m10 += img_tf.at<uchar>(r, c) * c;
-        img_m01 += img_tf.at<uchar>(r, c) * r;
+    for(int r = 0; r < img1.rows; ++r)
+      for(int c = 0; c < img1.cols; ++c) {
+        if(img1.at<uchar>(r, c) != 0) {
+          map_m00 += img1.at<uchar>(r, c);
+          map_m10 += img1.at<uchar>(r, c) * c;
+          map_m01 += img1.at<uchar>(r, c) * r;
+        }
+
+        if(img2.at<uchar>(r, c) != 0) {
+          img_m00 += img2.at<uchar>(r, c);
+          img_m10 += img2.at<uchar>(r, c) * c;
+          img_m01 += img2.at<uchar>(r, c) * r;
+        }
       }
 
-    error_centroids = 2 * (fabs(map_m10 / map_m00 - img_m10 / img_m00) / dim_x
-      + fabs(map_m01 / map_m00 - img_m01 / img_m00) / dim_y);
-
-    if(error_centroids > 1)
-      error_centroids = 1;
+    error_centroids = fabs(map_m10 / map_m00 - img_m10 / img_m00) / img1.cols
+      + fabs(map_m01 / map_m00 - img_m01 / img_m00) / img1.rows;
   }
 
 #ifdef DEBUG_IE
-  cv::resize(img_tf, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
-  cv::resize(mappiece, d_win_img(cv::Rect(380 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
+  cv::resize(img2, d_win_img(cv::Rect(0 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
+  cv::resize(img1, d_win_img(cv::Rect(380 ,0, 360, 240) ), d_win_size, 0, 0, cv::INTER_NEAREST);
   cv::imshow("test", d_win_img);
 
   mode = mode_backup;

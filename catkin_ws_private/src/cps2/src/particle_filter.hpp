@@ -6,86 +6,99 @@
 #include <random>
 #include "map.hpp"
 #include "image_evaluator.hpp"
+#include "particle.hpp"
+#include "dbscan.hpp"
 
 namespace cps2 {
-
-class Particle {
-public:
-  Particle(float x, float y, float th) :
-      p(x, y, th), belief(0)
-  {}
-
-  ~Particle() {}
-
-  cv::Point3f p;
-  float belief;
-};
 
 class ParticleFilter {
  public:
   cps2::Map *map;
-  cps2::ImageEvaluator *evaluator;
+  cps2::ImageEvaluator *image_evaluator;
 
   const int particles_num;
   const int particles_keep;
+  const float particle_belief_scale;
   const float particle_stdev_lin;
   const float particle_stdev_ang;
+  const float punishEdgeParticlesRate;
   const bool hamid_sampling;
-
+  
   std::vector<Particle> particles;
   Particle best;
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen; //Standard mersenne_twister_engine
-
-  // distributions for random particles
-  std::uniform_real_distribution<float> udist_x;
-  std::uniform_real_distribution<float> udist_y;
   std::uniform_real_distribution<float> udist_t;
 
-  ParticleFilter(cps2::Map *_map, int errorfunction, int _particles_num,
-      float _particles_keep, float _particle_stdev_lin, float _particle_stdev_ang, bool _hamid_sampling):
+  ParticleFilter(cps2::Map *_map, cps2::ImageEvaluator *_image_evaluator, int _particles_num,
+                 float _particles_keep, float _particle_belief_scale,
+                 float _particle_stdev_lin, float _particle_stdev_ang,
+                 bool _hamid_sampling, float _punishEdgeParticlesRate):
           map(_map),
+          image_evaluator(_image_evaluator),
           particles_num(_particles_num),
           particles_keep( (int)(_particles_keep * _particles_num) ),
+          particle_belief_scale(_particle_belief_scale * _particle_belief_scale),
           particle_stdev_lin(_particle_stdev_lin),
           particle_stdev_ang(_particle_stdev_ang),
           gen(rd() ),
-          udist_x(0, _map->img_gray.cols - 1),
-          udist_y(0, _map->img_gray.rows - 1),
           udist_t(0, 2 * M_PI),
           best(0, 0, 0),
-          hamid_sampling(_hamid_sampling)
-  {
-    evaluator = new ImageEvaluator(*map, errorfunction);
-
-    addNewRandomParticles();
-  }
+          hamid_sampling(_hamid_sampling),
+          punishEdgeParticlesRate(_punishEdgeParticlesRate)
+  {}
 
   ~ParticleFilter() {}
 
   void addNewRandomParticles() {
+    std::uniform_real_distribution<float> udist_x(
+        map->bbox.x, map->bbox.x + map->bbox.width);
+    std::uniform_real_distribution<float> udist_y(
+        map->bbox.y, map->bbox.y + map->bbox.height);
+
     for(int i = 0; i < particles_num - particles.size(); ++i) {
       Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
       particles.push_back(p);
     }
   }
 
-  void motion_update(float dx, float dy, float dt) {
+  void motion_update(float dx, float dth) {
     for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
-      it->p.x = fmax(0, fmin(map->img_gray.cols - 1, it->p.x + dx) );
-      it->p.y = fmax(0, fmin(map->img_gray.rows - 1, it->p.y + dy) );
-      it->p.z = it->p.z + dt;
+      it->p.z  = it->p.z + dth;
+      it->p.x += dx * cosf(it->p.z);
+      it->p.y -= dx * sinf(it->p.z);
     }
   }
 
   void evaluate(cv::Mat &img) {
     best.belief = 0;
 
-    for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
-      it->belief = 1 - evaluator->evaluate(img, it->p);
+    cv::Mat img_tf = image_evaluator->transform(
+        img, cv::Point3f(img.cols / 2, img.rows / 2, 0), cv::Size2i(img.cols, img.rows) );
 
-      if(it->belief > best.belief)
-        best = *it;
+    for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
+      std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
+
+      if(mappieces.empty() )
+        it->belief = 0;
+      else {
+
+        // TODO handle several mappieces
+
+        float e = image_evaluator->evaluate(img_tf, mappieces.front() );
+
+        it->belief = expf(-particle_belief_scale * (e * e) );
+
+        // punish particles that are outside the map
+        if (it->p.x >= (map->bbox.x + map->bbox.width - 1) ||
+            it->p.y >= (map->bbox.y + map->bbox.height - 1) ||
+            it->p.x < 0 || it->p.y < 0) {
+          it->belief *= punishEdgeParticlesRate;
+        }
+
+        if(it->belief > best.belief)
+          best = *it;
+      }
     }
   }
   
@@ -135,8 +148,8 @@ class ParticleFilter {
            std::normal_distribution<float> ndist_t(p.p.z, particle_stdev_ang * (1 - p.belief) );
 
            Particle new_particle(
-               fmax(0, fmin(map->img_gray.cols - 1, ndist_x(gen) ) ),
-               fmax(0, fmin(map->img_gray.rows - 1, ndist_y(gen) ) ),
+               fmax(map->bbox.x, fmin(map->bbox.x + map->bbox.width,  ndist_x(gen) ) ),
+               fmax(map->bbox.y, fmin(map->bbox.y + map->bbox.height, ndist_y(gen) ) ),
                ndist_t(gen) );
 
            new_particles.push_back(new_particle);
@@ -150,6 +163,7 @@ class ParticleFilter {
   }
   
   Particle getBest(){
+    //auto cluster = DBScan().dbscan(particles, 0.001, 1);
     return best;
   }
 };

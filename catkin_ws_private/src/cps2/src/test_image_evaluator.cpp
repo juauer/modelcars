@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "image_evaluator.hpp"
+#include "map.hpp"
 
-cps2::Map *map;
+std::string path;
+cv::Rect2i roi;
 cv::Mat img;
 
 int px = 100;
@@ -28,7 +29,16 @@ void apply(int, void *) {
     return;
 
   cv::Point3f p(px, py, pt * M_PI / 4);
-  cps2::ImageEvaluator(*map, cps2::IE_MODE_PIXELS, sc, sz, de).evaluate(img, p);
+  cps2::ImageEvaluator evaluator(cps2::IE_MODE_PIXELS, sc, sz, de);
+  cps2::Map map(path.c_str(), &evaluator);
+
+  // TODO soon theOnePice will be gone. what then?
+
+  cv::Mat img1 = evaluator.transform(map.theOnePiece.img, p, cv::Size2i(roi.width, roi.height) );
+  cv::Mat img2 = evaluator.transform(img,
+      cv::Point3f(img.cols / 2, img.rows / 2, 0), cv::Size2i(img.cols, img.rows) );
+
+  evaluator.evaluate(img1, img2);
 }
 
 int main(int argc, char **argv) {
@@ -36,15 +46,16 @@ int main(int argc, char **argv) {
     printf("Please use roslaunch: 'roslaunch cps2 test_image_evaluator.launch "
            "[x:=INT] [y:=INT] [w:=INT] [h:=INT]'\n");
 
-  std::string path = ros::package::getPath("cps2") +
-                     std::string("/../../../captures/(200,200,0).jpg");
-
-  map = new cps2::Map(path.c_str());
-  img = cv::Mat(map->img_bgr, cv::Rect(atoi(argv[1]), atoi(argv[2]),
-                                       atoi(argv[3]), atoi(argv[4]) ) );
+  path = ros::package::getPath("cps2") + std::string("/../../../captures/map_test.png");
+  roi  = cv::Rect2i(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]) );
 
   printf("test_image_evaluator: Using x: %d, y: %d, w: %d, h: %d\n",
       atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]) );
+
+  cps2::ImageEvaluator evaluator(cps2::IE_MODE_PIXELS);
+  cps2::Map map(path.c_str(), &evaluator);
+
+  img = cv::Mat(map.theOnePiece.img, roi);
 
   cv::namedWindow("test", CV_WINDOW_AUTOSIZE);
   cv::createTrackbar("particle x   ", "test", &px, max_px, apply);
