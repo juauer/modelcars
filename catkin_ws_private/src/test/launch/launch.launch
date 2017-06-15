@@ -4,10 +4,10 @@
   <arg name="bagfile" default="test" />
   
   <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
-  <arg name="calib" default="test" />
+  <arg name="calib" default="default" />
   
   <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test.png" />
+  <arg name="mapfile" default="map_test_2.png" />
   
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
