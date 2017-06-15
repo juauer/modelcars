@@ -61,7 +61,7 @@ void callback_odometry(const nav_msgs::Odometry &msg) {
   tf::quaternionMsgToTF(odom_last.pose.pose.orientation, q_last);
   tf::quaternionMsgToTF(msg.pose.pose.orientation, q_now);
 
-  pos_relative_vel.x = dt * (msg.twist.twist.linear.x - odom_last.twist.twist.linear.x);
+  pos_relative_vel.x = dt * msg.twist.twist.linear.x;
   pos_relative_vel.y = dt * (tf::getYaw(q_now) - tf::getYaw(q_last) );
   odom_last          = msg;
   has_odom           = true;
@@ -99,7 +99,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
 
-  particleFilter->motion_update(pos_relative_vel.x, pos_relative_vel.y);
+  particleFilter->motion_update(dt * pos_relative_vel.x, dt * pos_relative_vel.y);
   particleFilter->resample();
   particleFilter->evaluate(image);
   
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 
   ros::Subscriber sub_odo             = nh.subscribe("/odom", 1, &callback_odometry);
   ros::Subscriber sub_camera_matrix   = nh.subscribe("/usb_cam/camera_matrix", 1, &callback_camera_matrix);
-  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
+  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_raw", 1, &callback_image);
 
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
