@@ -21,7 +21,6 @@ public:
   cv::Point2i relative2image(cv::Point2f &p);
   cv::Point2f image2relative(cv::Point2i &p);
 
-private:
   int width;
   int height;
   int cx;

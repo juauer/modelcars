@@ -24,7 +24,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.1738010311" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel_x86/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel_arm/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/install_x86/include&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/5/bits"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.343267829" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false"/>

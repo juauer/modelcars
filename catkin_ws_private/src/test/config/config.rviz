@@ -62,6 +62,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
+      Pose Color: 255; 85; 255
       Pose Style: None
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
@@ -71,7 +72,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /usb_cam/image_raw
+      Image Topic: /localization/cps2/pose_image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -140,16 +141,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.24330139
+      Distance: 9.30362225
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 6.47226572
-        Y: 3.76725388
-        Z: 2.16697669
+        X: 0.811092436
+        Y: 0.324674577
+        Z: 2.05955005
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Name: Current View

@@ -1,9 +1,9 @@
 cmake_minimum_required( VERSION 2.8.3 )
-set( CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}" )
+set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslaunch roscpp image_transport cv_bridge
+  roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix
 )
 
 roslaunch_add_file_check(launch)
