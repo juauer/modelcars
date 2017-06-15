@@ -163,7 +163,7 @@ class ParticleFilter {
   }
   
   Particle getBest(){
-    auto cluster = dbscan3D(particles, 0.001, 1);
+    //auto cluster = DBScan().dbscan(particles, 0.001, 1);
     return best;
   }
 };
