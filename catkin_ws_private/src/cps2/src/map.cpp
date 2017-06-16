@@ -40,8 +40,7 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
   cv::Point2i pos_image = camera_matrix.relative2image(pos_rel2f);
 
-  cv::Point3f pos_image3f(pos_image.x, pos_image.y,
-      pos_world.z - theOnePiece.pos_world.z);
+  cv::Point3f pos_image3f(pos_image.x, pos_image.y, pos_world.z - M_PI / 2);
 
   map_pieces.push_back(image_evaluator->transform(
       theOnePiece.img, pos_image3f, cv::Size2i(camera_matrix.width, camera_matrix.height) ) );
@@ -71,10 +70,10 @@ void Map::update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world
 
   // TODO do something smart to handle the borders instead of using magic numbers
 
-  bbox.x      = -0.9 * p_abs.x;
-  bbox.y      = -0.9 * p_abs.y;
-  bbox.width  = 1.8 * p_abs.x;
-  bbox.height = 1.8 * p_abs.y;
+  bbox.x      = -0.7 * p_abs.x;
+  bbox.y      = -0.7 * p_abs.y;
+  bbox.width  = 1.4 * p_abs.x;
+  bbox.height = 1.4 * p_abs.y;
   ready       = true;
 }
 }
