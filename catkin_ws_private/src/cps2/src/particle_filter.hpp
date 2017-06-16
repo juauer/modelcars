@@ -51,6 +51,18 @@ class ParticleFilter {
   ~ParticleFilter() {}
 
   void addNewRandomParticles() {
+#ifdef DEBUG_PF_STATIC
+    particles.push_back(Particle(   0, -2.0,  0*M_PI/4) );
+    particles.push_back(Particle( 1.5, -1.5,  1*M_PI/4) );
+    particles.push_back(Particle( 2.0,    0,  2*M_PI/4) );
+    particles.push_back(Particle( 1.5,  1.5,  3*M_PI/4) );
+    particles.push_back(Particle(   0,  2.0,  4*M_PI/4) );
+    particles.push_back(Particle(-1.5,  1.5, -3*M_PI/4) );
+    particles.push_back(Particle(-2.0,    0, -2*M_PI/4) );
+    particles.push_back(Particle(-1.5, -1.5, -1*M_PI/4) );
+    return;
+#endif
+
     std::uniform_real_distribution<float> udist_x(
         map->bbox.x, map->bbox.x + map->bbox.width);
     std::uniform_real_distribution<float> udist_y(

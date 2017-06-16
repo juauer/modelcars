@@ -99,7 +99,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
 
-  particleFilter->motion_update(dt * pos_relative_vel.x, dt * pos_relative_vel.y);
+  //particleFilter->motion_update(dt * pos_relative_vel.x, -dt * pos_relative_vel.y);
   particleFilter->resample();
   particleFilter->evaluate(image);
   

@@ -40,7 +40,7 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
   cv::Point2i pos_image = camera_matrix.relative2image(pos_rel2f);
 
-  cv::Point3f pos_image3f(pos_image.x, pos_image.y, pos_world.z - M_PI / 2);
+  cv::Point3f pos_image3f(pos_image.x, pos_image.y, pos_world.z);
 
   map_pieces.push_back(image_evaluator->transform(
       theOnePiece.img, pos_image3f, cv::Size2i(camera_matrix.width, camera_matrix.height) ) );
