@@ -55,11 +55,12 @@ void Map::update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world
 
   // TODO get rid of the onePieceMapHACK
 
-  camera_matrix        = _camera_matrix;
-  camera_matrix.width  = theOnePiece.img.cols;
-  camera_matrix.height = theOnePiece.img.rows;
-  camera_matrix.cx     = theOnePiece.img.cols / 2;
-  camera_matrix.cy     = theOnePiece.img.rows / 2;
+  fisheye_camera_matrix::CameraMatrix onePieceHackedCM(
+      _camera_matrix.width, _camera_matrix.height,
+      theOnePiece.img.cols / 2, theOnePiece.img.rows / 2,
+      _camera_matrix.fl, _camera_matrix.ceil_height, _camera_matrix.scale);
+
+  camera_matrix = onePieceHackedCM;
 
   // TODO update using the latest data
 
