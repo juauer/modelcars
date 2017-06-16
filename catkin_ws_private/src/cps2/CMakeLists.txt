@@ -1,5 +1,9 @@
 cmake_minimum_required( VERSION 2.8.3 )
 set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
+
+# TODO why is this needed on some platforms?
+add_compile_options(-std=c++11)
+
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
