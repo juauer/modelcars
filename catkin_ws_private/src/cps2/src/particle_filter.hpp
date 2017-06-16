@@ -90,9 +90,9 @@ class ParticleFilter {
         it->belief = expf(-particle_belief_scale * (e * e) );
 
         // punish particles that are outside the map
-        if (it->p.x >= (map->bbox.x + map->bbox.width - 1) ||
-            it->p.y >= (map->bbox.y + map->bbox.height - 1) ||
-            it->p.x < 0 || it->p.y < 0) {
+        if (it->p.x >= (map->bbox.x + map->bbox.width) ||
+            it->p.y >= (map->bbox.y + map->bbox.height) ||
+            it->p.x < map->bbox.x || it->p.y < map->bbox.y) {
           it->belief *= punishEdgeParticlesRate;
         }
 
