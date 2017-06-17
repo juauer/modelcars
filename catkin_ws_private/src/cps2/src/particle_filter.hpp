@@ -11,6 +11,16 @@
 
 namespace cps2 {
 
+struct Bin {
+  int x;
+  int y;
+  float cx;
+  float cy;
+  int count;
+  float belief;
+  std::vector<Particle> ps;
+};
+
 class ParticleFilter {
  public:
   cps2::Map *map;
@@ -173,13 +183,123 @@ class ParticleFilter {
 
     addNewRandomParticles();
   }
-  
+
   Particle getBest(){
     //auto cluster = DBScan().dbscan(particles, 0.001, 1);
+    binning();
     return best;
   }
-};
 
+  Particle binning() {
+    Bin bins[20][20];
+    Bin *bestBin = &(bins[0][0]);
+
+    for(int i = 0; i < 20; ++i)
+      for(int j = 0; j < 20; ++j) {
+        bins[i][j].x      = j;
+        bins[i][j].y      = i;
+        bins[i][j].cx     = -5 + j * 0.5;
+        bins[i][j].cy     = -5 + i * 0.5;
+        bins[i][j].belief = 0;
+        bins[i][j].count  = 0;
+      }
+
+
+    for(std::vector<Particle>::iterator it = particles.begin();
+        it != particles.end(); ++it) {
+
+      int x = 10 + (int)roundf(2 * it->p.x);
+      int y = 10 + (int)roundf(2 * it->p.y);
+
+      bins[y][x].belief += it->belief;
+      ++bins[y][x].count;
+      bins[y][x].ps.push_back(*it);
+
+      if(bins[y][x].belief > bestBin->belief)
+        bestBin = &(bins[y][x]);
+    }
+
+    float sx = 0;
+    float sy = 0;
+
+    for(std::vector<Particle>::const_iterator it = bestBin->ps.begin();
+        it != bestBin->ps.end(); ++it) {
+
+      sx += it->p.x;
+      sy += it->p.y;
+    }
+
+    sx /= bestBin->count;
+    sy /= bestBin->count;
+
+    std::vector<Bin> goodBins;
+    goodBins.push_back(*bestBin);
+
+    if(sx < bestBin->cx) {
+      if(bestBin->x > 0)
+        goodBins.push_back(bins[bestBin->y][bestBin->x - 1]);
+
+      if(sy < bestBin->cy) {
+        if(bestBin->y > 0)
+          goodBins.push_back(bins[bestBin->y - 1][bestBin->x]);
+
+        if(bestBin->x > 0 && bestBin->y > 0)
+          goodBins.push_back(bins[bestBin->y - 1][bestBin->x - 1]);
+      }
+      else {
+        if(bestBin->y < 19)
+          goodBins.push_back(bins[bestBin->y + 1][bestBin->x]);
+
+        if(bestBin->x > 0 && bestBin->y < 19)
+          goodBins.push_back(bins[bestBin->y + 1][bestBin->x - 1]);
+      }
+    }
+    else {
+      if(bestBin->x < 19)
+        goodBins.push_back(bins[bestBin->y][bestBin->x + 1]);
+
+      if(sy < bestBin->cy) {
+        if(bestBin->y > 0)
+          goodBins.push_back(bins[bestBin->y - 1][bestBin->x]);
+
+        if(bestBin->x < 19 && bestBin->y > 0)
+          goodBins.push_back(bins[bestBin->y - 1][bestBin->x + 1]);
+      }
+      else {
+        if(bestBin->y < 19)
+          goodBins.push_back(bins[bestBin->y + 1][bestBin->x]);
+
+        if(bestBin->x < 19 && bestBin->y < 19)
+          goodBins.push_back(bins[bestBin->y + 1][bestBin->x + 1]);
+      }
+    }
+
+    sx = 0;
+    sy = 0;
+
+    float st = 0;
+    float sb = 0;
+
+    for(std::vector<Bin>::const_iterator it = goodBins.begin();
+        it != goodBins.end(); ++it)
+      for(std::vector<Particle>::const_iterator bit = it->ps.begin();
+              bit != it->ps.end(); ++bit) {
+
+        float yaw = fmod(bit->p.z, 2 * M_PI);
+
+        if(yaw < 0)
+          yaw += 2 * M_PI;
+
+        sx += bit->belief * bit->p.x;
+        sy += bit->belief * bit->p.y;
+        st += bit->belief * yaw;
+        sb += bit->belief;
+      }
+
+    Particle bp(sx / sb, sy / sb, st / sb);
+    best = bp;
+  }
+};
 } // namespace cps2
 
 #endif
