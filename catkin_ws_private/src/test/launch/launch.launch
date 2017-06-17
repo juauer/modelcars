@@ -25,7 +25,7 @@
   <arg name="particle_stddev_lin" default="0.1" />
   
   <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_ang" default="1.5" />
+  <arg name="particle_stddev_ang" default="0.05" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
