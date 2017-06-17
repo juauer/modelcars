@@ -76,9 +76,9 @@ class ParticleFilter {
 
   void motion_update(float dx, float dth) {
     for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
-      it->p.z  = it->p.z + dth;
+      it->p.z += dth;
       it->p.x += dx * cosf(it->p.z);
-      it->p.y -= dx * sinf(it->p.z);
+      it->p.y += dx * sinf(it->p.z);
     }
   }
 

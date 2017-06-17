@@ -56,15 +56,13 @@ void callback_odometry(const nav_msgs::Odometry &msg) {
   tf::Quaternion q_last;
   tf::Quaternion q_now;
 
-  // TODO don't use odom_last on first call
-
   tf::quaternionMsgToTF(odom_last.pose.pose.orientation, q_last);
   tf::quaternionMsgToTF(msg.pose.pose.orientation, q_now);
 
-  pos_relative_vel.x = dt * msg.twist.twist.linear.x;
-  pos_relative_vel.y = dt * (tf::getYaw(q_now) - tf::getYaw(q_last) );
-  odom_last          = msg;
-  has_odom           = true;
+  pos_relative_vel.x  = msg.twist.twist.linear.x;
+  pos_relative_vel.y += tf::getYaw(q_now) - tf::getYaw(q_last);
+  odom_last           = msg;
+  has_odom            = true;
 }
 
 void callback_camera_matrix(const fisheye_camera_matrix_msgs::CameraMatrix &msg) {
@@ -99,7 +97,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
 
-  //particleFilter->motion_update(dt * pos_relative_vel.x, -dt * pos_relative_vel.y);
+  particleFilter->motion_update(dt * pos_relative_vel.x, -pos_relative_vel.y);
   particleFilter->resample();
   particleFilter->evaluate(image);
   
@@ -108,7 +106,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   if(frame > 2)
     map->update(pos_world_last, best.p, pos_relative_vel, best.belief, camera_matrix);
 
-  pos_world_last = best.p;
+  pos_world_last     = best.p;
+  pos_relative_vel.y = 0;
 
   tf::Quaternion best_q = tf::createQuaternionFromYaw(best.p.z);
 
@@ -197,6 +196,11 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
+  odom_last.twist.twist.linear.x = 0;
+  odom_last.pose.pose.orientation.x = 0;
+  odom_last.pose.pose.orientation.y = 0;
+  odom_last.pose.pose.orientation.z = 0;
+  odom_last.pose.pose.orientation.w = 1;
   stamp_last_odom.sec      = 0;
   stamp_last_odom.nsec     = 0;
   stamp_last_image.sec     = 0;
