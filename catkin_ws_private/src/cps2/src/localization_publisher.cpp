@@ -164,9 +164,11 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 8) {
+  if(argc < 11) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep:=FLOAT] [particle_stddev:=FLOAT]'");
+              "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep:=FLOAT] "
+              "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
+              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT]'");
     return 1;
   }
 
@@ -178,7 +180,8 @@ int main(int argc, char **argv) {
   float particle_stddev_lin     = atof(argv[6]);
   float particle_stddev_ang     = atof(argv[7]);
   bool hamid_sampling           = atoi(argv[8]) != 0;
-  float punishEdgeParticlesRate = atof(argv[9]);
+  float bin_size                = atof(argv[9]);
+  float punishEdgeParticlesRate = atof(argv[10]);
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
@@ -186,17 +189,25 @@ int main(int argc, char **argv) {
   }
 
   ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
-  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, punishEdgeParticleRate %.2f",
-           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_belief_scale, particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", punishEdgeParticlesRate);
+  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, "
+      "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
+      "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
+      "punishEdgeParticleRate %.2f",
+           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num,
+           particles_keep, particle_belief_scale, particle_stddev_lin, particle_stddev_ang,
+           hamid_sampling ? "on" : "off", bin_size, punishEdgeParticlesRate);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction);
   map             = new cps2::Map(path_map.c_str(), image_evaluator);
-  particleFilter  = new cps2::ParticleFilter(map, image_evaluator, particles_num, particles_keep, particle_belief_scale, particle_stddev_lin, particle_stddev_ang, hamid_sampling, punishEdgeParticlesRate);
+  particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
+      particles_num, particles_keep, particle_belief_scale,
+      particle_stddev_lin, particle_stddev_ang, hamid_sampling,
+      bin_size, punishEdgeParticlesRate);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  odom_last.twist.twist.linear.x = 0;
+  odom_last.twist.twist.linear.x    = 0;
   odom_last.pose.pose.orientation.x = 0;
   odom_last.pose.pose.orientation.y = 0;
   odom_last.pose.pose.orientation.z = 0;

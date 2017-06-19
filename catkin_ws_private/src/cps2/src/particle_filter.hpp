@@ -2,6 +2,7 @@
 #define SRC_PARTICLEFILTER_HPP_
 
 #include <math.h>
+#include <stdlib.h>
 #include <vector>
 #include <random>
 #include "map.hpp"
@@ -33,9 +34,12 @@ class ParticleFilter {
   const float particle_stdev_ang;
   const float punishEdgeParticlesRate;
   const bool hamid_sampling;
+  const bool binning_enabled;
+  const float bin_size;
   
   std::vector<Particle> particles;
-  Particle best;
+  Particle best_single;
+  Particle best_binning;
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen; //Standard mersenne_twister_engine
   std::uniform_real_distribution<float> udist_t;
@@ -43,7 +47,7 @@ class ParticleFilter {
   ParticleFilter(cps2::Map *_map, cps2::ImageEvaluator *_image_evaluator, int _particles_num,
                  float _particles_keep, float _particle_belief_scale,
                  float _particle_stdev_lin, float _particle_stdev_ang,
-                 bool _hamid_sampling, float _punishEdgeParticlesRate):
+                 bool _hamid_sampling, float _bin_size, float _punishEdgeParticlesRate):
           map(_map),
           image_evaluator(_image_evaluator),
           particles_num(_particles_num),
@@ -53,8 +57,11 @@ class ParticleFilter {
           particle_stdev_ang(_particle_stdev_ang),
           gen(rd() ),
           udist_t(0, 2 * M_PI),
-          best(0, 0, 0),
+          best_single(0, 0, 0),
+          best_binning(0, 0, 0),
           hamid_sampling(_hamid_sampling),
+          binning_enabled(_bin_size > 0),
+          bin_size(_bin_size > 0 ? _bin_size : 0),
           punishEdgeParticlesRate(_punishEdgeParticlesRate)
   {}
 
@@ -93,7 +100,7 @@ class ParticleFilter {
   }
 
   void evaluate(cv::Mat &img) {
-    best.belief = 0;
+    best_single.belief = 0;
 
     cv::Mat img_tf = image_evaluator->transform(
         img, cv::Point3f(img.cols / 2, img.rows / 2, 0), cv::Size2i(img.cols, img.rows) );
@@ -118,12 +125,15 @@ class ParticleFilter {
           it->belief *= punishEdgeParticlesRate;
         }
 
-        if(it->belief > best.belief)
-          best = *it;
+        if(it->belief > best_single.belief)
+          best_single = *it;
       }
     }
+
+    if(binning_enabled)
+      binning();
   }
-  
+
   void resample() {
     // stochastic universal sampling
     std::vector<uint32_t> hits(particles_num, 0);
@@ -186,30 +196,35 @@ class ParticleFilter {
 
   Particle getBest(){
     //auto cluster = DBScan().dbscan(particles, 0.001, 1);
-    binning();
-    return best;
+
+    if(binning_enabled)
+      return best_binning;
+
+    return best_single;
   }
 
   Particle binning() {
-    Bin bins[20][20];
+    int num_x = (int)ceilf(map->bbox.width  / bin_size);
+    int num_y = (int)ceilf(map->bbox.height / bin_size);
+
+    Bin bins[num_y][num_x];
     Bin *bestBin = &(bins[0][0]);
 
-    for(int i = 0; i < 20; ++i)
-      for(int j = 0; j < 20; ++j) {
+    for(int i = 0; i < num_y; ++i)
+      for(int j = 0; j < num_x; ++j) {
         bins[i][j].x      = j;
         bins[i][j].y      = i;
-        bins[i][j].cx     = -5 + j * 0.5;
-        bins[i][j].cy     = -5 + i * 0.5;
+        bins[i][j].cx     = map->bbox.x + (j + 0.5) * bin_size;
+        bins[i][j].cy     = map->bbox.y + (i + 0.5) * bin_size;
         bins[i][j].belief = 0;
         bins[i][j].count  = 0;
       }
 
-
     for(std::vector<Particle>::iterator it = particles.begin();
         it != particles.end(); ++it) {
 
-      int x = 10 + (int)roundf(2 * it->p.x);
-      int y = 10 + (int)roundf(2 * it->p.y);
+      int x = std::max(0, std::min(num_x - 1, (int)floorf( (it->p.x - map->bbox.x) / bin_size) ) );
+      int y = std::max(0, std::min(num_y - 1, (int)floorf( (it->p.y - map->bbox.y) / bin_size) ) );
 
       bins[y][x].belief += it->belief;
       ++bins[y][x].count;
@@ -247,29 +262,29 @@ class ParticleFilter {
           goodBins.push_back(bins[bestBin->y - 1][bestBin->x - 1]);
       }
       else {
-        if(bestBin->y < 19)
+        if(bestBin->y < num_y - 1)
           goodBins.push_back(bins[bestBin->y + 1][bestBin->x]);
 
-        if(bestBin->x > 0 && bestBin->y < 19)
+        if(bestBin->x > 0 && bestBin->y < num_y - 1)
           goodBins.push_back(bins[bestBin->y + 1][bestBin->x - 1]);
       }
     }
     else {
-      if(bestBin->x < 19)
+      if(bestBin->x < num_x - 1)
         goodBins.push_back(bins[bestBin->y][bestBin->x + 1]);
 
       if(sy < bestBin->cy) {
         if(bestBin->y > 0)
           goodBins.push_back(bins[bestBin->y - 1][bestBin->x]);
 
-        if(bestBin->x < 19 && bestBin->y > 0)
+        if(bestBin->x < num_x - 1 && bestBin->y > 0)
           goodBins.push_back(bins[bestBin->y - 1][bestBin->x + 1]);
       }
       else {
-        if(bestBin->y < 19)
+        if(bestBin->y < num_y - 1)
           goodBins.push_back(bins[bestBin->y + 1][bestBin->x]);
 
-        if(bestBin->x < 19 && bestBin->y < 19)
+        if(bestBin->x < num_x - 1 && bestBin->y < num_y - 1)
           goodBins.push_back(bins[bestBin->y + 1][bestBin->x + 1]);
       }
     }
@@ -277,27 +292,24 @@ class ParticleFilter {
     sx = 0;
     sy = 0;
 
-    float st = 0;
-    float sb = 0;
+    float sts = 0;
+    float stc = 0;
+    float sb  = 0;
 
     for(std::vector<Bin>::const_iterator it = goodBins.begin();
         it != goodBins.end(); ++it)
       for(std::vector<Particle>::const_iterator bit = it->ps.begin();
               bit != it->ps.end(); ++bit) {
 
-        float yaw = fmod(bit->p.z, 2 * M_PI);
-
-        if(yaw < 0)
-          yaw += 2 * M_PI;
-
-        sx += bit->belief * bit->p.x;
-        sy += bit->belief * bit->p.y;
-        st += bit->belief * yaw;
-        sb += bit->belief;
+        sx  += bit->belief * bit->p.x;
+        sy  += bit->belief * bit->p.y;
+        sts += bit->belief * sinf(bit->p.z);
+        stc += bit->belief * cosf(bit->p.z);
+        sb  += bit->belief;
       }
 
-    Particle bp(sx / sb, sy / sb, st / sb);
-    best = bp;
+    Particle bp(sx / sb, sy / sb, atan2f(sts / sb, stc / sb) );
+    best_binning = bp;
   }
 };
 } // namespace cps2
