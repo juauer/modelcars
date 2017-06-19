@@ -11,7 +11,6 @@ const int IE_MODE_CENTROIDS = 1;
 class ImageEvaluator {
  public:
   ImageEvaluator(int mode, int resize_scale, int kernel_size, float kernel_stddev);
-  ImageEvaluator(int mode);
   virtual ~ImageEvaluator();
 
   cv::Mat transform(const cv::Mat &img, const cv::Point3f &pos_image, cv::Size onePieceMapSizeHACK);

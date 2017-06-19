@@ -12,6 +12,16 @@
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
   
+  <!-- arg <downscale>: When comparing images, resize them to (width/downscale, height/downscale). -->
+  <!-- Boost performance with this! -->
+  <arg name="downscale" default="25" />
+  
+  <!-- arg <kernel_size>: Size of the gaussian kernel used while downscaling. -->
+  <arg name="kernel_size" default="5" />
+  
+  <!-- arg <kernel_stddev>: Standard deviation of the kernel used while downscaling. -->
+  <arg name="kernel_stddev" default="2.5" />
+  
   <!-- arg <particles_num>: Number of particles -->
   <arg name="particles_num" default="100" />
   
@@ -47,6 +57,9 @@
   <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
     <arg name="mapfile" value="$(arg mapfile)" />
     <arg name="errorfunction" value="$(arg errorfunction)" />
+    <arg name="downscale" value="$(arg downscale)" />
+    <arg name="kernel_size" value="$(arg kernel_size)" />
+    <arg name="kernel_stddev" value="$(arg kernel_stddev)" />
     <arg name="particles_num" value="$(arg particles_num)" />
     <arg name="particles_keep" value="$(arg particles_keep)" />
     <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />

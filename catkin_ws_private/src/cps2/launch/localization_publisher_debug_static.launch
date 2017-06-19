@@ -6,6 +6,16 @@
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
   
+  <!-- arg <downscale>: When comparing images, resize them to (width/downscale, height/downscale). -->
+  <!-- Boost performance with this! -->
+  <arg name="downscale" default="1" />
+  
+  <!-- arg <kernel_size>: Size of the gaussian kernel used while downscaling. -->
+  <arg name="kernel_size" default="1" />
+  
+  <!-- arg <kernel_stddev>: Standard deviation of the kernel used while downscaling. -->
+  <arg name="kernel_stddev" default="1" />
+  
   <!-- arg <particles_num>: Number of particles -->
   <arg name="particles_num" default="100" />
   
@@ -30,5 +40,5 @@
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
   <arg name="punishEdgeParticlesRate" default="0.5" />
   
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug_static" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug_static" args="$(arg mapfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate)" output="screen" />
 </launch>

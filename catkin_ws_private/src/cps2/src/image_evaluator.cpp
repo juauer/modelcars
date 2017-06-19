@@ -69,20 +69,6 @@ ImageEvaluator::ImageEvaluator(int _mode, int _resize_scale, int _kernel_size, f
   generateKernel();
 }
 
-ImageEvaluator::ImageEvaluator(int _mode) : mode(_mode) {
-  resize_scale  = 25;
-  kernel_size   = 5;
-  kernel_stddev = 2.5;
-
-#ifdef DEBUG_PF_STATIC
-  resize_scale  = 5;
-  kernel_size   = 1;
-  kernel_stddev = 1;
-#endif
-
-  generateKernel();
-}
-
 ImageEvaluator::~ImageEvaluator() {
 
 }
