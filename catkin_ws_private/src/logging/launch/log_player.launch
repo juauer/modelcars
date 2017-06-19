@@ -6,5 +6,5 @@
 
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
   
-  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find logging)/../../../logs/$(arg bagfile).bag" output="screen" />
+  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find logging)/../../../logs/$(arg bagfile).bag" />
 </launch>

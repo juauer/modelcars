@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   printf("test_image_evaluator: Using x: %d, y: %d, w: %d, h: %d\n",
       atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]) );
 
-  cps2::ImageEvaluator evaluator(cps2::IE_MODE_PIXELS);
+  cps2::ImageEvaluator evaluator(cps2::IE_MODE_PIXELS, 1, 1, 1);
   cps2::Map map(path.c_str(), &evaluator);
 
   img = cv::Mat(map.theOnePiece.img, roi);

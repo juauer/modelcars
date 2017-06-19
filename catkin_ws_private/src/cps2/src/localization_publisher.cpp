@@ -56,15 +56,13 @@ void callback_odometry(const nav_msgs::Odometry &msg) {
   tf::Quaternion q_last;
   tf::Quaternion q_now;
 
-  // TODO don't use odom_last on first call
-
   tf::quaternionMsgToTF(odom_last.pose.pose.orientation, q_last);
   tf::quaternionMsgToTF(msg.pose.pose.orientation, q_now);
 
-  pos_relative_vel.x = dt * msg.twist.twist.linear.x;
-  pos_relative_vel.y = dt * (tf::getYaw(q_now) - tf::getYaw(q_last) );
-  odom_last          = msg;
-  has_odom           = true;
+  pos_relative_vel.x  = msg.twist.twist.linear.x;
+  pos_relative_vel.y += tf::getYaw(q_now) - tf::getYaw(q_last);
+  odom_last           = msg;
+  has_odom            = true;
 }
 
 void callback_camera_matrix(const fisheye_camera_matrix_msgs::CameraMatrix &msg) {
@@ -99,7 +97,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
 
-  particleFilter->motion_update(dt * pos_relative_vel.x, dt * pos_relative_vel.y);
+  particleFilter->motion_update(dt * pos_relative_vel.x, -pos_relative_vel.y);
   particleFilter->resample();
   particleFilter->evaluate(image);
   
@@ -108,7 +106,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   if(frame > 2)
     map->update(pos_world_last, best.p, pos_relative_vel, best.belief, camera_matrix);
 
-  pos_world_last = best.p;
+  pos_world_last     = best.p;
+  pos_relative_vel.y = 0;
 
   tf::Quaternion best_q = tf::createQuaternionFromYaw(best.p.z);
 
@@ -165,21 +164,28 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 8) {
+  if(argc < 14) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[mapfile:=FILE] [errorfunction:=(0|1)] [particles_num:=INT] [particles_keep:=FLOAT] [particle_stddev:=FLOAT]'");
+              "[mapfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
+              "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
+              "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
+              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT]'");
     return 1;
   }
 
   std::string path_map          = ros::package::getPath("cps2") + std::string("/../../../captures/") + std::string(argv[1]);
   int errorfunction             = atoi(argv[2]);
-  int particles_num             = atoi(argv[3]);
-  float particles_keep          = atof(argv[4]);
-  float particle_belief_scale   = atof(argv[5]);
-  float particle_stddev_lin     = atof(argv[6]);
-  float particle_stddev_ang     = atof(argv[7]);
-  bool hamid_sampling           = atoi(argv[8]) != 0;
-  float punishEdgeParticlesRate = atof(argv[9]);
+  int downscale                 = atoi(argv[3]);
+  int kernel_size               = atoi(argv[4]);
+  float kernel_stddev           = atof(argv[5]);
+  int particles_num             = atoi(argv[6]);
+  float particles_keep          = atof(argv[7]);
+  float particle_belief_scale   = atof(argv[8]);
+  float particle_stddev_lin     = atof(argv[9]);
+  float particle_stddev_ang     = atof(argv[10]);
+  bool hamid_sampling           = atoi(argv[11]) != 0;
+  float bin_size                = atof(argv[12]);
+  float punishEdgeParticlesRate = atof(argv[13]);
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
@@ -187,16 +193,31 @@ int main(int argc, char **argv) {
   }
 
   ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
-  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, particles_num: %d, particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, punishEdgeParticleRate %.2f",
-           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), particles_num, particles_keep, particle_belief_scale, particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", punishEdgeParticlesRate);
+  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, downscale: %d, "
+      "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
+      "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
+      "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
+      "punishEdgeParticleRate %.2f",
+           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
+           kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
+           particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
+           punishEdgeParticlesRate);
 
-  image_evaluator = new cps2::ImageEvaluator(errorfunction);
+  image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
   map             = new cps2::Map(path_map.c_str(), image_evaluator);
-  particleFilter  = new cps2::ParticleFilter(map, image_evaluator, particles_num, particles_keep, particle_belief_scale, particle_stddev_lin, particle_stddev_ang, hamid_sampling, punishEdgeParticlesRate);
+  particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
+      particles_num, particles_keep, particle_belief_scale,
+      particle_stddev_lin, particle_stddev_ang, hamid_sampling,
+      bin_size, punishEdgeParticlesRate);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
+  odom_last.twist.twist.linear.x    = 0;
+  odom_last.pose.pose.orientation.x = 0;
+  odom_last.pose.pose.orientation.y = 0;
+  odom_last.pose.pose.orientation.z = 0;
+  odom_last.pose.pose.orientation.w = 1;
   stamp_last_odom.sec      = 0;
   stamp_last_odom.nsec     = 0;
   stamp_last_image.sec     = 0;

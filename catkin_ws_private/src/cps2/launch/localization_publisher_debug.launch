@@ -1,31 +1,44 @@
 <?xml version="1.0"?>
 <launch>
   <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test.png" />
- 
+  <arg name="mapfile" default="map_test_2.png" />
+  
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
-   
+  
+  <!-- arg <downscale>: When comparing images, resize them to (width/downscale, height/downscale). -->
+  <!-- Boost performance with this! -->
+  <arg name="downscale" default="25" />
+  
+  <!-- arg <kernel_size>: Size of the gaussian kernel used while downscaling. -->
+  <arg name="kernel_size" default="5" />
+  
+  <!-- arg <kernel_stddev>: Standard deviation of the kernel used while downscaling. -->
+  <arg name="kernel_stddev" default="2.5" />
+  
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="500" />
+  <arg name="particles_num" default="100" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
-  <arg name="particles_keep" default="0.75" />
+  <arg name="particles_keep" default="0.99" />
   
   <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
   <arg name="particle_belief_scale" default="4" />
   
-  <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_lin" default="20" />
+  <!-- arg <particle_stddev_lin>: Linear standard deviation (in m) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_lin" default="0.1" />
   
   <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_ang" default="1.5" />
+  <arg name="particle_stddev_ang" default="0.05" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
-
+  
+  <!-- arg <bin_size>: Length of a bins side in m. Choose 0 to disable binning. -->
+  <arg name="bin_size" default="0.5" />
+  
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
   <arg name="punishEdgeParticlesRate" default="0.5" />
-
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg punishEdgeParticlesRate)" output="screen" />
+  
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate)" output="screen" />
 </launch>

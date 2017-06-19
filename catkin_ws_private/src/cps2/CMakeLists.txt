@@ -1,5 +1,9 @@
 cmake_minimum_required( VERSION 2.8.3 )
 set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
+
+# TODO why is this needed on some platforms?
+add_compile_options(-std=c++11)
+
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
@@ -25,6 +29,10 @@ target_link_libraries( localization_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS}
 add_executable( localization_publisher_debug src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
 target_compile_definitions( localization_publisher_debug PUBLIC DEBUG_PF )
 target_link_libraries( localization_publisher_debug ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+add_executable( localization_publisher_debug_static src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
+target_compile_definitions( localization_publisher_debug_static PUBLIC DEBUG_PF DEBUG_PF_STATIC)
+target_link_libraries( localization_publisher_debug_static ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( test_evaluator src/image_evaluator.cpp src/test_image_evaluator.cpp src/map.cpp)
 target_compile_definitions( test_evaluator PUBLIC DEBUG_IE )
