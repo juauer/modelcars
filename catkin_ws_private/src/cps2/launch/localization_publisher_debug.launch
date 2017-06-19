@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <launch>
   <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test.png" />
- 
+  <arg name="mapfile" default="map_test_2.png" />
+  
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
-   
+  
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="500" />
+  <arg name="particles_num" default="100" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
-  <arg name="particles_keep" default="0.75" />
+  <arg name="particles_keep" default="0.99" />
   
   <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
   <arg name="particle_belief_scale" default="4" />
   
-  <!-- arg <particle_stddev_lin>: Linear standard deviation (in px) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_lin" default="20" />
+  <!-- arg <particle_stddev_lin>: Linear standard deviation (in m) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_lin" default="0.1" />
   
   <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_ang" default="1.5" />
+  <arg name="particle_stddev_ang" default="0.05" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
