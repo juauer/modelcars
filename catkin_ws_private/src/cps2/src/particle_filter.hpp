@@ -69,6 +69,7 @@ class ParticleFilter {
 
   void addNewRandomParticles() {
 #ifdef DEBUG_PF_STATIC
+    particles.clear();
     particles.push_back(Particle(   0, -2.0,  0*M_PI/4) );
     particles.push_back(Particle( 1.5, -1.5,  1*M_PI/4) );
     particles.push_back(Particle( 2.0,    0,  2*M_PI/4) );
