@@ -21,6 +21,12 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   img_raw = cv_bridge::toCvShare(msg, "bgr8")->image;
 
+  // FIXME what happened to the images?
+  if(img_raw.rows == 720 && img_raw.cols == 1280) {
+    cv::Mat sub(img_raw, cv::Rect(320, 240, 640, 480) );
+    img_raw = sub;
+  }
+
   if(img_raw.rows != img_undistorted.rows || img_raw.cols != img_undistorted.cols)
     img_undistorted = cv::Mat(img_raw.rows, img_raw.cols, CV_8UC3);
 

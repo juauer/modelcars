@@ -70,10 +70,10 @@ void Map::update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world
 
   // TODO do something smart to handle the borders instead of using magic numbers
 
-  bbox.x      = -0.7 * p_abs.x;
-  bbox.y      = -0.7 * p_abs.y;
-  bbox.width  = 1.4 * p_abs.x;
-  bbox.height = 1.4 * p_abs.y;
+  bbox.x      = -0.9 * p_abs.x;
+  bbox.y      = -0.9 * p_abs.y;
+  bbox.width  = 1.8 * p_abs.x;
+  bbox.height = 1.8 * p_abs.y;
   ready       = true;
 }
 }
