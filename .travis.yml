@@ -54,7 +54,7 @@ cache:
 # trigger a build matrix for different ROS distributions if desired.
 env:
   global:
-    - ROS_DISTRO=indigo
+    - ROS_DISTRO=kinetic
     - ROS_CI_DESKTOP="`lsb_release -cs`"  # e.g. [precise|trusty|...]
     - CI_SOURCE_PATH=$(pwd)
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
@@ -69,7 +69,7 @@ before_install:
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
   - sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
-  - sudo apt-get install -y libopencv-core-dev libopencv-highgui-dev libopencv-imgproc-dev  ros-$ROS_DISTRO-opencv3 ros-$ROS_DISTRO-cv-bridge
+  - sudo apt-get install -y libopencv-imgproc-dev ros-$ROS_DISTRO-cv-bridge
   - source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
