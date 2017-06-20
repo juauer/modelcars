@@ -17,14 +17,12 @@
 bool has_odom          = false;
 bool has_camera_matrix = false;
 bool ready             = false;
-int frame              = 0;
 
 cps2::ImageEvaluator *image_evaluator;
 cps2::Map *map;
 cps2::ParticleFilter *particleFilter;
 
 cv::Mat image;
-cv::Point3f pos_world_last;
 cv::Point2f pos_relative_vel;
 cv::Point3f origin_map;
 nav_msgs::Odometry odom_last;
@@ -77,7 +75,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
       // TODO use init functions to hide the logic
 
-      map->update(cv::Point3f(), cv::Point3f(), cv::Point2f(), 0, camera_matrix);
+      map->update(cv::Mat(), cps2::Particle(0, 0, 0), camera_matrix);
       particleFilter->addNewRandomParticles();
       ready = true;
     }
@@ -103,10 +101,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   
   cps2::Particle best = particleFilter->getBest();
 
-  if(frame > 2)
-    map->update(pos_world_last, best.p, pos_relative_vel, best.belief, camera_matrix);
+  map->update(image, best, camera_matrix);
 
-  pos_world_last     = best.p;
   pos_relative_vel.y = 0;
 
   tf::Quaternion best_q = tf::createQuaternionFromYaw(best.p.z);
