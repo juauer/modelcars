@@ -9,6 +9,9 @@
   <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
   <arg name="mapfile" default="map_test_2.png" />
   
+  <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
+  <arg name="logfile" default="test" />
+  
   <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
   <arg name="errorfunction" default="0" />
   
@@ -35,7 +38,7 @@
   <arg name="particle_stddev_lin" default="0.1" />
   
   <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
-  <arg name="particle_stddev_ang" default="0.05" />
+  <arg name="particle_stddev_ang" default="0.1" />
   
   <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
   <arg name="hamid_sampling" default="0" />
@@ -56,6 +59,7 @@
   
   <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
     <arg name="mapfile" value="$(arg mapfile)" />
+    <arg name="logfile" value="$(arg logfile)" />
     <arg name="errorfunction" value="$(arg errorfunction)" />
     <arg name="downscale" value="$(arg downscale)" />
     <arg name="kernel_size" value="$(arg kernel_size)" />
