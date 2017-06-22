@@ -1,5 +1,16 @@
 <launch>
-  <node pkg="trajectory_movement" type="trajectory_movement_node" name="trajectory_movement_node" output="screen">
-    <param name="mode"	 type="int"    value="0" />
+  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
+  <arg name="mode" default="0" />
+  
+  <!-- arg <dstPosX>: set X value for the destination to drive to -->
+  <arg name="dstPosX" default="0" />
+  
+  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
+  <arg name="dstPosY" default="0" />
+  
+  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
+  <arg name="speed" default="20" />
+
+  <node pkg="control" type="control_node" name="control_node" args="$(arg mode) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
   </node>
 </launch>
