@@ -21,28 +21,23 @@ class DBScan {
   std::vector<cps2::Particle> dataset;
   cps2::Clusters clusters;
   
-  bool expandCluster(cps2::Particle P,
-                     std::vector<cps2::Particle> neighborPts,
-                     std::vector<cps2::Particle> C,
-                     float eps, int min_pts);
+  bool expandCluster(cps2::Particle p, std::vector<int> neighbor_pts,
+                     unsigned int C, float eps, int min_pts);
 
-  std::vector<cps2::Particle> regionQuery(cps2::Particle P, float eps);
+  std::vector<int> regionQuery(cps2::Particle p, float eps);
 };
 
-bool DBScan::expandCluster(cps2::Particle P,
-                           std::vector<cps2::Particle> neighborPts,
-                           std::vector<cps2::Particle> C,
-                           float eps, int min_pts){
+bool DBScan::expandCluster(cps2::Particle p, std::vector<int> neighbor_pts,
+                           unsigned int C, float eps, int min_pts){
   std::vector<int> visited(dataset.size(),false);
 
-  //add P to cluster C
-  for (int i = 0; i < neighborPts.size(); i++) {
+  //add p to cluster C
+  for (int i = 0; i < neighbor_pts.size(); i++) {
     if (~visited[i]) {
-      //mark P' as visited
-      auto neighborPtsCluster = regionQuery(dataset[i], eps);
-      if (neighborPtsCluster.size() >= min_pts) {
-        12;
-        //neighborPts = neighborPts joined with neighborPtsCluster
+      //mark p' as visited
+      auto neighbor_pts_cur = regionQuery(dataset[i], eps);
+      if (neighbor_pts_cur.size() >= min_pts) {
+        //neighbor_pts = neighbor_pts joined with neighbor_pts_cur
       }
     }
     //if (np is not yet member of any cluster)
@@ -50,27 +45,27 @@ bool DBScan::expandCluster(cps2::Particle P,
   }
 }
 
-std::vector<cps2::Particle> DBScan::regionQuery(cps2::Particle P, float eps){
-  std::vector<cps2::Particle> neighborPts;
+std::vector<int> DBScan::regionQuery(cps2::Particle p, float eps){
+  std::vector<int> neighbor_pts;
 
-  for (float x = P.p.x - eps; x <= P.p.x + eps; ++x) {
-    for (float y = P.p.y - eps; y <= P.p.y + eps; ++y) {
+  for (float x = p.p.x - eps; x <= p.p.x + eps; ++x) {
+    for (float y = p.p.y - eps; y <= p.p.y + eps; ++y) {
       // check if particle is part of Cluster
       //if (map_info_dataset.count(key)) {
-      neighborPts.push_back(P);
+      // neighbor_pts.push_back(p);
       //}
     }
   }
-  // return all points within P's eps-neighborhood (including P)
-  return neighborPts;
+  // return all points within p's eps-neighborhood (including p)
+  return neighbor_pts;
 }
 
 cps2::Clusters DBScan::dbscan(std::vector<cps2::Particle> &_dataset,
                               float eps, int min_pts){
   // https://en.wikipedia.org/wiki/DBSCAN
+  unsigned int C = 0;
   dataset = _dataset;
   std::vector<int> visited(dataset.size(),false);
-  std::vector<cps2::Particle> C;
   
   uint clusters_index = 0;
   for( unsigned int i = 0; i <= dataset.size(); i++){
@@ -78,12 +73,12 @@ cps2::Clusters DBScan::dbscan(std::vector<cps2::Particle> &_dataset,
       continue;
     }
     visited[i]= true;
-    auto neighbortPts = regionQuery(dataset[i], eps);
-    if (neighbortPts.size() < min_pts)
+    auto neighbort_pts = regionQuery(dataset[i], eps);
+    if (neighbort_pts.size() < min_pts)
       visited[i] = NOISE;
     else{
       //C = next_cluster
-      expandCluster(dataset[i], neighbortPts, C, eps, min_pts);
+      expandCluster(dataset[i], neighbort_pts, C, eps, min_pts);
     }
   }
 
