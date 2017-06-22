@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="trajectory_movement" type="trajectory_movement_node" name="trajectory_movement_node" output="screen">
+    <param name="mode"	 type="int"    value="0" />
+  </node>
+</launch>
