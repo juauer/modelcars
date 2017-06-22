@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
 #include "fisheye_camera_matrix/camera_matrix.hpp"
+#include "particle.hpp"
 #include "image_evaluator.hpp"
 #include "map_piece.hpp"
 
@@ -16,8 +17,7 @@ public:
   virtual ~Map();
 
   std::vector<cv::Mat> get_map_pieces(const cv::Point3f &pos_world);
-  void update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world_now,
-      const cv::Point2f &odom, float belief_best,
+  void update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &camera_matrix);
 
   cps2::MapPiece theOnePiece;
@@ -27,7 +27,6 @@ private:
   bool ready;
   cps2::ImageEvaluator *image_evaluator;
   fisheye_camera_matrix::CameraMatrix camera_matrix;
-  cv::Point3f origin;
 };
 
 } /* namespace cps2 */

@@ -17,9 +17,10 @@ Map::Map(const char *path, cps2::ImageEvaluator *_image_evaluator)
 
   cv::cvtColor(img_bgr, img_gray, CV_BGR2GRAY);
 
+  cv::Point3f theOnePieceCoords(0, 0, 0);
+
   bbox        = cv::Rect2f(0, 0, 0, 0);
-  origin      = cv::Point3f(0, 0, 0);
-  theOnePiece = cps2::MapPiece(origin, img_gray);
+  theOnePiece = cps2::MapPiece(theOnePieceCoords, img_gray);
 }
 
 Map::~Map() {
@@ -34,8 +35,6 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
   // TODO locate and push_back several images near pos_world
 
-  // TODO take origin into account
-
   cv::Point2f pos_rel2f(pos_world.x, pos_world.y);
 
   cv::Point2i pos_image = camera_matrix.relative2image(pos_rel2f);
@@ -48,8 +47,7 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   return map_pieces;
 }
 
-void Map::update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world_now,
-      const cv::Point2f &pos_relative_vel, float belief_best,
+void Map::update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &_camera_matrix) {
 
   // TODO get rid of the onePieceMapHACK
@@ -61,7 +59,7 @@ void Map::update(const cv::Point3f &pos_world_last, const cv::Point3f &pos_world
 
   camera_matrix = onePieceHackedCM;
 
-  // TODO update using the latest data
+  // TODO save image at coordinates pos_world and update bbox (not every frame)
 
   cv::Point2i p_img(0, 0);
 

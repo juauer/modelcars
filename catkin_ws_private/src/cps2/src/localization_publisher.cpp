@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <vector>
-#include <ros/package.h>
+#include <string>
+#include <iostream>
+#include <fstream>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <image_transport/image_transport.h>
@@ -17,14 +19,12 @@
 bool has_odom          = false;
 bool has_camera_matrix = false;
 bool ready             = false;
-int frame              = 0;
 
 cps2::ImageEvaluator *image_evaluator;
 cps2::Map *map;
 cps2::ParticleFilter *particleFilter;
 
 cv::Mat image;
-cv::Point3f pos_world_last;
 cv::Point2f pos_relative_vel;
 cv::Point3f origin_map;
 nav_msgs::Odometry odom_last;
@@ -39,6 +39,10 @@ visualization_msgs::MarkerArray msg_markers;
 sensor_msgs::ImagePtr msg_best;
 ros::Publisher pub_markers;
 image_transport::Publisher pub_best;
+
+#ifndef DEBUG_PF_STATIC
+std::ofstream file;
+#endif
 #endif
 
 void callback_odometry(const nav_msgs::Odometry &msg) {
@@ -77,7 +81,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
       // TODO use init functions to hide the logic
 
-      map->update(cv::Point3f(), cv::Point3f(), cv::Point2f(), 0, camera_matrix);
+      map->update(cv::Mat(), cps2::Particle(0, 0, 0), camera_matrix);
       particleFilter->addNewRandomParticles();
       ready = true;
     }
@@ -103,10 +107,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   
   cps2::Particle best = particleFilter->getBest();
 
-  if(frame > 2)
-    map->update(pos_world_last, best.p, pos_relative_vel, best.belief, camera_matrix);
+  map->update(image, best, camera_matrix);
 
-  pos_world_last     = best.p;
   pos_relative_vel.y = 0;
 
   tf::Quaternion best_q = tf::createQuaternionFromYaw(best.p.z);
@@ -158,15 +160,19 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
     pub_best.publish(msg_best);
   }
+
+#ifndef DEBUG_PF_STATIC
+  file << best.p.x << " " << best.p.y << std::endl;
+#endif
 #endif
 }
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 14) {
+  if(argc < 15) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[mapfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
+              "[mapfile:=FILE] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
               "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT]'");
@@ -174,18 +180,19 @@ int main(int argc, char **argv) {
   }
 
   std::string path_map          = ros::package::getPath("cps2") + std::string("/../../../captures/") + std::string(argv[1]);
-  int errorfunction             = atoi(argv[2]);
-  int downscale                 = atoi(argv[3]);
-  int kernel_size               = atoi(argv[4]);
-  float kernel_stddev           = atof(argv[5]);
-  int particles_num             = atoi(argv[6]);
-  float particles_keep          = atof(argv[7]);
-  float particle_belief_scale   = atof(argv[8]);
-  float particle_stddev_lin     = atof(argv[9]);
-  float particle_stddev_ang     = atof(argv[10]);
-  bool hamid_sampling           = atoi(argv[11]) != 0;
-  float bin_size                = atof(argv[12]);
-  float punishEdgeParticlesRate = atof(argv[13]);
+  std::string path_log          = ros::package::getPath("cps2") + std::string("/../../../logs/")     + std::string(argv[2]);
+  int errorfunction             = atoi(argv[3]);
+  int downscale                 = atoi(argv[4]);
+  int kernel_size               = atoi(argv[5]);
+  float kernel_stddev           = atof(argv[6]);
+  int particles_num             = atoi(argv[7]);
+  float particles_keep          = atof(argv[8]);
+  float particle_belief_scale   = atof(argv[9]);
+  float particle_stddev_lin     = atof(argv[10]);
+  float particle_stddev_ang     = atof(argv[11]);
+  bool hamid_sampling           = atoi(argv[12]) != 0;
+  float bin_size                = atof(argv[13]);
+  float punishEdgeParticlesRate = atof(argv[14]);
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
@@ -193,6 +200,7 @@ int main(int argc, char **argv) {
   }
 
   ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
+  ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
   ROS_INFO("localization_cps2_publisher: using errorfunction: %s, downscale: %d, "
       "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
       "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
@@ -250,6 +258,10 @@ int main(int argc, char **argv) {
     marker.color.b = 0.0;
     msg_markers.markers.push_back(marker);
   }
+
+#ifndef DEBUG_PF_STATIC
+  file.open(path_log.c_str(), std::ios::out | std::ios::trunc);
+#endif
 #endif
 
   ros::spin();

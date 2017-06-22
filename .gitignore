@@ -1,5 +1,8 @@
 model_car
-logs/*
+logs/test
+logs/test.png
+logs/*.bag
+catkin_ws_private/src/fisheye_camera_matrix/config/test.calib
 catkin_ws_user
 catkin_ws_private/build_x86
 catkin_ws_private/build_arm
