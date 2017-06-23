@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>trajectory_movement</name>
+  <name>control</name>
   <version>0.0.0</version>
   <description>move the car with preset trajectory</description>
 

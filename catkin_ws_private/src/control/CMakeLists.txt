@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-project(trajectory_movement)
+project(control)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,19 +10,21 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-	LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs
 )
+
+find_package( OpenCV REQUIRED )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(trajectory_movement_node src/trajectory_movement_node.cpp)
-#add_dependencies(trajectory_movement_node ${PROJECT_NAME})
-target_link_libraries(trajectory_movement_node ${catkin_LIBRARIES})
+add_executable(control_node src/control_node.cpp)
+#add_dependencies(control_node ${PROJECT_NAME})
+target_link_libraries(control_node ${catkin_LIBRARIES})
 
-install(TARGETS trajectory_movement_node
+install(TARGETS control_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

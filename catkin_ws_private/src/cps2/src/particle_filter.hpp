@@ -36,6 +36,8 @@ class ParticleFilter {
   const bool hamid_sampling;
   const bool binning_enabled;
   const float bin_size;
+  const bool setStartPos;
+  const cv::Point3f startPos;
   
   std::vector<Particle> particles;
   Particle best_single;
@@ -46,8 +48,9 @@ class ParticleFilter {
 
   ParticleFilter(cps2::Map *_map, cps2::ImageEvaluator *_image_evaluator, int _particles_num,
                  float _particles_keep, float _particle_belief_scale,
-                 float _particle_stdev_lin, float _particle_stdev_ang,
-                 bool _hamid_sampling, float _bin_size, float _punishEdgeParticlesRate):
+                 float _particle_stdev_lin, float _particle_stdev_ang, 
+                 bool _hamid_sampling, float _bin_size, float _punishEdgeParticlesRate,
+                 bool _setStartPos, cv::Point3f _startPos):
           map(_map),
           image_evaluator(_image_evaluator),
           particles_num(_particles_num),
@@ -62,7 +65,8 @@ class ParticleFilter {
           hamid_sampling(_hamid_sampling),
           binning_enabled(_bin_size > 0),
           bin_size(_bin_size > 0 ? _bin_size : 0),
-          punishEdgeParticlesRate(_punishEdgeParticlesRate)
+          punishEdgeParticlesRate(_punishEdgeParticlesRate),
+          setStartPos(_setStartPos), startPos(_startPos)
   {}
 
   ~ParticleFilter() {}
@@ -196,7 +200,7 @@ class ParticleFilter {
   }
 
   Particle getBest(){
-    //auto cluster = DBScan().dbscan(particles, 0.001, 1);
+    auto cluster = DBScan().dbscan(particles, 0.001, 1);
 
     if(binning_enabled)
       return best_binning;

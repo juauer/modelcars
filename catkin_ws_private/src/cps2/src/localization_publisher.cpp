@@ -193,6 +193,11 @@ int main(int argc, char **argv) {
   bool hamid_sampling           = atoi(argv[12]) != 0;
   float bin_size                = atof(argv[13]);
   float punishEdgeParticlesRate = atof(argv[14]);
+  bool setStartPos             = atoi(argv[15]);
+  cv::Point3f startPos;
+  startPos.x = atof(argv[16]);
+  startPos.y = atof(argv[17]);
+  startPos.z = atof(argv[18]);
 
   if(access(path_map.c_str(), R_OK ) == -1) {
     ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
@@ -205,18 +210,18 @@ int main(int argc, char **argv) {
       "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
       "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
       "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
-      "punishEdgeParticleRate %.2f",
+      "punishEdgeParticleRate %.2f setStartPos: %d startPosX: %.2f startPosY: %.2f startPosTh: %.2f",
            (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
-           punishEdgeParticlesRate);
+           punishEdgeParticlesRate, setStartPos, startPos.x, startPos.y, startPos.z);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
   map             = new cps2::Map(path_map.c_str(), image_evaluator);
   particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
       particles_num, particles_keep, particle_belief_scale,
       particle_stddev_lin, particle_stddev_ang, hamid_sampling,
-      bin_size, punishEdgeParticlesRate);
+      bin_size, punishEdgeParticlesRate, setStartPos, startPos);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
