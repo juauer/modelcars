@@ -4,9 +4,6 @@
 #include <geometry_msgs/Point.h>
 #include <opencv2/core.hpp>
 
-//parameters
-#include <ros/ros.h>
-
 class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0) {
