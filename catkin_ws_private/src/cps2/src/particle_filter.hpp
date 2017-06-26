@@ -86,16 +86,20 @@ class ParticleFilter {
 #endif
 
     if (setStartPos){
+      float psdl2 = particle_stdev_lin / 2;
+
       std::uniform_real_distribution<float> udist_x(
-          startPos.x, particle_stdev_lin  - (particle_stdev_lin/2));
+          startPos.x - psdl2, startPos.x + psdl2);
       std::uniform_real_distribution<float> udist_y(
-          startPos.y, particle_stdev_lin  - (particle_stdev_lin/2));
+          startPos.y - psdl2, startPos.y + psdl2);
 
       for(int i = 0; i < particles_num - particles.size(); ++i) {
         Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
         particles.push_back(p);
       }
+
       setStartPos = false;
+
     } else {
       std::uniform_real_distribution<float> udist_x(
           map->bbox.x, map->bbox.x + map->bbox.width);

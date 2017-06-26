@@ -29,7 +29,7 @@
   <arg name="particles_num" default="100" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
-  <arg name="particles_keep" default="0.99" />
+  <arg name="particles_keep" default="1.0" />
   
   <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
   <arg name="particle_belief_scale" default="4" />
