@@ -3,6 +3,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <opencv2/core.hpp>
+#include <math.h> 
 
 class Control {
  public:
@@ -25,20 +26,28 @@ class Control {
 
   void setDirection(const geometry_msgs::PoseStamped& msg_pose) {
     if (mode ==0){
-    seqNum = msg_pose.header.seq;
+      seqNum = msg_pose.header.seq;
 
-    cv::Point2f c_pos;
+      cv::Point3f pos;
     
-    c_pos.x = msg_pose.pose.position.x;
-    c_pos.x = msg_pose.pose.position.y;
+      pos.x = msg_pose.pose.position.x;
+      pos.x = msg_pose.pose.position.y;
+
+      cv::Point3f dir = dst - pos;
+      float steering = atan2f(dir.y, dir.x);
+
+      msg_pose.pose.orientation.x;
+      msg_pose.pose.orientation.y;
+      msg_pose.pose.orientation.z;
+      msg_pose.pose.orientation.w;
+      //TODO::get current orientation and correct steering
+
+      steering_angle_msg.data = steering;
     
-    msg_pose.pose.orientation.x;
-    msg_pose.pose.orientation.y;
-    msg_pose.pose.orientation.z;
-    msg_pose.pose.orientation.w;
-    
-    //pubSpeed_.publish(speed_msg);
-    //pubSteering_.publish(steering_angle_msg);
+      //float distance = cv::norm(dst, pos);
+      //speed_msg.data = distance;
+      //pubSpeed_.publish(speed_msg); // set speed according to distance ?
+      pubSteering_.publish(steering_angle_msg);
     }else{
       // just set a const angle
       steering_angle_msg.data = mode-91;
@@ -57,7 +66,7 @@ class Control {
   int dstPosY;
   int speed;
  protected:
-  geometry_msgs::Point dst;
+  cv::Point3f dst;
   std_msgs::Int16 speed_msg;
   std_msgs::Int16 steering_angle_msg;
   ros::NodeHandle n_; 
