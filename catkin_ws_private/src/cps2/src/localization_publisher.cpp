@@ -170,12 +170,13 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 15) {
+  if(argc < 19) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
               "[mapfile:=FILE] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
-              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT]'");
+              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL] "
+              "[startPosX:= FLOAT] [startPosY:= FLOAT] [startPosZ := FLOAT]'");
     return 1;
   }
 
