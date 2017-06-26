@@ -36,7 +36,7 @@ class ParticleFilter {
   const bool hamid_sampling;
   const bool binning_enabled;
   const float bin_size;
-  const bool setStartPos;
+  bool setStartPos;
   const cv::Point3f startPos;
   
   std::vector<Particle> particles;
@@ -95,6 +95,7 @@ class ParticleFilter {
         Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
         particles.push_back(p);
       }
+      setStartPos = false;
     } else {
       std::uniform_real_distribution<float> udist_x(
           map->bbox.x, map->bbox.x + map->bbox.width);
