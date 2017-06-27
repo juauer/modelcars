@@ -5,23 +5,11 @@
 
 namespace cps2 {
 
-Map::Map(const char *path, cps2::ImageEvaluator *_image_evaluator)
-    : image_evaluator(_image_evaluator)
-{
-  ready = false;
-
-  // TODO load a bunch of images, associated data and some index instead of a single file.
-
-  cv::Mat img_bgr = cv::imread(path);
-  cv::Mat img_gray;
-
-  cv::cvtColor(img_bgr, img_gray, CV_BGR2GRAY);
-
-  cv::Point3f theOnePieceCoords(0, 0, 0);
-
-  bbox        = cv::Rect2f(0, 0, 0, 0);
-  theOnePiece = cps2::MapPiece(theOnePieceCoords, img_gray);
-}
+Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
+    : grid_size(_grid_size),
+      ready(false),
+      image_evaluator(_image_evaluator)
+{}
 
 Map::~Map() {
 
@@ -74,4 +62,18 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   bbox.height = 1.8 * p_abs.y;
   ready       = true;
 }
+
+inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y) {
+  grid_x = (int)floorf( (pos_world.x - bbox.x) / grid_size);
+  grid_y = (int)floorf( (pos_world.y - bbox.y) / grid_size);
+}
+
+
+inline cv::Point2f Map::grid2world(const int &grid_x, const int &grid_y) {
+  return cv::Point2f(
+      grid_x * grid_size - bbox.x + grid_size / 2,
+      grid_y * grid_size - bbox.y + grid_size / 2
+  );
+}
+
 }
