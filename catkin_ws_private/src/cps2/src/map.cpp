@@ -37,30 +37,60 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
 void Map::update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &_camera_matrix) {
+  // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
+  camera_matrix = _camera_matrix;
 
-  // TODO get rid of the onePieceMapHACK
+  // resize the grid if needed
+  if(pos_world.p.x < bbox.x) {
+    for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
+      y->insert(y->begin(), MapPiece() );
 
-  fisheye_camera_matrix::CameraMatrix onePieceHackedCM(
-      _camera_matrix.width, _camera_matrix.height,
-      theOnePiece.img.cols / 2, theOnePiece.img.rows / 2,
-      _camera_matrix.fl, _camera_matrix.ceil_height, _camera_matrix.scale);
+    bbox.x     -= grid_size;
+    bbox.width += grid_size;
+  }
+  else if(pos_world.p.y < bbox.y) {
+    std::vector<MapPiece> v(bbox.width / grid_size);
 
-  camera_matrix = onePieceHackedCM;
+    grid.insert(grid.begin(), v);
 
-  // TODO save image at coordinates pos_world and update bbox (not every frame)
+    bbox.y      -= grid_size;
+    bbox.height += grid_size;
+  }
+  else if(pos_world.p.x > bbox.x + bbox.width) {
+    for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
+      y->push_back(MapPiece() );
 
-  cv::Point2i p_img(0, 0);
+    bbox.width += grid_size;
+  }
+  else if(pos_world.p.y > bbox.y + bbox.height) {
+    std::vector<MapPiece> v(bbox.width / grid_size);
 
-  cv::Point2f p_rel = camera_matrix.image2relative(p_img);
-  cv::Point2f p_abs = cv::Point2f(fabs(p_rel.x), fabs(p_rel.y) );
+    grid.push_back(v);
 
-  // TODO do something smart to handle the borders instead of using magic numbers
+    bbox.height += grid_size;
+  }
 
-  bbox.x      = -0.9 * p_abs.x;
-  bbox.y      = -0.9 * p_abs.y;
-  bbox.width  = 1.8 * p_abs.x;
-  bbox.height = 1.8 * p_abs.y;
-  ready       = true;
+  // get the mappiece for pos_world
+  int grid_x, grid_y;
+
+  world2grid(pos_world.p, grid_x, grid_y);
+
+  MapPiece *map_piece = &(grid.at(grid_y).at(grid_x));
+
+  // update the mappiece if needed
+  if(
+      !map_piece->is_set
+      // TODO other criteria
+  ) {
+    map_piece->img = image;
+    map_piece->is_set = true;
+    map_piece->pos_world = pos_world;
+
+    // TODO add timestamp
+    // map_piece->stamp =
+  }
+
+  ready = true;
 }
 
 inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y) {
