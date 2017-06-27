@@ -73,13 +73,9 @@ ImageEvaluator::~ImageEvaluator() {
 
 }
 
-cv::Mat ImageEvaluator::transform(const cv::Mat &img, const cv::Point3f &pos_image, cv::Size onePieceMapSizeHACK) {
-
-  // TODO replace the parameterized size with (img.rows, img.cols)
-  // as soon as the onePieceMap is gone.
-
-  int dim_y = onePieceMapSizeHACK.height / resize_scale;
-  int dim_x = onePieceMapSizeHACK.width  / resize_scale;
+cv::Mat ImageEvaluator::transform(const cv::Mat &img, const cv::Point3f &pos_image) {
+  int dim_y = img.rows / resize_scale;
+  int dim_x = img.cols / resize_scale;
   int cx    = dim_x / 2;
   int cy    = dim_y / 2;
 

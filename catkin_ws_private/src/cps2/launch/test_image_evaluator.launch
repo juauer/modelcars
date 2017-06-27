@@ -1,10 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- args <x>, <y>, <w>, <h>: rect of an arbitrary sample image on the map -->
-  <arg name="x" default="0" />
-  <arg name="y" default="100" />
-  <arg name="w" default="200" />
-  <arg name="h" default="150" />
-  
-  <node name="test_image_evaluator" pkg="cps2" type="test_evaluator" args="$(arg x) $(arg y) $(arg w) $(arg h)" output="screen" />
+  <node name="test_image_evaluator" pkg="cps2" type="test_evaluator" output="screen" />
 </launch>

@@ -76,12 +76,14 @@ void callback_camera_matrix(const fisheye_camera_matrix_msgs::CameraMatrix &msg)
 }
 
 void callback_image(const sensor_msgs::ImageConstPtr &msg) {
+  cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
+
   if(!ready)
     if(has_odom && has_camera_matrix) {
 
       // TODO use init functions to hide the logic
 
-      map->update(cv::Mat(), cps2::Particle(0, 0, 0), camera_matrix);
+      map->update(image, cps2::Particle(0, 0, 0), camera_matrix);
       particleFilter->addNewRandomParticles();
       ready = true;
     }
@@ -98,8 +100,6 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   if(dt > 2 || dt < 0)
     return;
-
-  cv::cvtColor(cv_bridge::toCvShare(msg, "bgr8")->image, image, CV_BGR2GRAY);
 
   particleFilter->motion_update(dt * pos_relative_vel.x, -pos_relative_vel.y);
   particleFilter->resample();
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
   if(argc < 19) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[mapfile:=FILE] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
+              "[grid_size:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
               "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL] "
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::string path_map          = ros::package::getPath("cps2") + std::string("/../../../captures/") + std::string(argv[1]);
+  float grid_size               = atof(argv[1]);
   std::string path_log          = ros::package::getPath("cps2") + std::string("/../../../logs/")     + std::string(argv[2]);
   int errorfunction             = atoi(argv[3]);
   int downscale                 = atoi(argv[4]);
@@ -200,25 +200,19 @@ int main(int argc, char **argv) {
   startPos.y = atof(argv[17]);
   startPos.z = atof(argv[18]);
 
-  if(access(path_map.c_str(), R_OK ) == -1) {
-    ROS_ERROR("No such file: %s\nPlease give a path relative to catkin_ws/../captures/", path_map.c_str() );
-    return 1;
-  }
-
-  ROS_INFO("localization_cps2_publisher: using mapfile: %s", path_map.c_str());
   ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
-  ROS_INFO("localization_cps2_publisher: using errorfunction: %s, downscale: %d, "
+  ROS_INFO("localization_cps2_publisher: using grid_size: %f, errorfunction: %s, downscale: %d, "
       "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
       "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
       "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
       "punishEdgeParticleRate %.2f setStartPos: %d startPosX: %.2f startPosY: %.2f startPosTh: %.2f",
-           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
+           grid_size, (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
            punishEdgeParticlesRate, setStartPos, startPos.x, startPos.y, startPos.z);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
-  map             = new cps2::Map(path_map.c_str(), image_evaluator);
+  map             = new cps2::Map(grid_size, image_evaluator);
   particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
       particles_num, particles_keep, particle_belief_scale,
       particle_stddev_lin, particle_stddev_ang, hamid_sampling,

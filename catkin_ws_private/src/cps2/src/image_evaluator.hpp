@@ -13,7 +13,7 @@ class ImageEvaluator {
   ImageEvaluator(int mode, int resize_scale, int kernel_size, float kernel_stddev);
   virtual ~ImageEvaluator();
 
-  cv::Mat transform(const cv::Mat &img, const cv::Point3f &pos_image, cv::Size onePieceMapSizeHACK);
+  cv::Mat transform(const cv::Mat &img, const cv::Point3f &pos_image);
   float evaluate(cv::Mat &img1, cv::Mat &img2);
 
  private:

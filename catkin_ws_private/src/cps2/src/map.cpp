@@ -82,9 +82,9 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
       !map_piece->is_set
       // TODO other criteria
   ) {
-    map_piece->img = image;
-    map_piece->is_set = true;
-    map_piece->pos_world = pos_world;
+    map_piece->img       = image;
+    map_piece->is_set    = true;
+    map_piece->pos_world = pos_world.p;
 
     // TODO add timestamp
     // map_piece->stamp =

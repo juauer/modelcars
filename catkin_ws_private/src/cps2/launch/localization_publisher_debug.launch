@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test_2.png" />
+  <!-- arg <grid_size>: size (in m) of a grid cell of map -->
+  <arg name="grid_size" default="1.0" />
   
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
@@ -55,5 +55,5 @@
   <!-- arg <startPosTh>: start position. -->
   <arg name="startPosTh" default="0" />
 
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg mapfile) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos) $(arg startPosX) $(arg startPosY) $(arg startPosTh)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg grid_size) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos) $(arg startPosX) $(arg startPosY) $(arg startPosTh)" output="screen" />
 </launch>
