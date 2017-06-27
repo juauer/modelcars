@@ -6,10 +6,15 @@
 namespace cps2 {
 
 Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
-    : grid_size(_grid_size),
+    : bbox(0, 0, _grid_size, grid_size),
+      grid_size(_grid_size),
       ready(false),
       image_evaluator(_image_evaluator)
-{}
+{
+  std::vector<MapPiece> v;
+  v.push_back(MapPiece() );
+  grid.push_back(v);
+}
 
 Map::~Map() {
 
@@ -84,6 +89,8 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   ) {
     map_piece->img       = image;
     map_piece->is_set    = true;
+
+    // TODO correct the position
     map_piece->pos_world = pos_world.p;
 
     // TODO add timestamp
