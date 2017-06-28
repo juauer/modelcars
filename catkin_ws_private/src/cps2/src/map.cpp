@@ -45,8 +45,6 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
   camera_matrix = _camera_matrix;
 
-  printf("set world: %f  %f  %f\n", pos_world.p.x, pos_world.p.y, pos_world.p.z);
-
   // resize the grid if needed
   if(pos_world.p.x - grid_size < bbox.x) {
     for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
