@@ -152,7 +152,7 @@ class ParticleFilter {
       }
     }
 
-    if(binning_enabled)
+    if(binning_enabled && best_single.belief != 0)
       binning();
   }
 
