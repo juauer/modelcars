@@ -83,10 +83,12 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   world2grid(pos_world.p, grid_x, grid_y);
 
   MapPiece *map_piece = &(grid.at(grid_y).at(grid_x));
+  cv::Point3f center  = grid2world(grid_x, grid_y);
 
   // update the mappiece if needed
   if(
       !map_piece->is_set
+      || dist(pos_world.p, center) < dist(map_piece->pos_world, center)
       // TODO other criteria
   ) {
     map_piece->img       = image;
@@ -108,10 +110,11 @@ inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid
 }
 
 
-inline cv::Point2f Map::grid2world(const int &grid_x, const int &grid_y) {
-  return cv::Point2f(
+inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
+  return cv::Point3f(
       grid_x * grid_size - bbox.x + grid_size / 2,
-      grid_y * grid_size - bbox.y + grid_size / 2
+      grid_y * grid_size - bbox.y + grid_size / 2,
+      0
   );
 }
 
@@ -123,6 +126,13 @@ cv::Point2f Map::rotate(const cv::Point2f &p, const float th) {
       thc * p.x - ths * p.y,
       ths * p.x + thc * p.y
   );
+}
+
+inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
+  const float x = p1.x - p2.x;
+  const float y = p1.y - p2.y;
+
+  return sqrtf(x * x + y * y);
 }
 
 }

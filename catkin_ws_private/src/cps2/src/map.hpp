@@ -39,9 +39,18 @@ private:
    * @param grid_y input grid index y
    * @return center of cell in world frame
    */
-  inline cv::Point2f grid2world(const int &grid_x, const int &grid_y);
+  inline cv::Point3f grid2world(const int &grid_x, const int &grid_y);
 
   inline cv::Point2f rotate(const cv::Point2f &p, const float th);
+
+  /**
+   * Euclidean distance between p1 and p2. For low-d vectors this is much faster
+   * than cv::norm or others
+   * @param p1 point 1
+   * @param p2 point 2
+   * @return euclidean distance between p1 and p2
+   */
+  inline float dist(const cv::Point3f &p1, const cv::Point3f &p2);
 
   const float grid_size;
 
