@@ -45,15 +45,17 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
   camera_matrix = _camera_matrix;
 
+  printf("set world: %f  %f  %f\n", pos_world.p.x, pos_world.p.y, pos_world.p.z);
+
   // resize the grid if needed
-  if(pos_world.p.x < bbox.x) {
+  if(pos_world.p.x - grid_size < bbox.x) {
     for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
       y->insert(y->begin(), MapPiece() );
 
     bbox.x     -= grid_size;
     bbox.width += grid_size;
   }
-  else if(pos_world.p.y < bbox.y) {
+  else if(pos_world.p.y - grid_size < bbox.y) {
     std::vector<MapPiece> v(bbox.width / grid_size);
 
     grid.insert(grid.begin(), v);
@@ -61,13 +63,13 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     bbox.y      -= grid_size;
     bbox.height += grid_size;
   }
-  else if(pos_world.p.x > bbox.x + bbox.width) {
+  else if(pos_world.p.x  + grid_size > bbox.x + bbox.width) {
     for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
       y->push_back(MapPiece() );
 
     bbox.width += grid_size;
   }
-  else if(pos_world.p.y > bbox.y + bbox.height) {
+  else if(pos_world.p.y  + grid_size > bbox.y + bbox.height) {
     std::vector<MapPiece> v(bbox.width / grid_size);
 
     grid.push_back(v);
