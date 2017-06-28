@@ -110,8 +110,8 @@ inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid
 
 inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
   return cv::Point3f(
-      grid_x * grid_size - bbox.x + grid_size / 2,
-      grid_y * grid_size - bbox.y + grid_size / 2,
+      (grid_x + 0.5) * grid_size + bbox.x,
+      (grid_y + 0.5) * grid_size + bbox.y,
       0
   );
 }
