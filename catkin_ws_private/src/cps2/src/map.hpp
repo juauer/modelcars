@@ -41,6 +41,8 @@ private:
    */
   inline cv::Point2f grid2world(const int &grid_x, const int &grid_y);
 
+  inline cv::Point2f rotate(const cv::Point2f &p, const float th);
+
   const float grid_size;
 
   bool ready;
