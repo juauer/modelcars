@@ -6,7 +6,7 @@
 namespace cps2 {
 
 Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
-    : bbox(0, 0, _grid_size, grid_size),
+    : bbox(0, 0, _grid_size, _grid_size),
       grid_size(_grid_size),
       ready(false),
       image_evaluator(_image_evaluator)
