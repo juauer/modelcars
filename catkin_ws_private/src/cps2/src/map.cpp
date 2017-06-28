@@ -5,22 +5,15 @@
 
 namespace cps2 {
 
-Map::Map(const char *path, cps2::ImageEvaluator *_image_evaluator)
-    : image_evaluator(_image_evaluator)
+Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
+    : bbox(0, 0, _grid_size, _grid_size),
+      grid_size(_grid_size),
+      ready(false),
+      image_evaluator(_image_evaluator)
 {
-  ready = false;
-
-  // TODO load a bunch of images, associated data and some index instead of a single file.
-
-  cv::Mat img_bgr = cv::imread(path);
-  cv::Mat img_gray;
-
-  cv::cvtColor(img_bgr, img_gray, CV_BGR2GRAY);
-
-  cv::Point3f theOnePieceCoords(0, 0, 0);
-
-  bbox        = cv::Rect2f(0, 0, 0, 0);
-  theOnePiece = cps2::MapPiece(theOnePieceCoords, img_gray);
+  std::vector<MapPiece> v;
+  v.push_back(MapPiece() );
+  grid.push_back(v);
 }
 
 Map::~Map() {
@@ -49,29 +42,95 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
 void Map::update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &_camera_matrix) {
+  // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
+  camera_matrix = _camera_matrix;
 
-  // TODO get rid of the onePieceMapHACK
+  // resize the grid if needed
+  if(pos_world.p.x - grid_size < bbox.x) {
+    for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
+      y->insert(y->begin(), MapPiece() );
 
-  fisheye_camera_matrix::CameraMatrix onePieceHackedCM(
-      _camera_matrix.width, _camera_matrix.height,
-      theOnePiece.img.cols / 2, theOnePiece.img.rows / 2,
-      _camera_matrix.fl, _camera_matrix.ceil_height, _camera_matrix.scale);
+    bbox.x     -= grid_size;
+    bbox.width += grid_size;
+  }
+  else if(pos_world.p.y - grid_size < bbox.y) {
+    std::vector<MapPiece> v(bbox.width / grid_size);
 
-  camera_matrix = onePieceHackedCM;
+    grid.insert(grid.begin(), v);
 
-  // TODO save image at coordinates pos_world and update bbox (not every frame)
+    bbox.y      -= grid_size;
+    bbox.height += grid_size;
+  }
+  else if(pos_world.p.x  + grid_size > bbox.x + bbox.width) {
+    for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
+      y->push_back(MapPiece() );
 
-  cv::Point2i p_img(0, 0);
+    bbox.width += grid_size;
+  }
+  else if(pos_world.p.y  + grid_size > bbox.y + bbox.height) {
+    std::vector<MapPiece> v(bbox.width / grid_size);
 
-  cv::Point2f p_rel = camera_matrix.image2relative(p_img);
-  cv::Point2f p_abs = cv::Point2f(fabs(p_rel.x), fabs(p_rel.y) );
+    grid.push_back(v);
 
-  // TODO do something smart to handle the borders instead of using magic numbers
+    bbox.height += grid_size;
+  }
 
-  bbox.x      = -0.9 * p_abs.x;
-  bbox.y      = -0.9 * p_abs.y;
-  bbox.width  = 1.8 * p_abs.x;
-  bbox.height = 1.8 * p_abs.y;
-  ready       = true;
+  // get the mappiece for pos_world
+  int grid_x, grid_y;
+
+  world2grid(pos_world.p, grid_x, grid_y);
+
+  MapPiece *map_piece = &(grid.at(grid_y).at(grid_x));
+  cv::Point3f center  = grid2world(grid_x, grid_y);
+
+  // update the mappiece if needed
+  if(
+      !map_piece->is_set
+      || dist(pos_world.p, center) < dist(map_piece->pos_world, center)
+      // TODO other criteria
+  ) {
+    map_piece->img       = image;
+    map_piece->is_set    = true;
+
+    // TODO correct the position
+    map_piece->pos_world = pos_world.p;
+
+    // TODO add timestamp
+    // map_piece->stamp =
+  }
+
+  ready = true;
 }
+
+inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y) {
+  grid_x = (int)floorf( (pos_world.x - bbox.x) / grid_size);
+  grid_y = (int)floorf( (pos_world.y - bbox.y) / grid_size);
+}
+
+
+inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
+  return cv::Point3f(
+      grid_x * grid_size - bbox.x + grid_size / 2,
+      grid_y * grid_size - bbox.y + grid_size / 2,
+      0
+  );
+}
+
+cv::Point2f Map::rotate(const cv::Point2f &p, const float th) {
+  const float ths = sinf(th);
+  const float thc = cosf(th);
+
+  return cv::Point2f(
+      thc * p.x - ths * p.y,
+      ths * p.x + thc * p.y
+  );
+}
+
+inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
+  const float x = p1.x - p2.x;
+  const float y = p1.y - p2.y;
+
+  return sqrtf(x * x + y * y);
+}
+
 }

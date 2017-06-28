@@ -36,7 +36,7 @@ class ParticleFilter {
   const bool hamid_sampling;
   const bool binning_enabled;
   const float bin_size;
-  const bool setStartPos;
+  bool setStartPos;
   const cv::Point3f startPos;
   
   std::vector<Particle> particles;
@@ -85,14 +85,31 @@ class ParticleFilter {
     return;
 #endif
 
-    std::uniform_real_distribution<float> udist_x(
-        map->bbox.x, map->bbox.x + map->bbox.width);
-    std::uniform_real_distribution<float> udist_y(
-        map->bbox.y, map->bbox.y + map->bbox.height);
+    if (setStartPos){
+      float psdl2 = particle_stdev_lin / 2;
 
-    for(int i = 0; i < particles_num - particles.size(); ++i) {
-      Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
-      particles.push_back(p);
+      std::uniform_real_distribution<float> udist_x(
+          startPos.x - psdl2, startPos.x + psdl2);
+      std::uniform_real_distribution<float> udist_y(
+          startPos.y - psdl2, startPos.y + psdl2);
+
+      for(int i = 0; i < particles_num - particles.size(); ++i) {
+        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+        particles.push_back(p);
+      }
+
+      setStartPos = false;
+
+    } else {
+      std::uniform_real_distribution<float> udist_x(
+          map->bbox.x, map->bbox.x + map->bbox.width);
+      std::uniform_real_distribution<float> udist_y(
+          map->bbox.y, map->bbox.y + map->bbox.height);
+
+      for(int i = 0; i < particles_num - particles.size(); ++i) {
+        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+        particles.push_back(p);
+      }
     }
   }
 
@@ -108,7 +125,7 @@ class ParticleFilter {
     best_single.belief = 0;
 
     cv::Mat img_tf = image_evaluator->transform(
-        img, cv::Point3f(img.cols / 2, img.rows / 2, 0), cv::Size2i(img.cols, img.rows) );
+        img, cv::Point3f(img.cols / 2, img.rows / 2, 0));
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
       std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
