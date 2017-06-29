@@ -217,7 +217,7 @@ class ParticleFilter {
   }
 
   Particle getBest(){
-    auto cluster = DBScan().dbscan(particles, 0.001, 1);
+    // auto cluster = DBScan().dbscan(particles, 0.001, 1);
 
     if(binning_enabled)
       return best_binning;
