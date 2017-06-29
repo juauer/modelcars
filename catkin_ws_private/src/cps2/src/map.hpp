@@ -66,6 +66,8 @@ private:
   cps2::ImageEvaluator *image_evaluator;
   fisheye_camera_matrix::CameraMatrix camera_matrix;
   std::vector<std::vector<MapPiece> > grid;
+  cv::Point3f path_now;
+  cv::Point3f path_prev;
 };
 
 } /* namespace cps2 */

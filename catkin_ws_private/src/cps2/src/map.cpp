@@ -9,7 +9,9 @@ Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
     : bbox(0, 0, _grid_size, _grid_size),
       grid_size(_grid_size),
       ready(false),
-      image_evaluator(_image_evaluator)
+      image_evaluator(_image_evaluator),
+      path_now(cv::Point3f(0, 0, 0) ),
+      path_prev(cv::Point3f(0, 0, 0) )
 {
   std::vector<MapPiece> v;
   v.push_back(MapPiece() );
@@ -133,17 +135,30 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   MapPiece *map_piece  = &(grid.at(pos_grid.y).at(pos_grid.x) );
   cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
 
+  if(path_now != center) {
+    path_prev = path_now;
+    path_now  = center;
+  }
+
   // update the mappiece if needed
   if(
       !map_piece->is_set
       || dist(pos_world.p, center) < dist(map_piece->pos_world, center)
       // TODO other criteria
   ) {
-    map_piece->img       = image;
-    map_piece->is_set    = true;
+    map_piece->img    = image;
+    map_piece->is_set = true;
 
-    // TODO correct the position using image_distance
-    map_piece->pos_world = pos_world.p;
+    // TODO correct the position. Maybe like this:
+    /*if(path_prev != path_now) {
+      cv::Point2i path_prev_grid = world2grid(path_prev);
+
+      map_piece->pos_world = pos_world.p + image_distance(
+          grid.at(path_prev_grid.y).at(path_prev_grid.x).img,
+          image, pos_world.p - grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world);
+    }
+    else*/
+      map_piece->pos_world = pos_world.p;
 
     // TODO add timestamp
     // map_piece->stamp =
