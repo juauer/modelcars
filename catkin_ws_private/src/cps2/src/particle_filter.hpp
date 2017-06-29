@@ -44,6 +44,8 @@ class ParticleFilter {
   Particle best_binning;
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen; //Standard mersenne_twister_engine
+  std::uniform_real_distribution<float> udist_x;
+  std::uniform_real_distribution<float> udist_y;
   std::uniform_real_distribution<float> udist_t;
 
   ParticleFilter(cps2::Map *_map, cps2::ImageEvaluator *_image_evaluator, int _particles_num,
@@ -85,31 +87,26 @@ class ParticleFilter {
     return;
 #endif
 
-    if (setStartPos){
+    if(setStartPos) {
       float psdl2 = particle_stdev_lin / 2;
 
-      std::uniform_real_distribution<float> udist_x(
-          startPos.x - psdl2, startPos.x + psdl2);
-      std::uniform_real_distribution<float> udist_y(
-          startPos.y - psdl2, startPos.y + psdl2);
-
-      for(int i = 0; i < particles_num - particles.size(); ++i) {
-        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
-        particles.push_back(p);
-      }
+      udist_x.param(std::uniform_real_distribution<float>::param_type(
+          startPos.x - psdl2, startPos.x + psdl2) );
+      udist_y.param(std::uniform_real_distribution<float>::param_type(
+          startPos.y - psdl2, startPos.y + psdl2) );
 
       setStartPos = false;
 
     } else {
-      std::uniform_real_distribution<float> udist_x(
-          map->bbox.x, map->bbox.x + map->bbox.width);
-      std::uniform_real_distribution<float> udist_y(
-          map->bbox.y, map->bbox.y + map->bbox.height);
-
-      for(int i = 0; i < particles_num - particles.size(); ++i) {
-        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
-        particles.push_back(p);
+      udist_x.param(std::uniform_real_distribution<float>::param_type(
+          map->bbox.x, map->bbox.x + map->bbox.width) );
+      udist_y.param(std::uniform_real_distribution<float>::param_type(
+          map->bbox.y, map->bbox.y + map->bbox.height) );
       }
+
+    for(int i = 0; i < particles_num - particles.size(); ++i) {
+      Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+      particles.push_back(p);
     }
   }
 
