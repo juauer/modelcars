@@ -45,16 +45,15 @@ std::ofstream file;
 #endif
 
 void callback_odometry(const nav_msgs::Odometry &msg) {
-  ros::Time now     = msg.header.stamp;
-  ros::Duration dif = now - stamp_last_odom;
-  float dt          = dif.sec + dif.nsec / 1000000000.0;
+  if(stamp_last_odom.isZero() ) {
+    stamp_last_odom = msg.header.stamp;
+    return;
+  }
+
+  ros::Time now = msg.header.stamp;
+  float dt      = (now - stamp_last_odom).toSec();
 
   stamp_last_odom = now;
-
-  // TODO get rid of mysterious overflows on dt
-
-  if(dt > 2 || dt < 0)
-    return;
 
   tf::Quaternion q_last;
   tf::Quaternion q_now;
@@ -89,16 +88,15 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     else
       return;
 
-  ros::Time now     = msg->header.stamp;
-  ros::Duration dif = now - stamp_last_image;
-  float dt          = dif.sec + dif.nsec / 1000000000.0;
+  if(stamp_last_image.isZero() ) {
+    stamp_last_image = msg->header.stamp;
+    return;
+  }
+
+  ros::Time now = msg->header.stamp;
+  float dt      = (now - stamp_last_image).toSec();
 
   stamp_last_image = now;
-
-  // TODO get rid of mysterious overflows on dt
-
-  if(dt > 2 || dt < 0)
-    return;
 
   particleFilter->motion_update(dt * pos_relative_vel.x, -pos_relative_vel.y);
   particleFilter->resample();
