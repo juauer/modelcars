@@ -26,7 +26,6 @@ cps2::ParticleFilter *particleFilter;
 
 cv::Mat image;
 cv::Point2f pos_relative_vel;
-cv::Point3f origin_map;
 nav_msgs::Odometry odom_last;
 fisheye_camera_matrix::CameraMatrix camera_matrix;
 ros::Time stamp_last_odom;
