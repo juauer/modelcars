@@ -18,7 +18,15 @@ public:
 
   virtual ~Map();
 
-  static cv::Point3f image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est);
+  /**
+   * Compute difference between two images in world frame
+   * @param img1 previous image
+   * @param img2 new image
+   * @param pos_prev previous pose in world frame
+   * @param pos_new new pose in world frame
+   * @return difference in world frame
+   */
+  cv::Point3f image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now);
 
   /**
    * Get one or more images, which are centered at pos_world in world frame.
@@ -66,7 +74,22 @@ private:
    * @return euclidean distance between p1 and p2
    */
   inline float dist(const cv::Point3f &p1, const cv::Point3f &p2);
-
+  
+  /**
+   * Rotate an image around its center
+   * @param img image
+   * @param radiant angle in rad
+   * @return rotated image
+   */
+  cv::Mat rotate_img(const cv::Mat &img, const float radiant);
+  
+  /**
+   * Optain gradient direction from image
+   * @param img image
+   * @return gradient direction in rad
+   */
+  float gradient(const cv::Mat &img);
+  
   const float grid_size;
   const float update_interval_min;
   const float update_interval_max;
