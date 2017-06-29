@@ -129,12 +129,9 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   }
 
   // get the mappiece for pos_world
-  int grid_x, grid_y;
-
-  world2grid(pos_world.p, grid_x, grid_y);
-
-  MapPiece *map_piece = &(grid.at(grid_y).at(grid_x) );
-  cv::Point3f center  = grid2world(grid_x, grid_y);
+  cv::Point2i pos_grid = world2grid(pos_world.p);
+  MapPiece *map_piece  = &(grid.at(pos_grid.y).at(pos_grid.x) );
+  cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
 
   // update the mappiece if needed
   if(
@@ -155,9 +152,11 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   ready = true;
 }
 
-inline void Map::world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y) {
-  grid_x = (int)floorf( (pos_world.x - bbox.x) / grid_size);
-  grid_y = (int)floorf( (pos_world.y - bbox.y) / grid_size);
+inline cv::Point2i Map::world2grid(const cv::Point3f &pos_world) {
+  return cv::Point2i(
+      (int)floorf( (pos_world.x - bbox.x) / grid_size),
+      (int)floorf( (pos_world.y - bbox.y) / grid_size)
+  );
 }
 
 

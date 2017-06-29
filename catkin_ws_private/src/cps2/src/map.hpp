@@ -33,7 +33,7 @@ private:
    * @param grid_x output grid index x
    * @param grid_y output grid index y
    */
-  inline void world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y);
+  inline cv::Point2i world2grid(const cv::Point3f &pos_world);
 
   /**
    * Get center of a cell in world frame for given grid indices.
