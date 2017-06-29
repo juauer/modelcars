@@ -25,6 +25,8 @@ cv::Point3f Map::image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est
 
   // TODO get rid of magic numbers
 
+  // TODO don't copy images: use references & instead
+
   // flow_est in Bild-Koordinaten von img1 nach img2: x- Pixel nach rechts, y-Pixel nach oben theta- Drehung im Uhrzeigersinn
   int x = (int)flow_est.x;
   int y = (int)flow_est.y;
