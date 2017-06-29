@@ -20,6 +20,57 @@ Map::~Map() {
 
 }
 
+cv::Point3f Map::image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est) {
+  // TODO change (at least flow_est.z and flow_corr) to radians
+
+  // TODO get rid of magic numbers
+
+  // flow_est in Bild-Koordinaten von img1 nach img2: x- Pixel nach rechts, y-Pixel nach oben theta- Drehung im Uhrzeigersinn
+  int x = (int)flow_est.x;
+  int y = (int)flow_est.y;
+  int theta = (int)flow_est.z;
+
+  cv::Mat gray1, gray2;
+  cv::cvtColor(img1, gray1, CV_BGR2GRAY);
+  cv::cvtColor(img2, gray2, CV_BGR2GRAY);
+
+  //cut fisheye projection
+  cv::Mat i1(gray1, cv::Rect(34, 56, img1.cols-68, img1.rows-112));
+  cv::Mat i2(gray2, cv::Rect(34, 56, img1.cols-68, img1.rows-112));
+
+  cv::Point3f flow_corr = flow_est;
+  float min_error = 1000;
+
+  for (int dtheta=-5; dtheta < 6; ++dtheta)
+  {
+    cv::Mat r = cv::getRotationMatrix2D(cv::Point2f(i2.cols/2., i2.rows/2.), theta+dtheta, 1.0);
+    cv::Mat img2_rot;
+    cv::warpAffine(i2, img2_rot, r, cv::Size(i2.cols, i2.rows));
+
+    for (int dx=-10; dx < 11; ++dx)
+    {
+      for (int dy=-10; dy < 11; ++dy)
+      {
+        cv::Mat part1(i1, cv::Rect(std::max(x+dx, 0), std::max(y+dy, 0), i1.cols-abs(x+dx), i1.rows-abs(y+dy)));
+        cv::Mat part2(img2_rot, cv::Rect(std::max(-x-dx, 0), std::max(-y-dy, 0), i1.cols-abs(x+dx), i1.rows-abs(y+dy)));
+
+        cv::Mat tile1, tile2;
+        part1.copyTo(tile1, part2);
+        part2.copyTo(tile2, part1);
+
+        cv::Mat test = tile1 - tile2;
+        if (min_error > cv::sum(cv::mean(test))[0])
+        {
+          min_error = cv::sum(cv::mean(test))[0];
+          flow_corr = cv::Point3f(x+dx, y+dy, theta+dtheta);
+        }
+      }
+    }
+  }
+
+  return flow_corr;
+}
+
 std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   std::vector<cv::Mat> map_pieces;
 
@@ -80,7 +131,7 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
 
   world2grid(pos_world.p, grid_x, grid_y);
 
-  MapPiece *map_piece = &(grid.at(grid_y).at(grid_x));
+  MapPiece *map_piece = &(grid.at(grid_y).at(grid_x) );
   cv::Point3f center  = grid2world(grid_x, grid_y);
 
   // update the mappiece if needed
@@ -92,7 +143,7 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     map_piece->img       = image;
     map_piece->is_set    = true;
 
-    // TODO correct the position
+    // TODO correct the position using image_distance
     map_piece->pos_world = pos_world.p;
 
     // TODO add timestamp

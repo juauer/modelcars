@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- arg <img1>: filename of an image in catkin_ws/../captures/ -->
+  <arg name="img1" />
+  
+  <!-- TODO add all args ... -->
+  
+  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img1)" output="screen" />
+</launch>

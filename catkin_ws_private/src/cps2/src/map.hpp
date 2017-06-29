@@ -16,6 +16,8 @@ public:
   Map(float grid_size, cps2::ImageEvaluator *image_evaluator);
   virtual ~Map();
 
+  static cv::Point3f image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est);
+
   std::vector<cv::Mat> get_map_pieces(const cv::Point3f &pos_world);
   void update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &camera_matrix);
