@@ -18,11 +18,24 @@ public:
 
   static cv::Point3f image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est);
 
+  /**
+   * Get one or more images, which are centered at pos_world in world frame.
+   * @param pos_world pose in world frame
+   * @return list of images, which are centered at pos_world in world frame
+   */
   std::vector<cv::Mat> get_map_pieces(const cv::Point3f &pos_world);
+
+  /**
+   * Update the map with crucial data. Should get called every frame. The map decides on
+   * best effort if a update is needed and may return immediately.
+   * @param image current undistorted, grayscale image
+   * @param pos_world current best guess of the position in world frame
+   * @param camera_matrix current camera matrix
+   */
   void update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &camera_matrix);
 
-  cv::Rect2f bbox; //!< Rect in world frame that surrounds the yet mapped space
+  cv::Rect2f bbox; //!< Bounding box in world frame covering the yet mapped space
 
 private:
   /**

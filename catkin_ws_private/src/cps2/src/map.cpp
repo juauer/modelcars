@@ -13,6 +13,7 @@ Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
       path_now(cv::Point3f(0, 0, 0) ),
       path_prev(cv::Point3f(0, 0, 0) )
 {
+  // start with a 1x1 grid
   std::vector<MapPiece> v;
   v.push_back(MapPiece() );
   grid.push_back(v);
