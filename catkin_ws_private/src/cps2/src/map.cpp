@@ -5,10 +5,13 @@
 
 namespace cps2 {
 
-Map::Map(float _grid_size, cps2::ImageEvaluator *_image_evaluator)
-    : bbox(0, 0, _grid_size, _grid_size),
-      grid_size(_grid_size),
+Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
+    float _update_interval_min, float _update_interval_max)
+    : grid_size(_grid_size),
+      update_interval_min(_update_interval_min),
+      update_interval_max(_update_interval_max),
       ready(false),
+      bbox(0, 0, _grid_size, _grid_size),
       image_evaluator(_image_evaluator),
       path_now(cv::Point3f(0, 0, 0) ),
       path_prev(cv::Point3f(0, 0, 0) )
@@ -137,6 +140,8 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   cv::Point2i pos_grid = world2grid(pos_world.p);
   MapPiece *map_piece  = &(grid.at(pos_grid.y).at(pos_grid.x) );
   cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
+  ros::Time now        = ros::Time::now();
+  float dt             = (now - map_piece->stamp).toSec();
 
   if(path_now != center) {
     path_prev = path_now;
@@ -146,8 +151,8 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   // update the mappiece if needed
   if(
       !map_piece->is_set
-      || dist(pos_world.p, center) < dist(map_piece->pos_world, center)
-      // TODO other criteria
+      || dt > update_interval_max
+      || (dt > update_interval_min && dist(pos_world.p, center) < dist(map_piece->pos_world, center) )
   ) {
     map_piece->img    = image;
     map_piece->is_set = true;
@@ -162,9 +167,7 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     }
     else*/
       map_piece->pos_world = pos_world.p;
-
-    // TODO add timestamp
-    // map_piece->stamp =
+      map_piece->stamp     = now;
   }
 
   ready = true;

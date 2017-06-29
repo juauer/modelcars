@@ -13,7 +13,9 @@ namespace cps2 {
 
 class Map {
 public:
-  Map(float grid_size, cps2::ImageEvaluator *image_evaluator);
+  Map(cps2::ImageEvaluator *image_evaluator, float grid_size,
+      float update_interval_min, float update_interval_max);
+
   virtual ~Map();
 
   static cv::Point3f image_distance(cv::Mat img1, cv::Mat img2, cv::Point3f flow_est);
@@ -74,6 +76,8 @@ private:
   inline float dist(const cv::Point3f &p1, const cv::Point3f &p2);
 
   const float grid_size;
+  const float update_interval_min;
+  const float update_interval_max;
 
   bool ready;
   cps2::ImageEvaluator *image_evaluator;

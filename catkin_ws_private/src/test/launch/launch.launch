@@ -9,6 +9,12 @@
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
   <arg name="grid_size" default="1.0" />
   
+  <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
+  <arg name="update_interval_min" default="1" />
+  
+  <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
+  <arg name="update_interval_max" default="60" />
+  
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
   
@@ -71,6 +77,8 @@
   
   <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
     <arg name="grid_size" value="$(arg grid_size)" />
+    <arg name="update_interval_min" value="$(arg update_interval_min)" />
+    <arg name="update_interval_max" value="$(arg update_interval_max)" />
     <arg name="logfile" value="$(arg logfile)" />
     <arg name="errorfunction" value="$(arg errorfunction)" />
     <arg name="downscale" value="$(arg downscale)" />
