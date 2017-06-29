@@ -59,14 +59,6 @@ private:
   inline cv::Point3f grid2world(const int &grid_x, const int &grid_y);
 
   /**
-   * Rotate a vector around its origin
-   * @param p vector
-   * @param th angle in rad
-   * @return rotated vector
-   */
-  inline cv::Point2f rotate(const cv::Point2f &p, const float th);
-
-  /**
    * Euclidean distance between p1 and p2. For low-d vectors this is much faster
    * than cv::norm or others
    * @param p1 point 1

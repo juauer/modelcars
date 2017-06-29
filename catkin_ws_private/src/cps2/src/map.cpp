@@ -189,16 +189,6 @@ inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
   );
 }
 
-cv::Point2f Map::rotate(const cv::Point2f &p, const float th) {
-  const float ths = sinf(th);
-  const float thc = cosf(th);
-
-  return cv::Point2f(
-      thc * p.x - ths * p.y,
-      ths * p.x + thc * p.y
-  );
-}
-
 inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
   const float x = p1.x - p2.x;
   const float y = p1.y - p2.y;

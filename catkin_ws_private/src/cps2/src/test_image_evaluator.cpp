@@ -29,8 +29,8 @@ void apply(int, void *) {
 
   cps2::ImageEvaluator evaluator(cps2::IE_MODE_PIXELS, sc, sz, de);
 
-  cv::Mat img1 = evaluator.transform(img, cv::Point3f(img.cols / 2 + px, img.rows / 2 + py, pt * M_PI / 4) );
-  cv::Mat img2 = evaluator.transform(img, cv::Point3f(img.cols / 2, img.rows / 2, 0) );
+  cv::Mat img1 = evaluator.transform(img, cv::Point2i(img.cols / 2 + px, img.rows / 2 + py), pt * M_PI / 4, 0);
+  cv::Mat img2 = evaluator.transform(img, cv::Point2i(img.cols / 2, img.rows / 2), 0, 0);
 
   evaluator.evaluate(img1, img2);
 }

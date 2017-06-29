@@ -13,7 +13,17 @@ class ImageEvaluator {
   ImageEvaluator(int mode, int resize_scale, int kernel_size, float kernel_stddev);
   virtual ~ImageEvaluator();
 
-  cv::Mat transform(const cv::Mat &img, const cv::Point3f &pos_image);
+  /**
+   * Compute a rotated subimage and apply downscaling and blurring during the process.
+   * @param img an grayscale image
+   * @param pos_image center of the new image, relative to the original image origin
+   * @param th rotate the resulting image around this angle
+   * @param ph rotate the original image around this angle
+   * @return the transformed image
+   */
+  cv::Mat transform(const cv::Mat &img,
+      const cv::Point2i &pos_image, const float th, const float ph);
+
   float evaluate(cv::Mat &img1, cv::Mat &img2);
 
  private:

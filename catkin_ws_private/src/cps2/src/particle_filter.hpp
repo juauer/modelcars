@@ -122,7 +122,7 @@ class ParticleFilter {
     best_single.belief = 0;
 
     cv::Mat img_tf = image_evaluator->transform(
-        img, cv::Point3f(img.cols / 2, img.rows / 2, 0));
+        img, cv::Point2i(img.cols / 2, img.rows / 2), 0, 0);
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
       std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
