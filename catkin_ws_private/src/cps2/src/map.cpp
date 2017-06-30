@@ -162,7 +162,8 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
       || dt > update_interval_max
       || (dt > update_interval_min && dist(pos_world.p, center) < dist(map_piece->pos_world, center) )
   ) {
-    map_piece->img    = image;
+    image.copyTo(map_piece->img);
+
     map_piece->is_set = true;
 
     // TODO correct the position. Maybe like this:
