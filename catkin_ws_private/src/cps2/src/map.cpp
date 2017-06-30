@@ -95,16 +95,30 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   if(!ready)
     return map_pieces;
 
-  // TODO locate and push_back several images near pos_world
+  cv::Point2i pos_grid = world2grid(pos_world);
+  cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
+  MapPiece map_piece   = grid.at(0).at(0);
 
-  cv::Point2f pos_rel2f(pos_world.x, pos_world.y);
+  // check a 3x3 grid for image with least distance
+  for(int i = -1; i < 2; ++i)
+    for(int j = -1; j < 2; ++j)
+      if(pos_grid.y + i > 0 && pos_grid.y + i < grid.size() &&
+          pos_grid.x + j > 0 && pos_grid.x + j < grid.at(0).size() &&
+          grid.at(pos_grid.y + i).at(pos_grid.x + j).is_set && (!map_piece.is_set
+          || dist(grid.at(pos_grid.y + i).at(pos_grid.x + j).pos_world, center) < dist(map_piece.pos_world, center) ) )
+        map_piece = grid.at(pos_grid.y + i).at(pos_grid.x + j);
 
-  cv::Point2i pos_image = camera_matrix.relative2image(pos_rel2f);
+  if(!map_piece.is_set)
+    return map_pieces;
 
-  cv::Point3f pos_image3f(pos_image.x, pos_image.y, pos_world.z);
+  cv::Point2f pos_rel(
+      pos_world.x - map_piece.pos_world.x,
+      pos_world.y - map_piece.pos_world.y);
 
- // map_pieces.push_back(image_evaluator->transform(
-  //    theOnePiece.img, pos_image3f, cv::Size2i(camera_matrix.width, camera_matrix.height) ) );
+  cv::Point2i pos_image = camera_matrix.relative2image(pos_rel);
+
+  map_pieces.push_back(image_evaluator->transform(
+      map_piece.img, pos_image, pos_world.z, -map_piece.pos_world.z) );
 
   return map_pieces;
 }
