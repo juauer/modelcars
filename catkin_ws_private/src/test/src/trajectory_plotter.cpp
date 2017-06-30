@@ -5,8 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 #include <ros/package.h>
 #include <ros/console.h>
 

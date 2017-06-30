@@ -6,7 +6,7 @@ find_package( catkin REQUIRED COMPONENTS
   roscpp cv_bridge image_transport message_generation fisheye_camera_matrix_msgs
 )
 
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4 REQUIRED )
 
 include_directories(
   include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}

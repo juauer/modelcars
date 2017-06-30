@@ -8,7 +8,7 @@ find_package( catkin REQUIRED COMPONENTS
 
 roslaunch_add_file_check(launch)
 
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4 REQUIRED )
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}

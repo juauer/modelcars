@@ -3,7 +3,7 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( test )
 
 find_package( catkin REQUIRED COMPONENTS roslib roscpp )
-find_package( OpenCV REQUIRED )
+find_package( OpenCV 2.4 REQUIRED )
 
 include_directories(
   ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
