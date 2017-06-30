@@ -40,3 +40,6 @@ target_link_libraries( test_evaluator ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( test_image_distance src/test_image_distance.cpp src/map.cpp src/image_evaluator.cpp )
 target_link_libraries( test_image_distance ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+add_executable( test_map_transforms src/test_map_transforms.cpp src/image_evaluator.cpp )
+target_link_libraries( test_map_transforms ${catkin_LIBRARIES} ${OpenCV_LIBS} )
