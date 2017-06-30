@@ -2,7 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
-#include "map.hpp"
+#include "../map.hpp"
 
 cps2::ImageEvaluator *image_evaluator;
 cps2::Map *map;

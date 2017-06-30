@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> logs;
 
   for(int i = 2; i < argc; ++i)
-    logs.push_back(ros::package::getPath("test")
+    logs.push_back(ros::package::getPath("cps2")
         + std::string("/../../../logs/") + std::string(argv[i]) );
 
   float meanx[n];

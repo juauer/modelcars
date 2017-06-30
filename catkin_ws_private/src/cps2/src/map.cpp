@@ -179,6 +179,7 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     image.copyTo(map_piece->img);
 
     map_piece->is_set = true;
+    map_piece->stamp  = now;
 
     // TODO correct the position. Maybe like this:
     /*if(path_prev != path_now) {
@@ -195,7 +196,6 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     }
     else*/
       map_piece->pos_world = pos_world.p;
-      map_piece->stamp     = now;
   }
 
   ready = true;

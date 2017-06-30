@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "map.hpp"
+#include "../map.hpp"
 
 cv::Mat img;
 
