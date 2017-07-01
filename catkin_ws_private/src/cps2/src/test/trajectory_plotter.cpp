@@ -1,14 +1,15 @@
 #include <stdlib.h>
 #include <math.h>
+#include <limits>
 #include <string>
-#include <sstream>
-#include <iostream>
 #include <fstream>
-#include <string>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <ros/package.h>
 #include <ros/console.h>
 
+// some rgb colors
 cv::Scalar colors[] {
     cv::Scalar(255,   0,   0),
     cv::Scalar(  0, 255,   0),
@@ -25,90 +26,112 @@ cv::Scalar colors[] {
     cv::Scalar(  0, 170,  85)
 };
 
-int cs = 13;
-int c = 0;
+const int cs = sizeof(colors) / sizeof(cv::Scalar);
+int c        = 0;
 
 cv::Scalar nextCol() {
   c = (c + 1) % cs;
   return colors[c];
 }
 
-// e.g. 'rosrun test trajectory_plotter 900 track01 track02 track03'
+/**
+ * Use with 'rosrun cps2 trajectory_plotter FILE... '
+ * Plot the trajectories given by filenames FILEs (relative to catkin_ws/logs/).
+ *
+ * All logs should have been recorded using the same bagfile (otherwise the computed
+ * stddev won't yield any useful information).
+ *
+ * It looks like we're not allowed to parse positional args with roslaunch, yet.
+ * That's why there is no launchfile.
+ */
 int main(int argc, char **argv) {
-  int n = atoi(argv[1]);
+  // read in all logs, count lines and ranges of x, y
+  std::vector<cv::Point2f> values[argc - 1];
 
-  std::vector<std::string> logs;
+  int n       = std::numeric_limits<int>::max();
+  float min_x = std::numeric_limits<float>::max();
+  float min_y = std::numeric_limits<float>::max();
+  float max_x = std::numeric_limits<float>::min();
+  float max_y = std::numeric_limits<float>::min();
 
-  for(int i = 2; i < argc; ++i)
-    logs.push_back(ros::package::getPath("cps2")
-        + std::string("/../../../logs/") + std::string(argv[i]) );
+  for(int i = 1; i < argc; ++i) {
+    std::string path = ros::package::getPath("cps2")
+          + std::string("/../../../logs/") + std::string(argv[i]);
 
-  float meanx[n];
-  float meany[n];
-
-  for(int i = 0; i < n; ++i) {
-    meanx[i] = 0;
-    meany[i] = 0;
-  }
-
-  cv::Mat img(540, 720, CV_8UC3, cv::Scalar(255, 255, 255) );
-  float vx[argc - 2][n];
-  float vy[argc - 2][n];
-  int j    = 0;
-  float ji = 1.0 / (argc - 2);
-
-  for(std::vector<std::string>::const_iterator it = logs.begin();
-      it != logs.end(); ++it) {
+    int n_line = 0;
 
     std::ifstream file;
     std::string line_str;
     float x, y;
-    cv::Point2f last;
-    bool b = true;
-    int i  = 0;
-    file.open(it->c_str(), std::ios::in);
+    file.open(path.c_str(), std::ios::in);
 
-    while(i < n && getline(file, line_str) ) {
+    while(getline(file, line_str) ) {
       std::stringstream line_ss(line_str);
       line_ss >> x >> y;
-      x = 100 * x + 360;
-      y = 100 * y + 270;
-      vx[j][i]  = x;
-      vy[j][i]  = y;
-      meanx[i] += ji * x;
-      meany[i] += ji * y;
+      values[i - 1].push_back(cv::Point2f(x, y) );
 
-      if(b) {
-        last = cv::Point2f(x, y);
-        b = false;
-        continue;
-      }
-
-      cv::Point2f now(x, y);
-      cv::line(img, now, last, nextCol() );
-      last = cv::Point2f(x, y);
-      ++i;
+      min_x = std::min(min_x, x);
+      min_y = std::min(min_y, y);
+      max_x = std::max(max_x, x);
+      max_y = std::max(max_y, y);
+      ++n_line;
     }
 
-    ++j;
+    n = std::min(n, n_line);
+
     file.close();
   }
 
-  float stddev = 0;
-  int lb = (int)floor(0.05*n);
-  int ub = (int)ceil(0.95*n);
-  j = 0;
+  // compute means
+  cv::Point2f means[n];
 
-  for(int k = 0; k < argc - 2; ++k)
-    for(int i = lb; i < ub; ++i) {
-      float x = vx[k][i] - meanx[i];
-      float y = vy[k][i] - meany[i];
+  float ni = 1.0 / (argc - 1);
+
+  for(int i = 0; i < argc - 1; ++i)
+    for(int j = 0; j < n; ++j)
+      means[j] += ni * values[i].at(j);
+
+  // compute standard deviation
+  float stddev = 0;
+
+  for(int i = 0; i < argc - 1; ++i)
+    for(int j = 0; j < n; ++j) {
+      const float x = values[i].at(j).x - means[j].x;
+      const float y = values[i].at(j).y - means[j].y;
+
       stddev += sqrtf(x*x + y*y);
     }
 
-  ROS_INFO("%f", stddev / ( (argc - 2) * (ub - lb) ) );
-  std::string path = ros::package::getPath("test") + std::string("/../../../logs/test.png");
+  stddev /= n * (argc - 1);
+
+  // plot tracks
+  cv::Mat img(
+      (int)ceilf(100 * (max_y - min_y) ),
+      (int)ceilf(100 * (max_x - min_x) ),
+      CV_8UC3, cv::Scalar(255, 255, 255) );
+
+  for(int i = 0; i < argc - 1; ++i) {
+    cv::Scalar col   = nextCol();
+    cv::Point2f last = values[i].front();
+
+    for(int j = 0; j< n; ++j) {
+      cv::line(img,
+          cv::Point2i(
+              (int)roundf(100 * (last.x - min_x) ),
+              (int)roundf(100 * (last.y - min_y) ) ),
+          cv::Point2i(
+              (int)roundf(100 * (values[i].at(j).x - min_x) ),
+              (int)roundf(100 * (values[i].at(j).y - min_y) ) ),
+          col);
+
+      last = values[i].at(j);
+    }
+  }
+
+  // output results
+  ROS_INFO("stddev: %.2f m", stddev);
   cv::imshow("tracks", img);
-  cv::imwrite(path.c_str(), img);
+  cv::imwrite( (ros::package::getPath("cps2")
+      + std::string("/../../../logs/test.png") ).c_str(), img);
   cv::waitKey(0);
 }
