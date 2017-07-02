@@ -44,10 +44,8 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const 
   int y = flow_img.y;
   float theta = flow_est.z;
   
-  cv::Mat img2_rot = rotate_img(img2, theta);
-  
+  cv::Mat part2 = rotate_cut(img2, theta, -x, -y);
   cv::Mat part1(img1, cv::Rect(std::max(x, 0), std::max(y, 0), img1.cols-abs(x), img1.rows-abs(y)));
-  cv::Mat part2(img2_rot, cv::Rect(std::max(-x, 0), std::max(-y, 0), img1.cols-abs(x), img1.rows-abs(y)));
 
   cv::Mat tile1, tile2;
   part1.copyTo(tile1, part2);
@@ -59,7 +57,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const 
   
   flow_corr.z = theta + d_theta;
     
-  img2_rot = rotate_img(img2, flow_corr.z);
+  cv::Mat img2_rot = rotate_img(img2, flow_corr.z);
   
   float min_error = 1000;
   
@@ -224,6 +222,26 @@ inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
   return sqrtf(x * x + y * y);
 }
 
+cv::Mat Map::rotate_cut(const cv::Mat &img, const float radiant, const int dx, const int dy) {
+  cv::Mat img_rot(img.rows-abs(dy), img.cols-abs(dx), CV_8UC1);
+  int delta_x = 0;
+  int delta_y = 0;
+  if(dx > 0) delta_x = dx;
+  if(dy > 0) delta_y = dy;
+  for(int x = 0; x < img.cols-abs(dx); ++x) {
+    for(int y = 0; y < img.rows-abs(dy); ++y) {
+      float x_rot = img.cols/2 + cosf(radiant)*(x+delta_x-img.cols/2) - sinf(radiant)*(y+delta_y-img.rows/2);
+      float y_rot = img.rows/2 + sinf(radiant)*(x+delta_x-img.cols/2) + cosf(radiant)*(y+delta_y-img.rows/2);
+      
+      if(x_rot >= 0 && y_rot >= 0 && x_rot < img.cols && y_rot < img.rows)
+        img_rot.at<uchar>(y, x) = img.at<uchar>(y_rot, x_rot);
+      else
+        img_rot.at<uchar>(y, x) = 0;
+    }
+  }
+  return img_rot;
+}
+    
 cv::Mat Map::rotate_img(const cv::Mat &img, const float radiant) {
   cv::Mat img_rot(img.rows, img.cols, CV_8UC1);
   for(int x = 0; x < img.cols; ++x) {

@@ -76,12 +76,15 @@ private:
   inline float dist(const cv::Point3f &p1, const cv::Point3f &p2);
   
   /**
-   * Rotate an image around its center
+   * Rotate an image around its center and cut the edges
    * @param img image
    * @param radiant angle in rad
+   * @param dx shift in x
+   * @param dy shift in y
    * @return rotated image
    */
   cv::Mat rotate_img(const cv::Mat &img, const float radiant);
+  cv::Mat rotate_cut(const cv::Mat &img, const float radiant, const int dx, const int dy);
   
   /**
    * Optain gradient direction from image
