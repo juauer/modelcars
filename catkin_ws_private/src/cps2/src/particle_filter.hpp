@@ -76,14 +76,14 @@ class ParticleFilter {
   void addNewRandomParticles() {
 #ifdef DEBUG_PF_STATIC
     particles.clear();
-    particles.push_back(Particle(   0, -2.0,  0*M_PI/4) );
-    particles.push_back(Particle( 1.5, -1.5,  1*M_PI/4) );
-    particles.push_back(Particle( 2.0,    0,  2*M_PI/4) );
-    particles.push_back(Particle( 1.5,  1.5,  3*M_PI/4) );
-    particles.push_back(Particle(   0,  2.0,  4*M_PI/4) );
-    particles.push_back(Particle(-1.5,  1.5, -3*M_PI/4) );
-    particles.push_back(Particle(-2.0,    0, -2*M_PI/4) );
-    particles.push_back(Particle(-1.5, -1.5, -1*M_PI/4) );
+    particles.push_back(Particle(startPos.x +   0, startPos.y - 1.0,  0 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 0.7, startPos.y - 0.7,  1 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 1.0, startPos.y +   0,  2 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 0.7, startPos.y + 0.7,  3 * M_PI/4) );
+    particles.push_back(Particle(startPos.x +   0, startPos.y + 1.0,  4 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 0.7, startPos.y + 0.7, -3 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 1.0, startPos.y +   0, -2 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 0.7, startPos.y - 0.7, -1 * M_PI/4) );
     return;
 #endif
 

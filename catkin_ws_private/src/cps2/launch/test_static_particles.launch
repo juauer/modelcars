@@ -7,13 +7,13 @@
   <arg name="calib" default="default" />
   
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
-  <arg name="grid_size" default="1.0" />
+  <arg name="grid_size" default="3" />
   
   <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
-  <arg name="update_interval_min" default="1" />
+  <arg name="update_interval_min" default="999" />
   
   <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
-  <arg name="update_interval_max" default="60" />
+  <arg name="update_interval_max" default="999" />
   
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
@@ -53,7 +53,7 @@
   <arg name="bin_size" default="0" />
   
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
-  <arg name="punishEdgeParticlesRate" default="0.5" />
+  <arg name="punishEdgeParticlesRate" default="1.0" />
 
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
