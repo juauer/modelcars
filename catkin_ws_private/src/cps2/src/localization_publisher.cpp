@@ -25,6 +25,7 @@ cps2::Map *map;
 cps2::ParticleFilter *particleFilter;
 
 cv::Mat image;
+cv::Point3f pos_start;
 cv::Point2f pos_relative_vel;
 nav_msgs::Odometry odom_last;
 fisheye_camera_matrix::CameraMatrix camera_matrix;
@@ -81,7 +82,7 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
       // TODO use init functions to hide the logic
 
-      map->update(image, cps2::Particle(0, 0, 0), camera_matrix);
+      map->update(image, cps2::Particle(pos_start.x, pos_start.y, pos_start.z), camera_matrix);
       particleFilter->addNewRandomParticles();
       ready = true;
     }
@@ -167,13 +168,12 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "localization_cps2_publisher");
 
-  if(argc < 21) {
+  if(argc < 18) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
               "[grid_size:=FLOAT] [update_interval_min:=FLOAT] [update_interval_max:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
-              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL] "
-              "[startPosX:= FLOAT] [startPosY:= FLOAT] [startPosZ := FLOAT]'");
+              "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL]'");
     return 1;
   }
 
@@ -194,29 +194,27 @@ int main(int argc, char **argv) {
   bool hamid_sampling           = atoi(argv[14]) != 0;
   float bin_size                = atof(argv[15]);
   float punishEdgeParticlesRate = atof(argv[16]);
-  bool setStartPos              = atoi(argv[17]);
-  cv::Point3f startPos(           atof(argv[18]),
-                                  atof(argv[19]),
-                                  atof(argv[20])
-  );
+  bool setStartPos              = atoi(argv[17]) != 0;
 
   ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
   ROS_INFO("localization_cps2_publisher: using grid_size: %f, using update_interval_min: %f, using update_interval_max: %f, errorfunction: %s, downscale: %d, "
       "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
       "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
       "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
-      "punishEdgeParticleRate %.2f setStartPos: %d startPosX: %.2f startPosY: %.2f startPosTh: %.2f",
+      "punishEdgeParticleRate %.2f, setStartPos: %d",
            grid_size, update_interval_min, update_interval_max, (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
-           punishEdgeParticlesRate, setStartPos, startPos.x, startPos.y, startPos.z);
+           punishEdgeParticlesRate, setStartPos);
+
+  pos_start = cv::Point3f(grid_size / 2, grid_size / 2, 0);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
   map             = new cps2::Map(image_evaluator, grid_size, update_interval_min, update_interval_max);
   particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
       particles_num, particles_keep, particle_belief_scale,
       particle_stddev_lin, particle_stddev_ang, hamid_sampling,
-      bin_size, punishEdgeParticlesRate, setStartPos, startPos);
+      bin_size, punishEdgeParticlesRate, setStartPos, pos_start);
 
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
