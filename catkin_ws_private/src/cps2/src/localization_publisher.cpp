@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
 
   ros::Subscriber sub_odo             = nh.subscribe("/odom", 1, &callback_odometry);
   ros::Subscriber sub_camera_matrix   = nh.subscribe("/usb_cam/camera_matrix", 1, &callback_camera_matrix);
-  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_raw", 1, &callback_image);
+  image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
 
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
