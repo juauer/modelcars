@@ -44,9 +44,6 @@ int main(int argc, char* argv[])
 
 	// image 2 guessed version
 	cv::Point3f img2_guess_pos_rel(atof(argv[5]), atof(argv[6]), atof(argv[7]) );
-	
-	cv::Point2i img2_guess_pos_img = camera_matrix.relative2image(
-	    cv::Point2f(img2_guess_pos_rel.x, img2_guess_pos_rel.y) );
 
   printf("guessed vector image1->image2:   %.2f, %.2f, %.2f \n",
       img2_guess_pos_rel.x, img2_guess_pos_rel.y, img2_guess_pos_rel.z);
