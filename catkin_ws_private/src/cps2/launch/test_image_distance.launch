@@ -1,29 +1,25 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- arg <img1>: filename of an image in catkin_ws/../captures/ -->
-  <arg name="img1" default="img1.png"/>
+  <!-- arg <img>: filename of an image in catkin_ws/../captures/ -->
+  <arg name="img" default="img1.png"/>
   
-  <!-- arg <img2>: filename of an image in catkin_ws/../captures/ -->
-  <arg name="img2" default="img6.png"/>
+  <!-- arg <pos_x>: pos x (in m) of a second image relative to img in world frame -->
+  <arg name="pos_x" default="1.0"/>
   
-  <!-- arg <prev_x>: pos x of img1 in world frame -->
-  <arg name="prev_x" default="0.263"/>
+  <!-- arg <pos_y>: pos y (in m) of a second image relative to img in world frame -->
+  <arg name="pos_y" default="1.0"/>
   
-  <!-- arg <prev_y>: pos y of img1 in world frame -->
-  <arg name="prev_y" default="0.407"/>
+  <!-- arg <pos_theta>: rotation (in rad) of a second image relative to img in world frame -->
+  <arg name="pos_theta" default="0.3"/>
   
-  <!-- arg <prev_theta>: rotation theta of img1 in world frame -->
-  <arg name="prev_theta" default="-3.05432"/>
+  <!-- arg <guess_x>: guessed pos x (in m) of a second image in world frame -->
+  <arg name="guess_x" default="1.1"/>
   
-  <!-- arg <new_x>: pos x of img2 in world frame -->
-  <arg name="new_x" default="1.267"/>
+  <!-- arg <guess_y>: guessed pos y (in m) of a second image in world frame -->
+  <arg name="guess_y" default="0.9"/>
   
-  <!-- arg <new_y>: pos y of img2 in world frame -->
-  <arg name="new_y" default="0.586"/>
+  <!-- arg <guess_theta>: guessed rotation (in rad) of a second image in world frame -->
+  <arg name="guess_theta" default="0.4"/>
   
-  <!-- arg <new_theta>: rotation theta of img2 in world frame -->
-  <arg name="new_theta" default="-3.66519"/>
-  
-  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img1) $(arg img2) $(arg prev_x) $(arg prev_y) $(arg prev_theta) $(arg new_x) $(arg new_y) $(arg new_theta)" output="screen" />
+  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img) $(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta)" output="screen" />
 </launch>
-  
