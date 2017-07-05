@@ -106,8 +106,8 @@ int main(int argc, char **argv) {
 
   // plot tracks
   cv::Mat img(
-      (int)ceilf(100 * (max_y - min_y) ),
-      (int)ceilf(100 * (max_x - min_x) ),
+      (int)ceilf(100 * (max_y - min_y) + 40),
+      (int)ceilf(100 * (max_x - min_x) + 40),
       CV_8UC3, cv::Scalar(255, 255, 255) );
 
   for(int i = 0; i < argc - 1; ++i) {
@@ -117,11 +117,11 @@ int main(int argc, char **argv) {
     for(int j = 0; j< n; ++j) {
       cv::line(img,
           cv::Point2i(
-              (int)roundf(100 * (last.x - min_x) ),
-              (int)roundf(100 * (last.y - min_y) ) ),
+              (int)roundf(100 * (last.x - min_x) + 20),
+              (int)roundf(100 * (last.y - min_y) + 20) ),
           cv::Point2i(
-              (int)roundf(100 * (values[i].at(j).x - min_x) ),
-              (int)roundf(100 * (values[i].at(j).y - min_y) ) ),
+              (int)roundf(100 * (values[i].at(j).x - min_x) + 20 ),
+              (int)roundf(100 * (values[i].at(j).y - min_y) + 20) ),
           col);
 
       last = values[i].at(j);
