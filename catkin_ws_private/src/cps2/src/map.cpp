@@ -88,37 +88,71 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const 
 }
 
 std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
-  std::vector<cv::Mat> map_pieces;
+  std::vector<cv::Mat> map_piece_images;
 
   if(!ready)
-    return map_pieces;
+    return map_piece_images;
 
-  cv::Point2i pos_grid = world2grid(pos_world);
-  cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
-  MapPiece map_piece   = grid.at(0).at(0);
+  // get grid indices and world coords of the grid cells center for pos_world
+  const cv::Point2i pos_grid = world2grid(pos_world);
+  const cv::Point3f center   = grid2world(pos_grid.x, pos_grid.y);
 
-  // check a 3x3 grid for image with least distance
-  for(int i = -1; i < 2; ++i)
-    for(int j = -1; j < 2; ++j)
-      if(pos_grid.y + i > 0 && pos_grid.y + i < grid.size() &&
-          pos_grid.x + j > 0 && pos_grid.x + j < grid.at(0).size() &&
-          grid.at(pos_grid.y + i).at(pos_grid.x + j).is_set && (!map_piece.is_set
-          || dist(grid.at(pos_grid.y + i).at(pos_grid.x + j).pos_world, center) < dist(map_piece.pos_world, center) ) )
-        map_piece = grid.at(pos_grid.y + i).at(pos_grid.x + j);
+  // find up to two cells which contain a valid (set) mappiece that was recorded near pos_world
+  MapPiece map_pieces[2] = { };
 
-  if(!map_piece.is_set)
-    return map_pieces;
+  const int grid_x_lb = std::max(0, pos_grid.x - 1);
+  const int grid_x_ub = std::min( (int)grid.at(0).size(), pos_grid.x + 2);
+  const int grid_y_lb = std::max(0, pos_grid.y - 1);
+  const int grid_y_ub = std::min( (int)grid.size(), pos_grid.y + 2);
 
-  cv::Point2f pos_rel(
-      pos_world.x - map_piece.pos_world.x,
-      pos_world.y - map_piece.pos_world.y);
+  for(int k = 0; k < 2; ++k) {
+    // check a 3x3 grid for image with least distance
+    for(int i = grid_y_lb; i < grid_y_ub; ++i)
+      for(int j = grid_x_lb; j < grid_x_ub; ++j) {
+        // do not use data from pos_grid itself, to avoid reading and updating the same mappiece
+        if(i == pos_grid.y && j == pos_grid.x)
+          continue;
 
-  cv::Point2i pos_image = camera_matrix.relative2image(pos_rel);
+        // skip unset pieces
+        if(!grid.at(i).at(j).is_set)
+          continue;
 
-  map_pieces.push_back(image_evaluator->transform(
-      map_piece.img, pos_image, pos_world.z, -map_piece.pos_world.z) );
+        // treat k==1
+        if(k == 1 && map_pieces[0].pos_world.x == grid.at(i).at(j).pos_world.x
+            && map_pieces[0].pos_world.y == grid.at(i).at(j).pos_world.y)
+          continue;
 
-  return map_pieces;
+        // always prefer set pieces over unset ones. Check the distance as final criterium
+        if(!map_pieces[k].is_set
+           || dist(grid.at(i).at(j).pos_world, center) < dist(map_pieces[k].pos_world, center)
+        )
+          map_pieces[k] = grid.at(i).at(j);
+      }
+  }
+
+  // if there is no other option, use pos_grid itself
+  if(!map_pieces[0].is_set)
+    map_pieces[0] = grid.at(pos_grid.y).at(pos_grid.x);
+
+  // extract the images
+  for(int k = 0; k < 2; ++k) {
+    if(!map_pieces[k].is_set)
+      break;
+
+    // vector between pos_world and center of mappiece
+    cv::Point2f pos_rel(
+        pos_world.x - map_pieces[k].pos_world.x,
+        pos_world.y - map_pieces[k].pos_world.y);
+
+    // projection of pos_world to image plane
+    cv::Point2i pos_image = camera_matrix.relative2image(pos_rel);
+
+    // transformed image with respect to pos_world rotation and mappiece rotation
+    map_piece_images.push_back(image_evaluator->transform(
+        map_pieces[k].img, pos_image, pos_world.z, -map_pieces[k].pos_world.z) );
+  }
+
+  return map_piece_images;
 }
 
 void Map::update(const cv::Mat &image, const Particle &pos_world,
