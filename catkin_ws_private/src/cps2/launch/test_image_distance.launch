@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- arg <img1>: filename of an image in catkin_ws/../captures/ -->
+  <arg name="img1" default="img1.png"/>
+  
+  <!-- arg <img2>: filename of an image in catkin_ws/../captures/ -->
+  <arg name="img2" default="img6.png"/>
+  
+  <!-- arg <prev_x>: pos x of img1 in world frame -->
+  <arg name="prev_x" default="0.263"/>
+  
+  <!-- arg <prev_y>: pos y of img1 in world frame -->
+  <arg name="prev_y" default="0.407"/>
+  
+  <!-- arg <prev_theta>: rotation theta of img1 in world frame -->
+  <arg name="prev_theta" default="-3.05432"/>
+  
+  <!-- arg <new_x>: pos x of img2 in world frame -->
+  <arg name="new_x" default="1.267"/>
+  
+  <!-- arg <new_y>: pos y of img2 in world frame -->
+  <arg name="new_y" default="0.586"/>
+  
+  <!-- arg <new_theta>: rotation theta of img2 in world frame -->
+  <arg name="new_theta" default="-3.66519"/>
+  
+  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img1) $(arg img2) $(arg prev_x) $(arg prev_y) $(arg prev_theta) $(arg new_x) $(arg new_y) $(arg new_theta)" output="screen" />
+</launch>
+  

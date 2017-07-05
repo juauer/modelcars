@@ -13,14 +13,39 @@ namespace cps2 {
 
 class Map {
 public:
-  Map(float grid_size, cps2::ImageEvaluator *image_evaluator);
+  Map(cps2::ImageEvaluator *image_evaluator, float grid_size,
+      float update_interval_min, float update_interval_max);
+
   virtual ~Map();
 
+  /**
+   * Compute difference between two images in world frame
+   * @param img1 previous image
+   * @param img2 new image
+   * @param pos_prev previous pose in world frame
+   * @param pos_new new pose in world frame
+   * @return difference in world frame
+   */
+  cv::Point3f image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now);
+
+  /**
+   * Get one or more images, which are centered at pos_world in world frame.
+   * @param pos_world pose in world frame
+   * @return list of images, which are centered at pos_world in world frame
+   */
   std::vector<cv::Mat> get_map_pieces(const cv::Point3f &pos_world);
+
+  /**
+   * Update the map with crucial data. Should get called every frame. The map decides on
+   * best effort if a update is needed and may return immediately.
+   * @param image current undistorted, grayscale image
+   * @param pos_world current best guess of the position in world frame
+   * @param camera_matrix current camera matrix
+   */
   void update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &camera_matrix);
 
-  cv::Rect2f bbox; //!< Rect in world frame that surrounds the yet mapped space
+  cv::Rect2f bbox; //!< Bounding box in world frame covering the yet mapped space
 
 private:
   /**
@@ -31,7 +56,7 @@ private:
    * @param grid_x output grid index x
    * @param grid_y output grid index y
    */
-  inline void world2grid(const cv::Point3f &pos_world, int &grid_x, int &grid_y);
+  inline cv::Point2i world2grid(const cv::Point3f &pos_world);
 
   /**
    * Get center of a cell in world frame for given grid indices.
@@ -42,14 +67,6 @@ private:
   inline cv::Point3f grid2world(const int &grid_x, const int &grid_y);
 
   /**
-   * Rotate a vector around its origin
-   * @param p vector
-   * @param th angle in rad
-   * @return rotated vector
-   */
-  inline cv::Point2f rotate(const cv::Point2f &p, const float th);
-
-  /**
    * Euclidean distance between p1 and p2. For low-d vectors this is much faster
    * than cv::norm or others
    * @param p1 point 1
@@ -57,13 +74,35 @@ private:
    * @return euclidean distance between p1 and p2
    */
   inline float dist(const cv::Point3f &p1, const cv::Point3f &p2);
-
+  
+  /**
+   * Rotate an image around its center and cut the edges
+   * @param img image
+   * @param radiant angle in rad
+   * @param dx shift in x
+   * @param dy shift in y
+   * @return rotated image
+   */
+  cv::Mat rotate_img(const cv::Mat &img, const float radiant);
+  cv::Mat rotate_cut(const cv::Mat &img, const float radiant, const int dx, const int dy);
+  
+  /**
+   * Optain gradient direction from image
+   * @param img image
+   * @return gradient direction in rad
+   */
+  float gradient(const cv::Mat &img);
+  
   const float grid_size;
+  const float update_interval_min;
+  const float update_interval_max;
 
   bool ready;
   cps2::ImageEvaluator *image_evaluator;
   fisheye_camera_matrix::CameraMatrix camera_matrix;
   std::vector<std::vector<MapPiece> > grid;
+  cv::Point3f path_now;
+  cv::Point3f path_prev;
 };
 
 } /* namespace cps2 */

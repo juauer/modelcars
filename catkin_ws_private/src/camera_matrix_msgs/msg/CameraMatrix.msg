@@ -1,9 +1,0 @@
-Header header
-float32 cx
-float32 cy
-float32 flx
-float32 fly
-float32 dcrx
-float32 dcry
-float32 dctx
-float32 dcty

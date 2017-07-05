@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="test_map_transforms" pkg="cps2" type="test_map_transforms" output="screen" />
+</launch>

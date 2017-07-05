@@ -73,24 +73,34 @@ ImageEvaluator::~ImageEvaluator() {
 
 }
 
-cv::Mat ImageEvaluator::transform(const cv::Mat &img, const cv::Point3f &pos_image) {
-  int dim_y = img.rows / resize_scale;
-  int dim_x = img.cols / resize_scale;
-  int cx    = dim_x / 2;
-  int cy    = dim_y / 2;
+cv::Mat ImageEvaluator::transform(const cv::Mat &img,
+    const cv::Point2i &pos_image, const float th, const float ph)
+{
+  const int cx1   = img.cols / 2;
+  const int cy1   = img.rows / 2;
+  const int dim_x = img.cols / resize_scale;
+  const int dim_y = img.rows / resize_scale;
+  const int cx2   = dim_x / 2;
+  const int cy2   = dim_y / 2;
+  const float ths = sinf(th);
+  const float thc = cosf(th);
+  const float phs = sinf(ph);
+  const float phc = cosf(ph);
 
   cv::Mat img_tf(dim_y, dim_x, CV_8UC1);
 
   for(int c = 0; c < dim_x; ++c) {
-    int sx = c - cx;
+    const int sx = c - cx2;
 
     for(int r = 0; r < dim_y; ++r) {
-      int sy  = r - cy;
-      float x = resize_scale * (sx * cosf(pos_image.z) - sy * sinf(pos_image.z) ) + pos_image.x;
-      float y = resize_scale * (sx * sinf(pos_image.z) + sy * cosf(pos_image.z) ) + pos_image.y;
+      const int sy   = r - cy2;
+      const float x  = resize_scale * (sx * thc - sy * ths ) + pos_image.x;
+      const float y  = resize_scale * (sx * ths + sy * thc ) + pos_image.y;
+      const float xx = (x - cx1) * phc - (y - cy1) * phs + cx1;
+      const float yy = (x - cx1) * phs + (y - cy1) * phc + cy1;
 
-      if(x >= 0 && y >= 0 && x < img.cols && y < img.rows)
-        img_tf.at<uchar>(r, c) = applyKernel(img, (int)x, (int)y);
+      if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
+        img_tf.at<uchar>(r, c) = applyKernel(img, (int)xx, (int)yy);
       else
         img_tf.at<uchar>(r, c) = 0;
     }

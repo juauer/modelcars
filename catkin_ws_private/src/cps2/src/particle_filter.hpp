@@ -44,6 +44,8 @@ class ParticleFilter {
   Particle best_binning;
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen; //Standard mersenne_twister_engine
+  std::uniform_real_distribution<float> udist_x;
+  std::uniform_real_distribution<float> udist_y;
   std::uniform_real_distribution<float> udist_t;
 
   ParticleFilter(cps2::Map *_map, cps2::ImageEvaluator *_image_evaluator, int _particles_num,
@@ -74,42 +76,37 @@ class ParticleFilter {
   void addNewRandomParticles() {
 #ifdef DEBUG_PF_STATIC
     particles.clear();
-    particles.push_back(Particle(   0, -2.0,  0*M_PI/4) );
-    particles.push_back(Particle( 1.5, -1.5,  1*M_PI/4) );
-    particles.push_back(Particle( 2.0,    0,  2*M_PI/4) );
-    particles.push_back(Particle( 1.5,  1.5,  3*M_PI/4) );
-    particles.push_back(Particle(   0,  2.0,  4*M_PI/4) );
-    particles.push_back(Particle(-1.5,  1.5, -3*M_PI/4) );
-    particles.push_back(Particle(-2.0,    0, -2*M_PI/4) );
-    particles.push_back(Particle(-1.5, -1.5, -1*M_PI/4) );
+    particles.push_back(Particle(startPos.x +   0, startPos.y - 1.0,  0 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 0.7, startPos.y - 0.7,  1 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 1.0, startPos.y +   0,  2 * M_PI/4) );
+    particles.push_back(Particle(startPos.x + 0.7, startPos.y + 0.7,  3 * M_PI/4) );
+    particles.push_back(Particle(startPos.x +   0, startPos.y + 1.0,  4 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 0.7, startPos.y + 0.7, -3 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 1.0, startPos.y +   0, -2 * M_PI/4) );
+    particles.push_back(Particle(startPos.x - 0.7, startPos.y - 0.7, -1 * M_PI/4) );
     return;
 #endif
 
-    if (setStartPos){
+    if(setStartPos) {
       float psdl2 = particle_stdev_lin / 2;
 
-      std::uniform_real_distribution<float> udist_x(
-          startPos.x - psdl2, startPos.x + psdl2);
-      std::uniform_real_distribution<float> udist_y(
-          startPos.y - psdl2, startPos.y + psdl2);
-
-      for(int i = 0; i < particles_num - particles.size(); ++i) {
-        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
-        particles.push_back(p);
-      }
+      udist_x.param(std::uniform_real_distribution<float>::param_type(
+          startPos.x - psdl2, startPos.x + psdl2) );
+      udist_y.param(std::uniform_real_distribution<float>::param_type(
+          startPos.y - psdl2, startPos.y + psdl2) );
 
       setStartPos = false;
 
     } else {
-      std::uniform_real_distribution<float> udist_x(
-          map->bbox.x, map->bbox.x + map->bbox.width);
-      std::uniform_real_distribution<float> udist_y(
-          map->bbox.y, map->bbox.y + map->bbox.height);
-
-      for(int i = 0; i < particles_num - particles.size(); ++i) {
-        Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
-        particles.push_back(p);
+      udist_x.param(std::uniform_real_distribution<float>::param_type(
+          map->bbox.x, map->bbox.x + map->bbox.width) );
+      udist_y.param(std::uniform_real_distribution<float>::param_type(
+          map->bbox.y, map->bbox.y + map->bbox.height) );
       }
+
+    for(int i = 0; i < particles_num - particles.size(); ++i) {
+      Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+      particles.push_back(p);
     }
   }
 
@@ -125,7 +122,7 @@ class ParticleFilter {
     best_single.belief = 0;
 
     cv::Mat img_tf = image_evaluator->transform(
-        img, cv::Point3f(img.cols / 2, img.rows / 2, 0));
+        img, cv::Point2i(img.cols / 2, img.rows / 2), 0, 0);
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
       std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
@@ -152,7 +149,7 @@ class ParticleFilter {
       }
     }
 
-    if(binning_enabled)
+    if(binning_enabled && best_single.belief != 0)
       binning();
   }
 
@@ -217,7 +214,7 @@ class ParticleFilter {
   }
 
   Particle getBest(){
-    auto cluster = DBScan().dbscan(particles, 0.001, 1);
+    // auto cluster = DBScan().dbscan(particles, 0.001, 1);
 
     if(binning_enabled)
       return best_binning;

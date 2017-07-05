@@ -1,7 +1,19 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- arg <bagfile>: filename of a bag in catkin_ws/../logs/ -->
+  <arg name="bagfile" default="test" />
+  
+  <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
+  <arg name="calib" default="default" />
+  
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
   <arg name="grid_size" default="1.0" />
+  
+  <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
+  <arg name="update_interval_min" default="1" />
+  
+  <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
+  <arg name="update_interval_max" default="60" />
   
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
@@ -45,15 +57,18 @@
 
     <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
-
-  <!-- arg <startPosX>: start position. -->
-  <arg name="startPosX" default="0" />
-
-  <!-- arg <startPosY>: start position. -->
-  <arg name="startPosY" default="0" />
-
-  <!-- arg <startPosTh>: start position. -->
-  <arg name="startPosTh" default="0" />
-
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg grid_size) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos) $(arg startPosX) $(arg startPosY) $(arg startPosTh)" output="screen" />
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cps2)/config/config.rviz" />
+  
+  <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
+    <arg name="calib" value="$(arg calib)" />
+  </include>
+  
+  <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
+  
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+  
+  <include file="$(find logging)/launch/log_player.launch" >
+    <arg name="bagfile" value="$(arg bagfile)" />
+  </include>
 </launch>
