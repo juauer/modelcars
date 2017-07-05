@@ -126,16 +126,19 @@ class ParticleFilter {
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
       std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
+      it->belief = 0;
 
       if(mappieces.empty() )
-        it->belief = 0;
+        continue;
       else {
+        for(std::vector<cv::Mat>::iterator jt = mappieces.begin();
+            jt != mappieces.end(); ++jt) {
+          float e = image_evaluator->evaluate(img_tf, *jt );
 
-        // TODO handle several mappieces
+          it->belief += expf(-particle_belief_scale * e * e);
+        }
 
-        float e = image_evaluator->evaluate(img_tf, mappieces.front() );
-
-        it->belief = expf(-particle_belief_scale * (e * e) );
+        it->belief /= mappieces.size();
 
         // punish particles that are outside the map
         if (it->p.x >= (map->bbox.x + map->bbox.width) ||

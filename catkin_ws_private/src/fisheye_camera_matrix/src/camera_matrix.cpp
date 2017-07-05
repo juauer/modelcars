@@ -114,7 +114,7 @@ void CameraMatrix::undistort(cv::Mat &src, cv::Mat &dst) {
   }
 }
 
-cv::Point2i CameraMatrix::relative2image(cv::Point2f &p) {
+cv::Point2i CameraMatrix::relative2image(const cv::Point2f &p) {
   cv::Point2f rot(p.y, -p.x);
 
   return cv::Point2i(
@@ -122,7 +122,7 @@ cv::Point2i CameraMatrix::relative2image(cv::Point2f &p) {
       (int)(cy + (1 / scale) * fl * rot.y / ceil_height) );
 }
 
-cv::Point2f CameraMatrix::image2relative(cv::Point2i &p) {
+cv::Point2f CameraMatrix::image2relative(const cv::Point2i &p) {
     cv::Point2f rel(
         (p.x - cx) * ceil_height / fl,
         (p.y - cy) * ceil_height / fl);

@@ -18,8 +18,8 @@ public:
   bool update_calibration();
 
   void undistort(cv::Mat &src, cv::Mat &dst);
-  cv::Point2i relative2image(cv::Point2f &p);
-  cv::Point2f image2relative(cv::Point2i &p);
+  cv::Point2i relative2image(const cv::Point2f &p);
+  cv::Point2f image2relative(const cv::Point2i &p);
 
   int width;
   int height;

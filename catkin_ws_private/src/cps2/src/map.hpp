@@ -19,12 +19,12 @@ public:
   virtual ~Map();
 
   /**
-   * Compute difference between two images in world frame
-   * @param img1 previous image
-   * @param img2 new image
-   * @param pos_prev previous pose in world frame
-   * @param pos_new new pose in world frame
-   * @return difference in world frame
+   * Compute vector between the centers of two images in world frame
+   * @param img1 an image
+   * @param img2 another image
+   * @param pos_prev position of img1 in world frame
+   * @param pos_new guessed position of img2 in world frame
+   * @return corrected guess of position of img2 in world frame
    */
   cv::Point3f image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now);
 
