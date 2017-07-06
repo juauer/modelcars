@@ -55,7 +55,7 @@ void ParticleFilter::addNewRandomParticles() {
 #endif
 
     if(setStartPos) {
-      float psdl2 = particle_stdev_lin / 2;
+      const float psdl2 = particle_stdev_lin / 2;
 
       udist_x.param(std::uniform_real_distribution<float>::param_type(
           startPos.x - psdl2, startPos.x + psdl2) );
@@ -72,12 +72,12 @@ void ParticleFilter::addNewRandomParticles() {
       }
 
     for(int i = 0; i < particles_num - particles.size(); ++i) {
-      Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
+      const Particle p(udist_x(gen), udist_y(gen), udist_t(gen) );
       particles.push_back(p);
     }
   }
 
-  void ParticleFilter::motion_update(float dx, float dth) {
+  void ParticleFilter::motion_update(const float dx, const float dth) {
     for(std::vector<Particle>::iterator it = particles.begin(); it < particles.end(); ++it) {
       it->p.z += dth;
       it->p.x += dx * cosf(it->p.z);
@@ -85,10 +85,10 @@ void ParticleFilter::addNewRandomParticles() {
     }
   }
 
-  void ParticleFilter::evaluate(cv::Mat &img) {
+  void ParticleFilter::evaluate(const cv::Mat &img) {
     best_single.belief = 0;
 
-    cv::Mat img_tf = image_evaluator->transform(
+    const cv::Mat img_tf = image_evaluator->transform(
         img, cv::Point2i(img.cols / 2, img.rows / 2), 0, 0);
 
     for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
@@ -100,7 +100,7 @@ void ParticleFilter::addNewRandomParticles() {
       else {
         for(std::vector<cv::Mat>::iterator jt = mappieces.begin();
             jt != mappieces.end(); ++jt) {
-          float e = image_evaluator->evaluate(img_tf, *jt );
+          const float e = image_evaluator->evaluate(img_tf, *jt);
 
           it->belief += expf(-particle_belief_scale * e * e);
         }
@@ -135,7 +135,7 @@ void ParticleFilter::resample() {
     if(sum_beliefs == 0.0)
       return;
 
-    float step = sum_beliefs / particles_keep;
+    const float step = sum_beliefs / particles_keep;
 
     std::uniform_real_distribution<float> rnd(0, step);
 
@@ -158,7 +158,7 @@ void ParticleFilter::resample() {
     std::vector<Particle> new_particles;
 
     for(int i = 0; i < particles_num; ++i) {
-       Particle p = particles[i];
+      const Particle p = particles[i];
 
        for(int h = 0; h < hits[i]; ++h)
          if(hamid_sampling && h == 0)
@@ -168,7 +168,7 @@ void ParticleFilter::resample() {
            std::normal_distribution<float> ndist_y(p.p.y, particle_stdev_lin * (1 - p.belief) );
            std::normal_distribution<float> ndist_t(p.p.z, particle_stdev_ang * (1 - p.belief) );
 
-           Particle new_particle(
+           const Particle new_particle(
                fmax(map->bbox.x, fmin(map->bbox.x + map->bbox.width,  ndist_x(gen) ) ),
                fmax(map->bbox.y, fmin(map->bbox.y + map->bbox.height, ndist_y(gen) ) ),
                ndist_t(gen) );
@@ -193,8 +193,8 @@ void ParticleFilter::resample() {
   }
 
   void ParticleFilter::binning() {
-    int num_x = (int)ceilf(map->bbox.width  / bin_size);
-    int num_y = (int)ceilf(map->bbox.height / bin_size);
+    const int num_x = (int)ceilf(map->bbox.width  / bin_size);
+    const int num_y = (int)ceilf(map->bbox.height / bin_size);
 
     Bin bins[num_y][num_x];
     Bin *bestBin = &(bins[0][0]);
@@ -209,11 +209,11 @@ void ParticleFilter::resample() {
         bins[i][j].count  = 0;
       }
 
-    for(std::vector<Particle>::iterator it = particles.begin();
+    for(std::vector<Particle>::const_iterator it = particles.begin();
         it != particles.end(); ++it) {
 
-      int x = std::max(0, std::min(num_x - 1, (int)floorf( (it->p.x - map->bbox.x) / bin_size) ) );
-      int y = std::max(0, std::min(num_y - 1, (int)floorf( (it->p.y - map->bbox.y) / bin_size) ) );
+      const int x = std::max(0, std::min(num_x - 1, (int)floorf( (it->p.x - map->bbox.x) / bin_size) ) );
+      const int y = std::max(0, std::min(num_y - 1, (int)floorf( (it->p.y - map->bbox.y) / bin_size) ) );
 
       bins[y][x].belief += it->belief;
       ++bins[y][x].count;
@@ -297,7 +297,7 @@ void ParticleFilter::resample() {
         sb  += bit->belief;
       }
 
-    Particle bp(sx / sb, sy / sb, atan2f(sts / sb, stc / sb) );
+    const Particle bp(sx / sb, sy / sb, atan2f(sts / sb, stc / sb) );
     best_binning = bp;
   }
 } // namespace cps2

@@ -45,9 +45,9 @@ class ParticleFilter {
 
   void addNewRandomParticles();
 
-  void motion_update(float dx, float dth);
+  void motion_update(const float dx, const float dth);
 
-  void evaluate(cv::Mat &img);
+  void evaluate(const cv::Mat &img);
 
   void resample();
 
