@@ -23,14 +23,14 @@ catkin_package(
   CATKIN_DEPENDS cv_bridge image_transport
 )
 
-add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
+add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp src/particle_filter.cpp )
 target_link_libraries( localization_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
-add_executable( localization_publisher_debug src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
+add_executable( localization_publisher_debug src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp src/particle_filter.cpp )
 target_compile_definitions( localization_publisher_debug PUBLIC DEBUG_PF )
 target_link_libraries( localization_publisher_debug ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
-add_executable( localization_publisher_debug_static src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp )
+add_executable( localization_publisher_debug_static src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp src/particle_filter.cpp )
 target_compile_definitions( localization_publisher_debug_static PUBLIC DEBUG_PF DEBUG_PF_STATIC )
 target_link_libraries( localization_publisher_debug_static ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
