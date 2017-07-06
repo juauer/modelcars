@@ -1,6 +1,7 @@
 #include <math.h>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <ros/package.h>
 #include "map.hpp"
 
 namespace cps2 {
@@ -31,7 +32,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const 
   
   // initializing CameraMatrix
   if(camera_matrix.width == 0) {
-    fisheye_camera_matrix::CameraMatrix cm(640, 480, 0, 0, 320, 2.55, 1.5);
+    fisheye_camera_matrix::CameraMatrix cm( (ros::package::getPath("fisheye_camera_matrix") + std::string("/config/default.calib") ).c_str() );
     camera_matrix = cm;
   }
   
