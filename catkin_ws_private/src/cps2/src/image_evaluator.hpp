@@ -24,7 +24,7 @@ class ImageEvaluator {
   cv::Mat transform(const cv::Mat &img,
       const cv::Point2i &pos_image, const float th, const float ph);
 
-  float evaluate(cv::Mat &img1, cv::Mat &img2);
+  float evaluate(const cv::Mat &img1, const cv::Mat &img2);
 
  private:
   void generateKernel();

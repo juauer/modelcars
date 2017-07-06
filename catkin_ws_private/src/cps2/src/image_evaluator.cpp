@@ -109,7 +109,7 @@ cv::Mat ImageEvaluator::transform(const cv::Mat &img,
   return img_tf;
 }
 
-float ImageEvaluator::evaluate(cv::Mat &img1, cv::Mat &img2) {
+float ImageEvaluator::evaluate(const cv::Mat &img1, const cv::Mat &img2) {
   float error_pixels = 0;
 
 #ifdef DEBUG_IE
