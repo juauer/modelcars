@@ -29,6 +29,9 @@ int main(int argc, char* argv[]) {
   cv::Mat img1;
   cv::cvtColor(cv::imread(path_img), img1, CV_BGR2GRAY);
 
+  // init map
+  map.update(img1, cps2::Particle(0, 0, 0), camera_matrix);
+
   // image 2
   cv::Point3f img2_real_pos_rel(atof(argv[2]), atof(argv[3]), atof(argv[4]) );
 
