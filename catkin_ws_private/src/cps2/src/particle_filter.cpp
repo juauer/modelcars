@@ -42,6 +42,7 @@ ParticleFilter::~ParticleFilter() {}
 
 void ParticleFilter::addNewRandomParticles() {
 #ifdef DEBUG_PF_STATIC
+  // generate fixed Particles on a circle around startPos
   particles.clear();
   particles.push_back(Particle(startPos.x +   0, startPos.y - 1.0,  0 * M_PI/4) );
   particles.push_back(Particle(startPos.x + 0.7, startPos.y - 0.7,  1 * M_PI/4) );
@@ -54,7 +55,9 @@ void ParticleFilter::addNewRandomParticles() {
   return;
 #endif
 
+  // fill particles with new, uniformly distributed particles.
   if(setStartPos) {
+    // only in first frame: generate near startPos
     const float psdl2 = particle_stdev_lin / 2;
 
     udist_x.param(std::uniform_real_distribution<float>::param_type(
@@ -64,6 +67,7 @@ void ParticleFilter::addNewRandomParticles() {
 
     setStartPos = false;
   } else {
+    // generate all over the map
     udist_x.param(std::uniform_real_distribution<float>::param_type(
         map->bbox.x, map->bbox.x + map->bbox.width) );
     udist_y.param(std::uniform_real_distribution<float>::param_type(
@@ -88,16 +92,20 @@ void ParticleFilter::motion_update(const float dx, const float dth) {
 void ParticleFilter::evaluate(const cv::Mat &img) {
   best_single.belief = 0;
 
+  // set up img by applying the same blur and downscale which were applied to the mappieces
   const cv::Mat img_tf = image_evaluator->transform(
       img, cv::Point2i(img.cols / 2, img.rows / 2), 0, 0);
 
+  // evaluate all particles against img
   for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); ++it) {
+    // get a list of mappieces near this particle
     std::vector<cv::Mat> mappieces = map->get_map_pieces(it->p);
     it->belief = 0;
 
     if(mappieces.empty() )
       continue;
     else {
+      // do the actual evaluation. Sum up the beliefs to compute a mean
       for(std::vector<cv::Mat>::iterator jt = mappieces.begin(); jt != mappieces.end(); ++jt) {
         const float e = image_evaluator->evaluate(img_tf, *jt);
 
@@ -113,11 +121,13 @@ void ParticleFilter::evaluate(const cv::Mat &img) {
       )
         it->belief *= punishEdgeParticlesRate;
 
+      // track the best particle
       if(it->belief > best_single.belief)
         best_single = *it;
     }
   }
 
+  // if binning is enabled, run it now
   if(binning_enabled && best_single.belief != 0)
     binning();
 }
@@ -126,6 +136,7 @@ void ParticleFilter::resample() {
   // stochastic universal sampling
   std::vector<uint32_t> hits(particles_num, 0);
 
+  // sum up the beliefs of all Particles
   float sum_beliefs = 0;
 
   for(std::vector<Particle>::const_iterator it = particles.begin(); it < particles.end(); ++it)
@@ -134,14 +145,17 @@ void ParticleFilter::resample() {
   if(sum_beliefs == 0.0)
     return;
 
+  // calculate the size of 'one unit' and generate a random start value in that range
   const float step = sum_beliefs / particles_keep;
 
   std::uniform_real_distribution<float> rnd(0, step);
 
-  float current = rnd(gen); // random number between 0 and 'step'
+  float current = rnd(gen);
   float target  = 0;
   int i         = 0;
 
+  // iterate over the Particles and count how often they got 'hit' by SUS. Particles with a
+  // higher belief will be hit more often.
   for(std::vector<Particle>::const_iterator it = particles.begin();
       it < particles.end(); ++it)
   {
@@ -161,22 +175,24 @@ void ParticleFilter::resample() {
   for(int i = 0; i < particles_num; ++i) {
     const Particle p = particles[i];
 
-     for(int h = 0; h < hits[i]; ++h)
-       if(hamid_sampling && h == 0)
-         new_particles.push_back(p);
-       else {
-         std::normal_distribution<float> ndist_x(p.p.x, particle_stdev_lin * (1 - p.belief) );
-         std::normal_distribution<float> ndist_y(p.p.y, particle_stdev_lin * (1 - p.belief) );
-         std::normal_distribution<float> ndist_t(p.p.z, particle_stdev_ang * (1 - p.belief) );
+    // generate a particle for each hit
+    for(int h = 0; h < hits[i]; ++h)
+      if(hamid_sampling && h == 0)
+        new_particles.push_back(p);
+      else {
+        // apply some noise. The amount of noise is scaled by the belief of a Particle
+        std::normal_distribution<float> ndist_x(p.p.x, particle_stdev_lin * (1 - p.belief) );
+        std::normal_distribution<float> ndist_y(p.p.y, particle_stdev_lin * (1 - p.belief) );
+        std::normal_distribution<float> ndist_t(p.p.z, particle_stdev_ang * (1 - p.belief) );
 
-         const Particle new_particle(
-             fmax(map->bbox.x, fmin(map->bbox.x + map->bbox.width,  ndist_x(gen) ) ),
-             fmax(map->bbox.y, fmin(map->bbox.y + map->bbox.height, ndist_y(gen) ) ),
-             ndist_t(gen) );
+        const Particle new_particle(
+            fmax(map->bbox.x, fmin(map->bbox.x + map->bbox.width,  ndist_x(gen) ) ),
+            fmax(map->bbox.y, fmin(map->bbox.y + map->bbox.height, ndist_y(gen) ) ),
+            ndist_t(gen) );
 
-         new_particles.push_back(new_particle);
-       }
-   }
+        new_particles.push_back(new_particle);
+      }
+  }
 
   // randomize the remainder
   particles = new_particles;
@@ -194,12 +210,14 @@ Particle ParticleFilter::getBest(){
 }
 
 void ParticleFilter::binning() {
+  // generate a grid covering all of the current map
   const int num_x = (int)ceilf(map->bbox.width  / bin_size);
   const int num_y = (int)ceilf(map->bbox.height / bin_size);
 
   Bin bins[num_y][num_x];
   Bin *bestBin = &(bins[0][0]);
 
+  // set the grid indices and world frame coords of grid cell center for each Bin
   for(int i = 0; i < num_y; ++i)
     for(int j = 0; j < num_x; ++j) {
       bins[i][j].x      = j;
@@ -210,6 +228,8 @@ void ParticleFilter::binning() {
       bins[i][j].count  = 0;
     }
 
+  // assign the nearest Bin to each Particle and sum up the beliefs for the Bins. Keep track
+  // of the Bin with the highest belief
   for(std::vector<Particle>::const_iterator it = particles.begin();
       it != particles.end(); ++it)
   {
@@ -227,6 +247,7 @@ void ParticleFilter::binning() {
       bestBin = &(bins[y][x]);
   }
 
+  // compute the mean (x,y)-position of Particles in the best Bin
   float sx = 0;
   float sy = 0;
 
@@ -240,6 +261,8 @@ void ParticleFilter::binning() {
   sx /= bestBin->count;
   sy /= bestBin->count;
 
+  // in order to get a representing cluster that is not compromised by the grid-discretization,
+  // add the three Bins nearest to bestBin (and bestBin) to the cluster.
   std::vector<Bin> goodBins;
   goodBins.push_back(*bestBin);
 
@@ -282,6 +305,9 @@ void ParticleFilter::binning() {
     }
   }
 
+  // compute the wheighted mean of positions for all Particles in the cluster. To compute
+  // a mean of angles, split the angles in sin and cos portions, take the wheighted means
+  // of both and rebuild an angle using atan2.
   sx = 0;
   sy = 0;
 
