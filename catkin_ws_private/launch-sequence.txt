@@ -1,0 +1,5 @@
+roslaunch manual_control manual_odroid.launch & roslaunch odometry odometry.launch & roslaunch /opt/ros/indigo/share/usb_cam/launch/usb_cam-test.launch
+roslaunch fisheye_camera_matrix camera_matrix_publisher.launch
+roslaunch fisheye_camera_matrix undistorted_image_publisher.launch
+roslaunch cps2 localization_publisher_debug.launch
+roslaunch control control.launch
