@@ -1,4 +1,4 @@
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 
 #include "fisheye_camera_matrix_msgs/CameraMatrix.h"
 

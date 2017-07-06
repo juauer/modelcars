@@ -3,8 +3,8 @@
 #include <fstream>
 #include <ros/ros.h>
 #include <ros/package.h>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "fisheye_camera_matrix/camera_matrix.hpp"
 
 fisheye_camera_matrix::CameraMatrix camera_matrix;

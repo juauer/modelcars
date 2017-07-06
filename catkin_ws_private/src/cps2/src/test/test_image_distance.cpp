@@ -1,8 +1,12 @@
-#include <opencv2/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include "../map.hpp"
+
+namespace cv{
+  typedef Rect_<int> Rect2i;
+}
 
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "stitching");

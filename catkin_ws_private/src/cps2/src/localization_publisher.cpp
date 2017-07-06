@@ -7,7 +7,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <image_transport/image_transport.h>
 #include <nav_msgs/Odometry.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <tf/tf.h>

@@ -1,9 +1,9 @@
 #include <math.h>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #ifdef DEBUG_IE
 #include <stdio.h>
-#include <opencv2/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 #include "image_evaluator.hpp"

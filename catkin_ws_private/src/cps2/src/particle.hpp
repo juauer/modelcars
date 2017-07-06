@@ -1,7 +1,7 @@
 #ifndef SRC_PARTICLE_HPP_
 #define SRC_PARTICLE_HPP_
 
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace cps2 {
 
