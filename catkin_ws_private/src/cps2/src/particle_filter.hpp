@@ -74,15 +74,6 @@ public:
    */
   Particle getBest();
 
-  /**
-   * Use a grid to detect clusters of Particles. Find the cluster with the maximum total belief
-   * and compute a new Particle from the weighted mean of the Particles from this cluster.
-   *
-   * Binning tends to avoid cluster-jumping and additionally smooths the result in comparison
-   * to the naive approach.
-   */
-  void binning();
-
   const int particles_num;
   const int particles_keep;
   const float particle_belief_scale;
@@ -94,11 +85,22 @@ public:
   const float bin_size;
   const cv::Point3f startPos;
   
+  std::vector<Particle> particles;
+
+private:
+  /**
+   * Use a grid to detect clusters of Particles. Find the cluster with the maximum total belief
+   * and compute a new Particle from the weighted mean of the Particles from this cluster.
+   *
+   * Binning tends to avoid cluster-jumping and additionally smooths the result in comparison
+   * to the naive approach.
+   */
+  void binning();
+
   cps2::Map *map;
   cps2::ImageEvaluator *image_evaluator;
 
   bool setStartPos;
-  std::vector<Particle> particles;
   Particle best_single;
   Particle best_binning;
   std::random_device rd;
