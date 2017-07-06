@@ -30,11 +30,8 @@ Map::~Map() {
 cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now) {
   // differenz zwischen Bildern in Weltkoordinaten
   
-  // initializing CameraMatrix
-  if(camera_matrix.width == 0) {
-    fisheye_camera_matrix::CameraMatrix cm( (ros::package::getPath("fisheye_camera_matrix") + std::string("/config/default.calib") ).c_str() );
-    camera_matrix = cm;
-  }
+  if(!ready)
+    return cv::Point3f(0, 0, 0);
   
   cv::Point3f flow_corr;
   cv::Point3f flow_est = pos_now - pos_prev;
