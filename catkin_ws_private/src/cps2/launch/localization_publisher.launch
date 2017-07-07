@@ -26,7 +26,7 @@
   <arg name="kernel_stddev" default="2.5" />
   
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="100" />
+  <arg name="particles_num" default="50" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="1.0" />
