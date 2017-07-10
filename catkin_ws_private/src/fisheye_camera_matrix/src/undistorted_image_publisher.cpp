@@ -21,8 +21,8 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   img_raw = cv_bridge::toCvShare(msg, "bgr8")->image;
 
-  // FIXME what happened to the images?
   if(img_raw.rows == 720 && img_raw.cols == 1280) {
+    ROS_WARN("Please capture 640x480 pixels. Do NOT use the high resolution 1280x720 capture mode!");
     cv::Mat sub(img_raw, cv::Rect(320, 240, 640, 480) );
     img_raw = sub;
   }
