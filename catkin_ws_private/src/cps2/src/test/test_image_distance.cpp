@@ -4,10 +4,6 @@
 #include <ros/package.h>
 #include "../map.hpp"
 
-namespace cv{
-  typedef Rect_<int> Rect2i;
-}
-
 int main(int argc, char* argv[]) {
   ros::init(argc, argv, "stitching");
   ros::NodeHandle nh;
