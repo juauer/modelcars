@@ -20,7 +20,7 @@ include_directories(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS cv_bridge image_transport
+  CATKIN_DEPENDS cv_bridge image_transport fisheye_camera_matrix
 )
 
 add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp src/particle_filter.cpp )

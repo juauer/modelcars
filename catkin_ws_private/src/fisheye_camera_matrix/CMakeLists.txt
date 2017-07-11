@@ -31,14 +31,10 @@ catkin_package(
 )
 
 install(
-  TARGETS ${PROJECT_NAME}
+  TARGETS ${PROJECT_NAME} offline_calibration_manual camera_matrix_publisher undistorted_image_publisher
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-
-install(
-  TARGETS offline_calibration_manual camera_matrix_publisher undistorted_image_publisher
-  RUNTIME DESTINATION ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME}/
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(
