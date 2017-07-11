@@ -9,6 +9,11 @@
 #include "image_evaluator.hpp"
 #include "map_piece.hpp"
 
+namespace cv{
+  typedef Rect_<float> Rect2f;
+}
+
+
 namespace cps2 {
 
 class Map {
