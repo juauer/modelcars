@@ -6,10 +6,16 @@ find_package( catkin REQUIRED COMPONENTS
   roscpp cv_bridge image_transport message_generation fisheye_camera_matrix_msgs
 )
 
-find_package( OpenCV 2.4 REQUIRED )
+find_package( OpenCV REQUIRED )
 
 include_directories(
   include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
+)
+
+catkin_package(
+  LIBRARIES ${PROJECT_NAME}
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
+  CATKIN_DEPENDS cv_bridge image_transport message_runtime fisheye_camera_matrix_msgs
 )
 
 add_executable( offline_calibration_manual src/offline_calibration_manual.cpp src/camera_matrix.cpp )
@@ -23,12 +29,6 @@ target_link_libraries( undistorted_image_publisher ${catkin_LIBRARIES} ${OpenCV_
 
 add_library( fisheye_camera_matrix src/camera_matrix.cpp )
 target_link_libraries( fisheye_camera_matrix ${catkin_LIBRARIES} ${OpenCV_LIBS} )
-
-catkin_package(
-  LIBRARIES ${PROJECT_NAME}
-  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
-  CATKIN_DEPENDS cv_bridge image_transport message_runtime fisheye_camera_matrix_msgs
-)
 
 install(
   TARGETS ${PROJECT_NAME} offline_calibration_manual camera_matrix_publisher undistorted_image_publisher

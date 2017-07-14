@@ -52,5 +52,5 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
   
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) (arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) (arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" />
 </launch>

@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <!-- arg <bagfile>: the bag is getting written to catkin_ws/../logs/<filename>.bag -->
-  <arg name="bagfile" default="new" />
-  
-  <node name="log_recorder" pkg="rosbag" type="record" args="-O $(find logging)/../../../logs/$(arg bagfile).bag /odom /usb_cam/image_raw" output="screen" />
-</launch>

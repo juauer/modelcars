@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- arg <bagfile>: filename of a bag in catkin_ws/../logs/ -->
-  <arg name="bagfile" default="test" />
-  
   <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
   <arg name="calib" default="default" />
   
@@ -54,11 +51,9 @@
   
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
   <arg name="punishEdgeParticlesRate" default="0.5" />
-
-    <!-- arg <setStartPos>: start particle filter with initial position -->
-  <arg name="setStartPos" default="1" />
   
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cps2)/config/config.rviz" />
+  <!-- arg <setStartPos>: start particle filter with initial position -->
+  <arg name="setStartPos" default="1" />
   
   <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
     <arg name="calib" value="$(arg calib)" />
@@ -67,8 +62,4 @@
   <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
   
   <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
-  
-  <include file="$(find logging)/launch/log_player.launch" >
-    <arg name="bagfile" value="$(arg bagfile)" />
-  </include>
 </launch>

@@ -1,18 +1,15 @@
 cmake_minimum_required( VERSION 2.8.3 )
 set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 
-# TODO why is this needed on some platforms?
-add_compile_options(-std=c++11)
-
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
   roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix
 )
 
-roslaunch_add_file_check(launch)
+roslaunch_add_file_check( launch )
 
-find_package( OpenCV 2.4 REQUIRED )
+find_package( OpenCV REQUIRED )
 
 include_directories(
   ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
