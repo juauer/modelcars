@@ -21,5 +21,7 @@
   <!-- arg <guess_theta>: guessed rotation (in rad) of a second image in world frame -->
   <arg name="guess_theta" default="0.4"/>
   
-  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img) $(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta)" output="screen" />
+  <arg name="treshold" default="122"/>
+  
+  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img) $(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta) $(arg treshold)" output="screen" />
 </launch>
