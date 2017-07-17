@@ -23,6 +23,9 @@ catkin_package(
 add_executable( control_node src/control_node.cpp )
 target_link_libraries( control_node ${catkin_LIBRARIES} )
 
+add_executable( control_wasd src/control_wasd.cpp )
+target_link_libraries( control_wasd ${catkin_LIBRARIES} )
+
 install( TARGETS control_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
