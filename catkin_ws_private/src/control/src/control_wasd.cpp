@@ -26,7 +26,8 @@ int get_char() {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "control_wasd");
   ros::NodeHandle nh; 
-  
+
+  ros::Publisher pub_motor    = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);
   ros::Publisher pub_speed    = nh.advertise<std_msgs::Int16>("/manual_control/speed", 1);
   ros::Publisher pub_steering = nh.advertise<std_msgs::Int16>("/manual_control/steering", 1);
 
@@ -35,6 +36,8 @@ int main(int argc, char **argv) {
 
   msg_speed.data    = 0;
   msg_steering.data = 90;
+
+  pub_motor.publish(msg_speed);
 
   int c;
 

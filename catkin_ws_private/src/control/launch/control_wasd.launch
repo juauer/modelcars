@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find motor_communication)/launch/motor_odroid.launch" />
+  
+  <node pkg="control" type="control_wasd" name="control_wasd" output="screen" />
+</launch>
