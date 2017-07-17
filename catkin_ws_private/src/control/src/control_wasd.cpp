@@ -58,28 +58,28 @@ int main(int argc, char **argv) {
 
     case 65:  // arrow up
     case 119: // w
-      msg_speed.data -= 10;
+      msg_speed.data -= 100;
       pub_speed.publish(msg_speed);
       ROS_INFO("speed=%d", -msg_speed.data);
       break;
 
     case 68:  // arrow left
     case 97:  // a
-      msg_steering.data = std::max(10, msg_steering.data - 10);
+      msg_steering.data = std::min(170, msg_steering.data + 10);
       pub_steering.publish(msg_steering);
       ROS_INFO("steering=%d", msg_steering.data - 90);
       break;
 
     case 66:  // arrow down
     case 115: // s
-      msg_speed.data = std::min(0, msg_speed.data + 10);
+      msg_speed.data += 100;
       pub_speed.publish(msg_speed);
       ROS_INFO("speed=%d", -msg_speed.data);
       break;
 
     case 67:  // arrow right
     case 100: // d
-      msg_steering.data = std::min(170, msg_steering.data + 10);
+      msg_steering.data = std::max(10, msg_steering.data - 10);
       pub_steering.publish(msg_steering);
       ROS_INFO("steering=%d", msg_steering.data - 90);
       break;
