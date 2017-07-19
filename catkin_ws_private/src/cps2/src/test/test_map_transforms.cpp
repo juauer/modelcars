@@ -1,6 +1,6 @@
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <ros/package.h>
 #include "fisheye_camera_matrix/camera_matrix.hpp"
 #include "../image_evaluator.hpp"

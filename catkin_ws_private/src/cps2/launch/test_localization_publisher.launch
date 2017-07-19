@@ -7,13 +7,13 @@
   <arg name="calib" default="default" />
   
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
-  <arg name="grid_size" default="3" />
+  <arg name="grid_size" default="1.0" />
   
   <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
-  <arg name="update_interval_min" default="999" />
+  <arg name="update_interval_min" default="1" />
   
   <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
-  <arg name="update_interval_max" default="999" />
+  <arg name="update_interval_max" default="60" />
   
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
@@ -23,16 +23,16 @@
   
   <!-- arg <downscale>: When comparing images, resize them to (width/downscale, height/downscale). -->
   <!-- Boost performance with this! -->
-  <arg name="downscale" default="1" />
+  <arg name="downscale" default="25" />
   
   <!-- arg <kernel_size>: Size of the gaussian kernel used while downscaling. -->
-  <arg name="kernel_size" default="1" />
+  <arg name="kernel_size" default="5" />
   
   <!-- arg <kernel_stddev>: Standard deviation of the kernel used while downscaling. -->
-  <arg name="kernel_stddev" default="1" />
+  <arg name="kernel_stddev" default="2.5" />
   
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="8" />
+  <arg name="particles_num" default="50" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="1.0" />
@@ -50,23 +50,23 @@
   <arg name="hamid_sampling" default="0" />
   
   <!-- arg <bin_size>: Length of a bins side in m. Choose 0 to disable binning. -->
-  <arg name="bin_size" default="0" />
+  <arg name="bin_size" default="0.5" />
   
   <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
-  <arg name="punishEdgeParticlesRate" default="1.0" />
+  <arg name="punishEdgeParticlesRate" default="0.5" />
 
-  <!-- arg <setStartPos>: start particle filter with initial position -->
+    <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
   
   <include file="$(find cps2)/launch/rviz.launch" />
-    
+  
   <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
     <arg name="calib" value="$(arg calib)" />
   </include>
   
   <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
   
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug_static" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
   
-  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" />
+  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
 </launch>

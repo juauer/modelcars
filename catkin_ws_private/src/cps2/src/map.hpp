@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <ros/ros.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include "fisheye_camera_matrix/camera_matrix.hpp"
 #include "particle.hpp"
 #include "image_evaluator.hpp"

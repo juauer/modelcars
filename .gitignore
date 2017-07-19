@@ -3,7 +3,6 @@ logs/test
 logs/test.png
 logs/*.bag
 catkin_ws_private/src/fisheye_camera_matrix/config/test.calib
-catkin_ws_user
 catkin_ws_private/build_x86
 catkin_ws_private/build_arm
 catkin_ws_private/devel_x86
@@ -19,5 +18,7 @@ catkin_ws_private/.catkin_tools/profiles/kinetic_x86/packages
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/build.yaml
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/devel_collisions.txt
 catkin_ws_private/.catkin_tools/profiles/indigo_x86/packages
-catkin_ws_private/.catkin_tools/profiles/indigo_arm/*
+catkin_ws_private/.catkin_tools/profiles/odroid/build.yaml
+catkin_ws_private/.catkin_tools/profiles/odroid/devel_collisions.txt
+catkin_ws_private/.catkin_tools/profiles/odroid/packages
 catkin_ws_private/.settings

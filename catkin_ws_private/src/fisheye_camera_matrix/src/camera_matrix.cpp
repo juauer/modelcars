@@ -95,21 +95,21 @@ bool CameraMatrix::update_calibration() {
   return false;
 }
 
-void CameraMatrix::undistort(cv::Mat &src, cv::Mat &dst) {
+void CameraMatrix::undistort(const cv::Mat &src, cv::Mat &dst) {
   for(int x = 0; x < width; ++x) {
-    float rx = (float)x - cx;
+    const float rx = (float)(x - cx);
 
       for(int y = 0; y < height; ++y) {
-        float ry   = (float)y - cy;
-        float r    = sqrtf(rx * rx + ry * ry);
-        float r_ud = scale * sinf(atanf(r / fl) ) * fl;
-        float x_ud = cx + rx * r_ud / r;
-        float y_ud = cy + ry * r_ud / r;
+        const float ry   = (float)(y - cy);
+        const float r    = sqrtf(rx * rx + ry * ry);
+        const float r_ud = scale * sinf(atanf(r / fl) ) * fl;
+        const int x_ud   = (int)(cx + rx * r_ud / r);
+        const int y_ud   = (int)(cy + ry * r_ud / r);
 
         if(x_ud >= 0 && y_ud >= 0 && x_ud < width && y_ud < height)
-          dst.at<cv::Vec3b>( (int)y, (int)x) = src.at<cv::Vec3b>( (int)y_ud, (int)x_ud);
+          dst.at<cv::Vec3b>(y, x) = src.at<cv::Vec3b>(y_ud, x_ud);
         else
-          dst.at<cv::Vec3b>( (int)y, (int)x) = cv::Vec3b(0, 0, 0);
+          dst.at<cv::Vec3b>(y, x) = cv::Vec3b(0, 0, 0);
       }
   }
 }

@@ -11,6 +11,7 @@
   <!-- arg <speed>: speed with which the car should drive 20-1000 -->
   <arg name="speed" default="20" />
 
-  <node pkg="control" type="control_node" name="control_node" args="$(arg mode) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
-  </node>
+  <include file="$(find cps2)/launch/localization_publisher_debug.launch" />
+  
+  <node pkg="control" type="control_node" name="control_node" args="$(arg mode) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen" />
 </launch>

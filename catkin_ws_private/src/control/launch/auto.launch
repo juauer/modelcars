@@ -1,6 +1,0 @@
-<launch>
-  <include file="$(find motor_communication)/launch/motor_odroid.launch"/>
-  <include file="$(find send_steering)/launch/servo_odroid.launch"/>
-  <include file="$(find random_movement)/launch/trajectory_movement.launch"/>
-  <include file="$(find light)/launch/light.launch"/>
-</launch>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <rosparam> use_sim_time: true </rosparam>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cps2)/config/config.rviz" />
+  
+  <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+</launch>

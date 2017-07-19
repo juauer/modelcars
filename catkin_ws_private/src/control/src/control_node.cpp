@@ -2,7 +2,7 @@
 #include <std_msgs/Int16.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <math.h> 
 
 class Control {

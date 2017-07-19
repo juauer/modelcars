@@ -305,8 +305,8 @@ void ParticleFilter::binning() {
     }
   }
 
-  // compute the wheighted mean of positions for all Particles in the cluster. To compute
-  // a mean of angles, split the angles in sin and cos portions, take the wheighted means
+  // compute the weighted mean of positions for all Particles in the cluster. To compute
+  // a mean of angles, split the angles in sin and cos portions, take the weighted means
   // of both and rebuild an angle using atan2.
   sx = 0;
   sy = 0;

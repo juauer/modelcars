@@ -19,7 +19,7 @@ public:
    * @param _image_evaluator pointer to an ImageEvaluator
    * @param _particles_num total number of particles
    * @param _particles_keep percent of particles that are not resampled randomly
-   * @param _particle_belief_scale belief=exp( (pbs * error)^2)
+   * @param _particle_belief_scale belief=exp( -(pbs * error)^2)
    * @param _particle_stdev_lin standard deviation to generate noise around particles among x,y
    * @param _particle_stdev_ang standard deviation to generate noise for particles rotation
    * @param _hamid_sampling only apply noise to the new, copied particles in terms of SUS

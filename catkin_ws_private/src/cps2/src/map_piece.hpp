@@ -1,7 +1,7 @@
 #ifndef SRC_MAP_PIECE_HPP_
 #define SRC_MAP_PIECE_HPP_
 
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <ros/time.h>
 
 namespace cps2 {

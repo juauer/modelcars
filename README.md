@@ -1,22 +1,33 @@
 # modelcars
 
-### compiling
+### Quick Start Guide
 
-* Use `catkin build --profile <profile>` to compile on a PC where `profile` is `kinetic_x86` or `indigo_x86`.
+To start the localization, several things have to be (ros)launched, depending on what You want to do:
 
-* To compile for arm run `crosscompile/install.sh` (once) and use `catkin build --profile indigo_arm`. Make sure you have installed the odroid sdk and compiler to `/opt/odroid-x2/` and installed all other dependencies mentioned at the [Wiki](https://github.com/AutoModelCar/AutoModelCarWiki/wiki/Cross-compile).
+##### Regular Start
 
-* You can set your favourite profile with `catkin profile set <profile>`.
+* `fisheye_camera_matrix camera_matrix_provider.launch`
+    * publishes /usb_cam/camera_matrix which is needed to undistort the fisheye-image and to compute perspective projections
+* `fisheye_camera_matrix undistorted_image_provider.launch`
+    * publishes /usb_cam/image_undistorted
+* `cps2 localization_publisher.launch`
+    * publishes /localization/cps2/pose containing the cars pose in world frame
 
-### testing with recorded data
+##### Debugging on Car
 
-* To test Your code, add Your node to `test/launch/launch.launch` and launch with `roslaunch test launch.launch`. This will launch Your node, a log_player and rviz. The following topics are published by the player:
-    * `/usb_cam/image_raw` - The raw image
-    * `/odom` - Odometry data
-    * `/path` - The Ground Truth trajectory (only available for artificial data)
+Alternatively, You may launch `cps2 localization_publisher_debug.launch` which launches all of the above. The debug version publishes some markers and writes the trajectory to a file. Use `cps2 rviz.launch` on a remote PC to make things visible.
 
-* If You're going to generate new logs:
-    * Use `roslaunch logging log_recorder.launch filename:='f'` to record data on the robot and store it in the file 'f'.bag.
-    * Alternatively, build artificial data by hand in `logging/src/log_generator.cpp` and generate it using `roslaunch logging log_generator.launch`.
-    * Use `roslaunch logging log_player.launch` to play back a log file.
+##### Debugging on Desktop
+
+Alternatively, just launch `cps2 test_localization_publisher` which launches all of the above plus a rosbag player.
+
+### How does it work?
+
+// TODO
+
+### Parameters to set
+
+All parameters are briefly explained in the launchfiles where they are supposed to be set. Here, we like to give a more detailed explaination:
+
+// TODO
 

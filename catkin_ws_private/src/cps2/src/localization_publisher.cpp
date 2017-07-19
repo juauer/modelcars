@@ -7,7 +7,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <image_transport/image_transport.h>
 #include <nav_msgs/Odometry.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <tf/tf.h>
@@ -197,12 +197,13 @@ int main(int argc, char **argv) {
   bool setStartPos              = atoi(argv[17]) != 0;
 
   ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
-  ROS_INFO("localization_cps2_publisher: using grid_size: %f, using update_interval_min: %f, using update_interval_max: %f, errorfunction: %s, downscale: %d, "
-      "kernel_size: %d, kernel_stddev: %.2f, particles_num: %d, "
-      "particles_keep: %.2f, particle_belief_scale: %.2f, particle_stddev_lin: %.2f, "
-      "particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
+  ROS_INFO("localization_cps2_publisher: using grid_size: %f, update_interval_min: %f, "
+      "update_interval_max: %f, errorfunction: %s, downscale: %d, kernel_size: %d, "
+      "kernel_stddev: %.2f, particles_num: %d, particles_keep: %.2f, particle_belief_scale: %.2f, "
+      "particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
       "punishEdgeParticleRate %.2f, setStartPos: %d",
-           grid_size, update_interval_min, update_interval_max, (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
+           grid_size, update_interval_min, update_interval_max,
+           (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
            punishEdgeParticlesRate, setStartPos);
