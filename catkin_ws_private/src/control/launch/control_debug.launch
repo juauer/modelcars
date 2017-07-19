@@ -108,6 +108,9 @@
   <node pkg="control" type="control_node" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
   </node>
 
+  <node pkg="control" type="path_control_node" name="path_control_node" args="" output="screen">
+  </node>
+  
   <include file="$(find logging)/launch/log_player.launch" >
     <arg name="bagfile" value="$(arg bagfile)" />
   </include>
