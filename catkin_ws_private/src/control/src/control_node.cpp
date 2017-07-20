@@ -72,6 +72,8 @@ class Control {
         // and send message that the destination is reached
         if( (dir.x < epsilon) && (-dir.x < epsilon) &&
             (dir.y < epsilon) && (-dir.y < epsilon)){
+          ROS_INFO("control_node setDirection: destination reached");
+
           reached_msg.data = true;
           pubDstReached_.publish(reached_msg);
           // speed_msg.data = 0;
@@ -101,6 +103,7 @@ class Control {
         steeringPose_msg.scale.x    = distance;//length
         
         pubSteeringPose_.publish(steeringPose_msg);
+        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f)",pos.x,pos.y, dst.x, dst.y);
       }
     }else{
       // just send a const angle
@@ -110,6 +113,8 @@ class Control {
   }
   
   void setDestination(const geometry_msgs::Point& msg_dst) {
+    dstPosX = msg_dst.x;
+    dstPosY = msg_dst.y;
     dst.x = msg_dst.x;
     dst.y = msg_dst.y;
   }

@@ -1,6 +1,19 @@
+<<<<<<< HEAD
 cmake_minimum_required( VERSION 2.8.3 )
 set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( control )
+=======
+cmake_minimum_required(VERSION 2.8.3)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+project(control)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+  roslib roscpp std_msgs sensor_msgs geometry_msgs
+)
+>>>>>>> 4681b4d... control node loads points know from file and debug statements need cleaning
 
 find_package( catkin REQUIRED COMPONENTS
   roscpp std_msgs sensor_msgs geometry_msgs
