@@ -90,7 +90,9 @@ int main(int argc, char **argv) {
     default:
       msg_speed.data = 0;
       pub_speed.publish(msg_speed);
-      ROS_INFO("speed=%d", -msg_speed.data);
+      msg_speed.data = 1;
+      pub_motor.publish(msg_speed);
+      ROS_INFO("stopped.");
       break;
     }
   }
