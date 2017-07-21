@@ -36,15 +36,22 @@ int main(int argc, char **argv) {
   while(ros::ok() ) {
     ros::spinOnce();
 
-    msg.header.seq   = ++seq_nbr;
-    msg.header.stamp = ros::Time::now();
+    bool updated = false;
 
     if(auto_calibration_enabled) {
-      camera_matrix.update_calibration();
-
-      msg = camera_matrix.serialize();
+      if(camera_matrix.update_calibration() ) {
+        msg     = camera_matrix.serialize();
+        updated = true;
+      }
     }
 
-    pub.publish(msg);
+    // increase counter every frame but only publish every 30th frame or if an update occurred
+    msg.header.seq = ++seq_nbr;
+
+    if(updated || (seq_nbr % 30) == 0) {
+      msg.header.stamp = ros::Time::now();
+
+      pub.publish(msg);
+    }
   }
 }
