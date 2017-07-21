@@ -3,7 +3,7 @@ set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
 project( control )
 
 find_package( catkin REQUIRED COMPONENTS
-  roscpp std_msgs sensor_msgs geometry_msgs
+  roslib roscpp std_msgs sensor_msgs geometry_msgs
 )
 
 find_package( OpenCV REQUIRED )
@@ -19,17 +19,6 @@ catkin_package(
 
 add_executable( control_wasd src/control_wasd.cpp )
 target_link_libraries( control_wasd ${catkin_LIBRARIES} )
-
-install( TARGETS control_node control_wasd
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install( DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS
-)
 
 add_executable(control_node src/control_node.cpp)
 target_link_libraries(control_node ${catkin_LIBRARIES})

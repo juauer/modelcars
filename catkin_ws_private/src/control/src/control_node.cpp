@@ -133,6 +133,8 @@ class Control {
   float dstPosX;
   float dstPosY;
   float speed;
+  bool reached;
+
  protected:
   cv::Point3f dst;
   std_msgs::Int16 speed_msg;
@@ -144,6 +146,7 @@ class Control {
   ros::Publisher pubSteering_;
   ros::Publisher pubSteeringPose_;
   ros::Publisher pubDst_;
+  ros::Publisher pubDstReached_;
   ros::Subscriber subDir_;
   ros::Subscriber subDst_;
 
