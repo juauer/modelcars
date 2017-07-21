@@ -33,11 +33,13 @@ int main(int argc, char **argv) {
 
   std_msgs::Int16 msg_speed;
   std_msgs::Int16 msg_steering;
+  std_msgs::Int16 msg_stop;
+  std_msgs::Int16 msg_start;
 
   msg_speed.data    = 0;
   msg_steering.data = 90;
-
-  pub_motor.publish(msg_speed);
+  msg_stop.data     = 1;
+  msg_start.data    = 0;
 
   int c;
 
@@ -56,12 +58,14 @@ int main(int argc, char **argv) {
 
     switch(c) {
     case 113: // q
+      pub_motor.publish(msg_stop);
       running = false;
       break;
 
     case 65:  // arrow up
     case 119: // w
       msg_speed.data -= 100;
+      pub_motor.publish(msg_start);
       pub_speed.publish(msg_speed);
       ROS_INFO("speed=%d", -msg_speed.data);
       break;
@@ -76,6 +80,7 @@ int main(int argc, char **argv) {
     case 66:  // arrow down
     case 115: // s
       msg_speed.data += 100;
+      pub_motor.publish(msg_start);
       pub_speed.publish(msg_speed);
       ROS_INFO("speed=%d", -msg_speed.data);
       break;
@@ -90,8 +95,7 @@ int main(int argc, char **argv) {
     default:
       msg_speed.data = 0;
       pub_speed.publish(msg_speed);
-      msg_speed.data = 1;
-      pub_motor.publish(msg_speed);
+      pub_motor.publish(msg_stop);
       ROS_INFO("stopped.");
       break;
     }
