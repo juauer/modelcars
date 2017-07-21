@@ -37,11 +37,13 @@ class Control {
     dstPoint_msg.point.z = 0;
     
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
-    pubSteeringPose_ = nh.advertise<visualization_msgs::Marker>(nh.resolveName("/localization/control/SteeringPose"), 1);
-    pubDst_ = nh.advertise<geometry_msgs::PointStamped>(nh.resolveName("/localization/control/destination"), 1);
     pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
     subDir_ = n_.subscribe("/localization/cps2/pose",1,&Control::setDirection,this); 
-    subDst_ = n_.subscribe("/localization/cps2/dst",1,&Control::setDestination,this);    
+    subDst_ = n_.subscribe("/localization/cps2/dst",1,&Control::setDestination,this);
+#ifdef DEBUG_CONTROL
+    pubSteeringPose_ = nh.advertise<visualization_msgs::Marker>(nh.resolveName("/localization/control/SteeringPose"), 1);
+    pubDst_ = nh.advertise<geometry_msgs::PointStamped>(nh.resolveName("/localization/control/destination"), 1);    
+#endif
   }
   ~Control(){}
 
@@ -60,7 +62,7 @@ class Control {
 
         cv::Point3f dir = dst - pos;
         float steering_rad = atan2f(dir.y, dir.x);
-        float steering = steering_rad * (180.0/M_PI);
+        float steering = std::min(std::max(steering_rad * (180.0/M_PI),-50.0),50.0);
 
         steering_angle_msg.data = steering;
     
@@ -82,6 +84,7 @@ class Control {
 
         pubSteering_.publish(steering_angle_msg);
 
+#ifdef DEBUG_CONTROL
         dstPoint_msg.header.seq   = msg_pose.header.seq;
         dstPoint_msg.header.stamp = msg_pose.header.stamp;
         dstPoint_msg.point.x      = dst.x;
@@ -104,6 +107,7 @@ class Control {
         
         pubSteeringPose_.publish(steeringPose_msg);
         ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f)",pos.x,pos.y, dst.x, dst.y);
+#endif        
       }
     }else{
       // just send a const angle
@@ -117,6 +121,10 @@ class Control {
     dstPosY = msg_dst.y;
     dst.x = msg_dst.x;
     dst.y = msg_dst.y;
+    
+#ifdef DEBUG_CONTROL
+    ROS_INFO("control_node setDestination dst(%.2f/%.2f)", dst.x, dst.y);
+#endif
   }
 
   int seqNum;

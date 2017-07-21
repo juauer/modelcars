@@ -40,6 +40,12 @@ class PathControl {
     }
     file.close();
     ROS_INFO("Path_Control_node initialization Num Points: %lu path: %s", point_list.size(), path.c_str());
+
+    // send first destination
+    msg_dst.x = point_list[current].x;
+    msg_dst.y = point_list[current].y;
+
+    pubDst_.publish(msg_dst);
   }
   ~PathControl(){}
 
@@ -49,7 +55,9 @@ class PathControl {
 
     current = (current + 1) % point_list.size();
     pubDst_.publish(msg_dst);
+#ifdef DEBUG_CONTROL
     ROS_INFO("Path_Control_node setDestination current: %d dst(%.2f/%.2f)", current, msg_dst.x, msg_dst.y);
+#endif
   }
 
   std::string pathFile;  
