@@ -8,6 +8,160 @@ namespace cv{
   typedef Rect_<int> Rect2i;
 }
 
+/* Moved from Map
+cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now) {
+  // differenz zwischen Bildern in Weltkoordinaten
+
+  if(!ready)
+    return cv::Point3f(0, 0, 0);
+
+  cv::Point3f flow_corr;
+  cv::Point3f flow_est = pos_now - pos_prev;
+  cv::Point2f flow_rel(flow_est.x, flow_est.y);
+  cv::Point2i flow_img = camera_matrix.relative2image(flow_rel);
+  int x = flow_img.x - img1.cols/2;
+  int y = flow_img.y - img1.rows/2;
+  float theta = flow_est.z;
+  cv::Mat part2 = rotate_cut(img2, -theta, -x, -y);
+  cv::Mat part1(img1, cv::Rect(std::max(x, 0), std::max(y, 0), img1.cols-abs(x), img1.rows-abs(y)));
+
+  cv::Mat tile1, tile2;
+  part1.copyTo(tile1, part2);
+  part2.copyTo(tile2, part1);
+  cv::imshow("b1",tile1);
+  cv::imshow("b2",tile2);
+  cv::waitKey(0);
+
+  float grad1 = gradient(tile1);
+  float grad2 = gradient(tile2);
+  float d_theta = grad1-grad2;
+    printf("--%f      %f     %f\n",grad1,grad2,d_theta);
+
+  flow_corr.z = theta + d_theta;
+
+  cv::Mat img2_rot = rotate_img(img2, -flow_corr.z);
+  float min_error = 1000;
+
+  for (int dx=-10; dx < 11; ++dx)
+  {
+    for (int dy=-10; dy < 11; ++dy)
+    {
+      cv::Mat parta(img1, cv::Rect(std::max(x+dx, 0), std::max(y+dy, 0), img1.cols-abs(x+dx), img1.rows-abs(y+dy)));
+      cv::Mat partb(img2_rot, cv::Rect(std::max(-x-dx, 0), std::max(-y-dy, 0), img1.cols-abs(x+dx), img1.rows-abs(y+dy)));
+
+      parta.copyTo(tile1, partb);
+      partb.copyTo(tile2, parta);
+
+      cv::Mat t = tile1 - tile2;
+      if (min_error > cv::sum(cv::mean(t))[0])
+      {
+        min_error = cv::sum(cv::mean(t))[0];
+        flow_img.x = x+dx + img1.cols/2;
+        flow_img.y = y+dy + img1.rows/2;
+      }
+    }
+  }
+
+  flow_rel = camera_matrix.image2relative(flow_img);
+  flow_corr.x = cosf(pos_prev.z)*flow_rel.x - sinf(pos_prev.z)*flow_rel.y;
+  flow_corr.y = sinf(pos_prev.z)*flow_rel.x + cosf(pos_prev.z)*flow_rel.y;
+
+  return flow_corr;
+}
+
+cv::Mat Map::rotate_cut(const cv::Mat &img, const float radiant, const int dx, const int dy) {
+  const float r_sin = sinf(radiant);
+  const float r_cos = cosf(radiant);
+
+  cv::Mat img_rot(img.rows-abs(dy), img.cols-abs(dx), CV_8UC1);
+  int delta_x = 0;
+  int delta_y = 0;
+  if(dx > 0) delta_x = dx;
+  if(dy > 0) delta_y = dy;
+
+  for(int c = 0; c < img.cols-abs(dx); ++c) {
+    const int sx = c - img.cols/2;
+
+    for(int r = 0; r < img.rows-abs(dy); ++r) {
+      const int sy = r - img.rows/2;
+      const float x = sx + delta_x + img.cols/2; // + cosf(radiant)*(x+delta_x-img.cols/2) - sinf(radiant)*(y+delta_y-img.rows/2);
+      const float y = sy + delta_y + img.rows/2; // + sinf(radiant)*(x+delta_x-img.cols/2) + cosf(radiant)*(y+delta_y-img.rows/2);
+      const float xx = (x - img.cols / 2) * r_cos - (y - img.rows / 2) * r_sin + img.cols/2;
+      const float yy = (x - img.cols / 2) * r_sin + (y - img.rows / 2) * r_cos + img.rows/2;
+
+      if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
+        img_rot.at<uchar>(r, c) = img.at<uchar>(yy, xx);
+      else
+        img_rot.at<uchar>(r, c) = 0;
+    }
+  }
+  return img_rot;
+}
+
+cv::Mat ImageEvaluator::transform(const cv::Mat &img,
+    const float ph)
+{
+  const int cx1   = img.cols / 2;
+  const int cy1   = img.rows / 2;
+  const int dim_x = img.cols;
+  const int dim_y = img.rows;
+  const int cx2   = dim_x / 2;
+  const int cy2   = dim_y / 2;
+  const float phs = sinf(ph);
+  const float phc = cosf(ph);
+
+  cv::Mat img_tf(dim_y, dim_x, CV_8UC1);
+
+  for(int c = 0; c < dim_x; ++c) {
+    const int sx = c - cx2;
+
+    for(int r = 0; r < dim_y; ++r) {
+      const int sy   = r - cy2;
+      const float x  = (sx);
+      const float y  = (sy);
+      const float xx = (x - cx1) * phc - (y - cy1) * phs + cx1;
+      const float yy = (x - cx1) * phs + (y - cy1) * phc + cy1;
+
+      if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
+        img_tf.at<uchar>(r, c) = applyKernel(img, (int)xx, (int)yy);
+      else
+        img_tf.at<uchar>(r, c) = 0;
+    }
+  }
+
+  return img_tf;
+}
+
+cv::Mat Map::rotate_img(const cv::Mat &img, const float radiant) {
+  cv::Mat img_rot(img.rows, img.cols, CV_8UC1);
+  for(int x = 0; x < img.cols; ++x) {
+    for(int y = 0; y < img.rows; ++y) {
+      float x_rot = img.cols/2 + cosf(radiant)*(x-img.cols/2) - sinf(radiant)*(y-img.rows/2);
+      float y_rot = img.rows/2 + sinf(radiant)*(x-img.cols/2) + cosf(radiant)*(y-img.rows/2);
+
+      if(x_rot >= 0 && y_rot >= 0 && x_rot < img.cols && y_rot < img.rows)
+        img_rot.at<uchar>(y, x) = img.at<uchar>(y_rot, x_rot);
+      else
+        img_rot.at<uchar>(y, x) = 0;
+    }
+  }
+  return img_rot;
+}
+
+float Map::gradient(const cv::Mat &img) {
+  cv::Mat mat_x, mat_y, abs_x, abs_y;
+  cv::Sobel(img,mat_x, CV_16S, 1, 0, 3, 1, 0, cv::BORDER_DEFAULT);
+  cv::Sobel(img,mat_y, CV_16S, 0, 1, 3, 1, 0, cv::BORDER_DEFAULT);
+  cv::convertScaleAbs(mat_x, abs_x);
+  cv::convertScaleAbs(mat_y, abs_y);
+  cv::Mat orientation = cv::Mat::zeros(abs_x.rows, abs_y.cols, CV_32F);
+  abs_x.convertTo(mat_x,CV_32F);
+  abs_y.convertTo(mat_y,CV_32F);
+  cv::phase(mat_x, mat_y, orientation, false);
+  return cv::mean(orientation)[0];
+}
+*/
+
 float orientation(const cv::Mat &img) {
   cv::Moments m = cv::moments(img, false);
   float cen_x=m.m10/m.m00;
