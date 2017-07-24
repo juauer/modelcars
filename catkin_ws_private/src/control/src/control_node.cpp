@@ -46,7 +46,7 @@ class Control {
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
     pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
     subDir_ = n_.subscribe("/localization/cps2/pose",1,&Control::setDirection,this); 
-    subDst_ = n_.subscribe("/localization/cps2/dst",1,&Control::setDestination,this);
+    subDst_ = n_.subscribe("/localization/control/dest",1,&Control::setDestination,this);
     pubMotor_ = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);    
     pubSpeed_ = nh.advertise<std_msgs::Int16>("/manual_control/speed", 1);
 

@@ -17,7 +17,7 @@ class PathControl {
     n_.param<std::string>("pathFile", pathFile, "track01.csv");
     
     subDst_ = n_.subscribe("/localization/control/destination/reached",1,&PathControl::setDestination,this);
-    pubDst_ = nh.advertise<geometry_msgs::Point>(nh.resolveName("/localization/cps2/dst"), 1);
+    pubDst_ = nh.advertise<geometry_msgs::Point>(nh.resolveName("/localization/control/dest"), 1);
 
     msg_dst.z = 0;
 
