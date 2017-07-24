@@ -30,28 +30,17 @@ int main(int argc, char **argv) {
   ros::Publisher pub = nh.advertise<fisheye_camera_matrix_msgs::CameraMatrix>("/usb_cam/camera_matrix", 1);
   fisheye_camera_matrix_msgs::CameraMatrix msg = camera_matrix.serialize();
   int seq_nbr = 0;
-
-  msg.header.frame_id = "base_link";
+  ros::Rate r(1);
 
   while(ros::ok() ) {
-    ros::spinOnce();
+    if(auto_calibration_enabled)
+      if(camera_matrix.update_calibration() )
+        msg = camera_matrix.serialize();
 
-    bool updated = false;
+    msg.header.seq   = ++seq_nbr;
+    msg.header.stamp = ros::Time::now();
 
-    if(auto_calibration_enabled) {
-      if(camera_matrix.update_calibration() ) {
-        msg     = camera_matrix.serialize();
-        updated = true;
-      }
-    }
-
-    // increase counter every frame but only publish every 30th frame or if an update occurred
-    msg.header.seq = ++seq_nbr;
-
-    if(updated || (seq_nbr % 30) == 0) {
-      msg.header.stamp = ros::Time::now();
-
-      pub.publish(msg);
-    }
+    pub.publish(msg);
+    r.sleep();
   }
 }
