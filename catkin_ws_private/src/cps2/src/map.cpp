@@ -14,8 +14,8 @@ Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
       ready(false),
       bbox(0, 0, _grid_size, _grid_size),
       image_evaluator(_image_evaluator),
-      path_now(cv::Point3f(0, 0, 0) ),
-      path_prev(cv::Point3f(0, 0, 0) )
+      path_now(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) ),
+      path_prev(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) )
 {
   // start with a 1x1 grid
   std::vector<MapPiece> v;
@@ -71,7 +71,8 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   }
 
   // if there is no other option, use pos_grid itself
-  if(!map_pieces[0].is_set)
+  if(!map_pieces[0].is_set && pos_grid.x > 0 && pos_grid.y > 0
+      && pos_grid.x < grid.at(0).size() && pos_grid.y < grid.size() )
     map_pieces[0] = grid.at(pos_grid.y).at(pos_grid.x);
 
   // extract the images
@@ -134,7 +135,8 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
 #endif
 
   cv::Point2f best_rel = camera_matrix.image2relative(
-      cv::Point2i(best_x + img1.cols / 2, best_y + img1.rows / 2) );
+      cv::Point2i(best_x + img1.cols / 2, best_y + img1.rows / 2) )
+      + cv::Point2f(pos_prev.x, pos_prev.y);
 
   return cv::Point3f(best_rel.x, best_rel.y, best_th);
 }
@@ -197,13 +199,14 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     map_piece->is_set = true;
     map_piece->stamp  = now;
 
-    /* if(path_prev != path_now) {
+    // correct the position
+    /* TODO Do something smart - full brute force scanning is way too slow!
+    if(path_prev != path_now) {
       cv::Point2i path_prev_grid = world2grid(path_prev);
-      std::cout << "guess: " << pos_world.p << std::endl;
+
       map_piece->pos_world = image_distance(
           grid.at(path_prev_grid.y).at(path_prev_grid.x).img,
           image, grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world, pos_world.p);
-      std::cout << "corr : " << map_piece->pos_world << std::endl;
     }
     else */
       map_piece->pos_world = pos_world.p;
@@ -218,7 +221,6 @@ inline cv::Point2i Map::world2grid(const cv::Point3f &pos_world) {
       (int)floorf( (pos_world.y - bbox.y) / grid_size)
   );
 }
-
 
 inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
   return cv::Point3f(
