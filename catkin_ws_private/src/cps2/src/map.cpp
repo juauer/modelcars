@@ -14,8 +14,8 @@ Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
       ready(false),
       bbox(0, 0, _grid_size, _grid_size),
       image_evaluator(_image_evaluator),
-      path_now(cv::Point3f(0, 0, 0) ),
-      path_prev(cv::Point3f(0, 0, 0) )
+      path_now(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) ),
+      path_prev(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) )
 {
   // start with a 1x1 grid
   std::vector<MapPiece> v;
@@ -25,66 +25,6 @@ Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
 
 Map::~Map() {
 
-}
-
-cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2, const cv::Point3f &pos_prev, const cv::Point3f &pos_now) {
-  // differenz zwischen Bildern in Weltkoordinaten
-  
-  if(!ready)
-    return cv::Point3f(0, 0, 0);
-  
-  cv::Point3f flow_corr;
-  cv::Point3f flow_est = pos_now - pos_prev;
-  cv::Point2f flow_rel(flow_est.x, flow_est.y);
-  cv::Point2i flow_img = camera_matrix.relative2image(flow_rel);
-  int x = flow_img.x - img1.cols/2;
-  int y = flow_img.y - img1.rows/2;
-  float theta = flow_est.z;
-  cv::Mat part2 = rotate_cut(img2, -theta, -x, -y);
-  cv::Mat part1(img1, cv::Rect(std::max(x, 0), std::max(y, 0), img1.cols-abs(x), img1.rows-abs(y)));
-  
-  cv::Mat tile1, tile2;
-  part1.copyTo(tile1, part2);
-  part2.copyTo(tile2, part1);
-  cv::imshow("b1",tile1);
-  cv::imshow("b2",tile2);
-  cv::waitKey(0);
-  
-  float grad1 = gradient(tile1);
-  float grad2 = gradient(tile2);
-  float d_theta = grad1-grad2;
-    printf("--%f      %f     %f\n",grad1,grad2,d_theta);
-  
-  flow_corr.z = theta + d_theta;
-    
-  cv::Mat img2_rot = rotate_img(img2, -flow_corr.z);
-  float min_error = 1000;
-  
-  for (int dx=-10; dx < 11; ++dx)
-  {
-    for (int dy=-10; dy < 11; ++dy)
-    {
-      cv::Mat parta(img1, cv::Rect(std::max(x+dx, 0), std::max(y+dy, 0), img1.cols-abs(x+dx), img1.rows-abs(y+dy)));
-      cv::Mat partb(img2_rot, cv::Rect(std::max(-x-dx, 0), std::max(-y-dy, 0), img1.cols-abs(x+dx), img1.rows-abs(y+dy)));
-
-      parta.copyTo(tile1, partb);
-      partb.copyTo(tile2, parta);
-
-      cv::Mat t = tile1 - tile2;
-      if (min_error > cv::sum(cv::mean(t))[0])
-      {
-        min_error = cv::sum(cv::mean(t))[0];
-        flow_img.x = x+dx + img1.cols/2;
-        flow_img.y = y+dy + img1.rows/2;
-      }
-    }
-  }
-  
-  flow_rel = camera_matrix.image2relative(flow_img);
-  flow_corr.x = cosf(pos_prev.z)*flow_rel.x - sinf(pos_prev.z)*flow_rel.y;
-  flow_corr.y = sinf(pos_prev.z)*flow_rel.x + cosf(pos_prev.z)*flow_rel.y;
-  
-  return flow_corr;
 }
 
 std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
@@ -131,7 +71,8 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   }
 
   // if there is no other option, use pos_grid itself
-  if(!map_pieces[0].is_set)
+  if(!map_pieces[0].is_set && pos_grid.x > 0 && pos_grid.y > 0
+      && pos_grid.x < grid.at(0).size() && pos_grid.y < grid.size() )
     map_pieces[0] = grid.at(pos_grid.y).at(pos_grid.x);
 
   // extract the images
@@ -153,6 +94,51 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   }
 
   return map_piece_images;
+}
+
+cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
+      const cv::Point3f &pos_prev, const cv::Point3f &pos_now) {
+
+  // this is a brute force experimental approach!
+  cv::Point2i shift = camera_matrix.relative2image(
+      cv::Point2f(pos_now.x - pos_prev.x, pos_now.y - pos_prev.y) )
+      - cv::Point2i(img1.cols / 2, img1.rows / 2);
+  int best_x     = shift.x;
+  int best_y     = shift.y;
+  float best_th  = pos_now.z - pos_prev.z;
+  float best_err = std::numeric_limits<float>::max();
+
+  for(float th = pos_now.z - pos_prev.z - 0.2; th <= pos_now.z - pos_prev.z + 0.2; th += 0.1)
+    for(int dx = shift.x - 30; dx <= shift.x + 30; dx += 10)
+      for(int dy = shift.y - 30; dy <= shift.y + 30; dy += 10) {
+        cv::Mat img1_cut = transform(img1,  dx / 2,  dy / 2, 0);
+        cv::Mat img2_cut = transform(img2, -dx / 2, -dy / 2, -th);
+        float err        = image_evaluator->evaluate(img1_cut, img2_cut);
+
+        if(err < best_err) {
+          best_x   = dx;
+          best_y   = dy;
+          best_th  = th;
+          best_err = err;
+        }
+      }
+
+#ifdef DEBUG_IMAGE_DISTANCE
+  cv::Mat img1_cut = transform(img1,  best_x / 2,  best_y / 2, 0);
+  cv::Mat img2_cut = transform(img2, -best_x / 2, -best_y / 2, -best_th);
+  cv::Mat canvas3(img1_cut.rows, 2 * img1_cut.cols + 20, CV_8UC1, cv::Scalar(127) );
+
+  img1_cut.copyTo(canvas3(cv::Rect2i(0, 0, img1_cut.cols, img1_cut.rows) ) );
+  img2_cut.copyTo(canvas3(cv::Rect2i(img1_cut.cols + 20, 0, img1_cut.cols, img1_cut.rows) ) );
+
+  cv::imshow("img1 (cut) <-> img2 (corrected, cut)", canvas3);
+#endif
+
+  cv::Point2f best_rel = camera_matrix.image2relative(
+      cv::Point2i(best_x + img1.cols / 2, best_y + img1.rows / 2) )
+      + cv::Point2f(pos_prev.x, pos_prev.y);
+
+  return cv::Point3f(best_rel.x, best_rel.y, best_th);
 }
 
 void Map::update(const cv::Mat &image, const Particle &pos_world,
@@ -213,20 +199,16 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     map_piece->is_set = true;
     map_piece->stamp  = now;
 
-    // TODO correct the position. Maybe like this:
-    /*if(path_prev != path_now) {
+    // correct the position
+    /* TODO Do something smart - full brute force scanning is way too slow!
+    if(path_prev != path_now) {
       cv::Point2i path_prev_grid = world2grid(path_prev);
 
-      map_piece->pos_world = pos_world.p + image_distance(
+      map_piece->pos_world = image_distance(
           grid.at(path_prev_grid.y).at(path_prev_grid.x).img,
-          image, pos_world.p - grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world);
-	
-	// gives back vector in world coordinates depending on prev position
-	  map_piece->pos_world = grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world + image_distance(
-          grid.at(path_prev_grid.y).at(path_prev_grid.x).img,
-          image, grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world, pos_world.p );
+          image, grid.at(path_prev_grid.y).at(path_prev_grid.x).pos_world, pos_world.p);
     }
-    else*/
+    else */
       map_piece->pos_world = pos_world.p;
   }
 
@@ -239,7 +221,6 @@ inline cv::Point2i Map::world2grid(const cv::Point3f &pos_world) {
       (int)floorf( (pos_world.y - bbox.y) / grid_size)
   );
 }
-
 
 inline cv::Point3f Map::grid2world(const int &grid_x, const int &grid_y) {
   return cv::Point3f(
@@ -256,46 +237,15 @@ inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
   return sqrtf(x * x + y * y);
 }
 
-cv::Mat Map::rotate_cut(const cv::Mat &img, const float radiant, const int dx, const int dy) {
-  const float r_sin = sinf(radiant);
-  const float r_cos = cosf(radiant);
-  
-  cv::Mat img_rot(img.rows-abs(dy), img.cols-abs(dx), CV_8UC1);
-  int delta_x = 0;
-  int delta_y = 0;
-  if(dx > 0) delta_x = dx;
-  if(dy > 0) delta_y = dy;
-  
-  for(int c = 0; c < img.cols-abs(dx); ++c) {
-    const int sx = c - img.cols/2;
-    
-    for(int r = 0; r < img.rows-abs(dy); ++r) {
-      const int sy = r - img.rows/2;
-      const float x = sx + delta_x + img.cols/2; // + cosf(radiant)*(x+delta_x-img.cols/2) - sinf(radiant)*(y+delta_y-img.rows/2);
-      const float y = sy + delta_y + img.rows/2; // + sinf(radiant)*(x+delta_x-img.cols/2) + cosf(radiant)*(y+delta_y-img.rows/2);
-      const float xx = (x - img.cols / 2) * r_cos - (y - img.rows / 2) * r_sin + img.cols/2;
-      const float yy = (x - img.cols / 2) * r_sin + (y - img.rows / 2) * r_cos + img.rows/2;
-      
-      if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
-        img_rot.at<uchar>(r, c) = img.at<uchar>(yy, xx);
-      else
-        img_rot.at<uchar>(r, c) = 0;
-    }
-  }
-  return img_rot;
-}
-
-/*    cv::Mat ImageEvaluator::transform(const cv::Mat &img,
-    const float ph)
-{
+cv::Mat Map::transform(const cv::Mat &img, const int dx, const int dy, const float rotation) {
   const int cx1   = img.cols / 2;
   const int cy1   = img.rows / 2;
-  const int dim_x = img.cols;
-  const int dim_y = img.rows;
+  const int dim_x = img.cols - 2 * abs(dx);
+  const int dim_y = img.rows - 2 * abs(dy);
   const int cx2   = dim_x / 2;
   const int cy2   = dim_y / 2;
-  const float phs = sinf(ph);
-  const float phc = cosf(ph);
+  const float phs = sinf(rotation);
+  const float phc = cosf(rotation);
 
   cv::Mat img_tf(dim_y, dim_x, CV_8UC1);
 
@@ -304,48 +254,19 @@ cv::Mat Map::rotate_cut(const cv::Mat &img, const float radiant, const int dx, c
 
     for(int r = 0; r < dim_y; ++r) {
       const int sy   = r - cy2;
-      const float x  = (sx);
-      const float y  = (sy);
-      const float xx = (x - cx1) * phc - (y - cy1) * phs + cx1;
-      const float yy = (x - cx1) * phs + (y - cy1) * phc + cy1;
+      const float x  = sx + dx;
+      const float y  = sy + dy;
+      const float xx = x * phc - y * phs + cx1;
+      const float yy = x * phs + y * phc + cy1;
 
       if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
-        img_tf.at<uchar>(r, c) = applyKernel(img, (int)xx, (int)yy);
+        img_tf.at<uchar>(r, c) = img.at<uchar>( rintf(yy), rintf(xx) );
       else
         img_tf.at<uchar>(r, c) = 0;
     }
   }
 
   return img_tf;
-}
-  */  
-cv::Mat Map::rotate_img(const cv::Mat &img, const float radiant) {
-  cv::Mat img_rot(img.rows, img.cols, CV_8UC1);
-  for(int x = 0; x < img.cols; ++x) {
-    for(int y = 0; y < img.rows; ++y) {
-      float x_rot = img.cols/2 + cosf(radiant)*(x-img.cols/2) - sinf(radiant)*(y-img.rows/2);
-      float y_rot = img.rows/2 + sinf(radiant)*(x-img.cols/2) + cosf(radiant)*(y-img.rows/2);
-      
-      if(x_rot >= 0 && y_rot >= 0 && x_rot < img.cols && y_rot < img.rows)
-        img_rot.at<uchar>(y, x) = img.at<uchar>(y_rot, x_rot);
-      else
-        img_rot.at<uchar>(y, x) = 0;
-    }
-  }
-  return img_rot;
-}
-
-float Map::gradient(const cv::Mat &img) {
-  cv::Mat mat_x, mat_y, abs_x, abs_y;
-  cv::Sobel(img,mat_x, CV_16S, 1, 0, 3, 1, 0, cv::BORDER_DEFAULT);
-  cv::Sobel(img,mat_y, CV_16S, 0, 1, 3, 1, 0, cv::BORDER_DEFAULT);
-  cv::convertScaleAbs(mat_x, abs_x);
-  cv::convertScaleAbs(mat_y, abs_y);
-  cv::Mat orientation = cv::Mat::zeros(abs_x.rows, abs_y.cols, CV_32F);
-  abs_x.convertTo(mat_x,CV_32F);
-  abs_y.convertTo(mat_y,CV_32F);
-  cv::phase(mat_x, mat_y, orientation, false);
-  return cv::mean(orientation)[0];
 }
 
 }

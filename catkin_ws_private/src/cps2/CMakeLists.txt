@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8.3 )
-set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
+set( CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}" )
 
 project( cps2 )
 
@@ -35,11 +35,26 @@ add_executable( test_evaluator src/image_evaluator.cpp src/test/test_image_evalu
 target_compile_definitions( test_evaluator PUBLIC DEBUG_IE )
 target_link_libraries( test_evaluator ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
-add_executable( test_image_distance src/test/test_image_distance.cpp src/map.cpp src/image_evaluator.cpp )
-target_link_libraries( test_image_distance ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+add_executable( test_image_distance_smart src/test/test_image_distance_smart.cpp src/map.cpp src/image_evaluator.cpp )
+target_link_libraries( test_image_distance_smart ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+add_executable( test_image_distance_bf src/test/test_image_distance_bf.cpp src/map.cpp src/image_evaluator.cpp )
+target_compile_definitions( test_image_distance_bf PUBLIC DEBUG_IMAGE_DISTANCE )
+target_link_libraries( test_image_distance_bf ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( test_map_transforms src/test/test_map_transforms.cpp src/image_evaluator.cpp )
 target_link_libraries( test_map_transforms ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( trajectory_plotter src/test/trajectory_plotter.cpp )
 target_link_libraries( trajectory_plotter ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+
+install( TARGETS localization_publisher localization_publisher_debug
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install( DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+)

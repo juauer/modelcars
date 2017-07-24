@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- arg <bagfile>: filename of a bag in catkin_ws/../logs/ -->
+  <arg name="bagfile" default="test" />
+    
+  <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
+  <arg name="logfile" default="test" />
+  
+  <!-- arg <errorfunction>: Which error function to use, where [0|1] correspondes to [pixelwise|centroids] -->
+  <arg name="errorfunction" default="0" />
+  
+  <!-- arg <downscale>: When comparing images, resize them to (width/downscale, height/downscale). -->
+  <!-- Boost performance with this! -->
+  <arg name="downscale" default="25" />
+  
+  <!-- arg <kernel_size>: Size of the gaussian kernel used while downscaling. -->
+  <arg name="kernel_size" default="5" />
+  
+  <!-- arg <kernel_stddev>: Standard deviation of the kernel used while downscaling. -->
+  <arg name="kernel_stddev" default="2.5" />
+  
+  <!-- arg <particles_num>: Number of particles -->
+  <arg name="particles_num" default="100" />
+  
+  <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
+  <arg name="particles_keep" default="1.0" />
+  
+  <!-- arg <particle_belief_scale>: For a given error e the particle belief b is computet as b=exp( - (particle_belief_scale * e)^2 ). -->
+  <arg name="particle_belief_scale" default="4" />
+  
+  <!-- arg <particle_stddev_lin>: Linear standard deviation (in m) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_lin" default="0.1" />
+  
+  <!-- arg <particle_stddev_ang>: Angular standard deviation (in radians) of distribution which is used to resample near a kept particle. -->
+  <arg name="particle_stddev_ang" default="0.1" />
+  
+  <!-- arg <hamid_sampling>: 0|1 = off|on. With Hamid-Sampling, each original particle hit by SUS will be kept as is, without respect to it's belief. -->
+  <arg name="hamid_sampling" default="0" />
+  
+  <!-- arg <bin_size>: Length of a bins side in m. Choose 0 to disable binning. -->
+  <arg name="bin_size" default="0.5" />
+  
+  <!-- arg <punishEdgeParticlesRate>: multiply belief with this factor. -->
+  <arg name="punishEdgeParticlesRate" default="0.5" />
+
+  <!-- arg <setStartPos>: start particle filter with initial position -->
+  <arg name="setStartPos" default="1" />
+
+  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
+  <arg name="mode" default="0" />
+  
+  <!-- arg <epsilon>: set the precision to match destination -->
+  <arg name="epsilon" default="0.1" />
+
+  <!-- arg <dstPosX>: set X value for the destination to drive to -->
+  <arg name="dstPosX" default="-0.04" />
+  
+  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
+  <arg name="dstPosY" default="0.03" />
+  
+  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
+  <arg name="speed" default="20" />
+
+  <!-- arg <pathFile>: file to load point list from -->
+  <arg name="pathFile" default="track01.csv" />
+
+  <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
+    <arg name="logfile" value="$(arg logfile)" />
+    <arg name="errorfunction" value="$(arg errorfunction)" />
+    <arg name="downscale" value="$(arg downscale)" />
+    <arg name="kernel_size" value="$(arg kernel_size)" />
+    <arg name="kernel_stddev" value="$(arg kernel_stddev)" />
+    <arg name="particles_num" value="$(arg particles_num)" />
+    <arg name="particles_keep" value="$(arg particles_keep)" />
+    <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />
+    <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
+    <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
+    <arg name="hamid_sampling" value="$(arg hamid_sampling)" />
+    <arg name="bin_size" value="$(arg bin_size)" />
+    <arg name="punishEdgeParticlesRate" value="$(arg punishEdgeParticlesRate)" />
+    <arg name="setStartPos" value="$(arg setStartPos)" />
+  </include>
+  
+  <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
+  </node>
+  
+  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg pathFile)" output="screen">
+  </node>
+
+  <rosparam> use_sim_time: true </rosparam>  
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find control)/config/config_control.rviz" />
+
+  <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+  
+  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
+</launch>

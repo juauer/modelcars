@@ -94,10 +94,10 @@ cv::Mat ImageEvaluator::transform(const cv::Mat &img,
 
     for(int r = 0; r < dim_y; ++r) {
       const int sy   = r - cy2;
-      const float x  = resize_scale * (sx * thc - sy * ths ) + pos_image.x;
-      const float y  = resize_scale * (sx * ths + sy * thc ) + pos_image.y;
-      const float xx = (x - cx1) * phc - (y - cy1) * phs + cx1;
-      const float yy = (x - cx1) * phs + (y - cy1) * phc + cy1;
+      const float x  = resize_scale * (sx * thc - sy * ths ) + pos_image.x - cx1;
+      const float y  = resize_scale * (sx * ths + sy * thc ) + pos_image.y - cy1;
+      const float xx = x * phc - y * phs + cx1;
+      const float yy = x * phs + y * phc + cy1;
 
       if(xx >= 0 && yy >= 0 && xx < img.cols && yy < img.rows)
         img_tf.at<uchar>(r, c) = applyKernel(img, (int)xx, (int)yy);

@@ -28,13 +28,19 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<fisheye_camera_matrix_msgs::CameraMatrix>("/usb_cam/camera_matrix", 1);
+  fisheye_camera_matrix_msgs::CameraMatrix msg = camera_matrix.serialize();
+  int seq_nbr = 0;
+  ros::Rate r(1);
 
   while(ros::ok() ) {
-    ros::spinOnce();
-
     if(auto_calibration_enabled)
-      camera_matrix.update_calibration();
+      if(camera_matrix.update_calibration() )
+        msg = camera_matrix.serialize();
 
-    pub.publish(camera_matrix.serialize() );
+    msg.header.seq   = ++seq_nbr;
+    msg.header.stamp = ros::Time::now();
+
+    pub.publish(msg);
+    r.sleep();
   }
 }
