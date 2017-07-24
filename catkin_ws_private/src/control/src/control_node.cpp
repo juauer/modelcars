@@ -127,8 +127,8 @@ class Control {
         steeringPose_msg.scale.x    = distance;//length
         
         pubSteeringPose_.publish(steeringPose_msg);
-        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d",
-                 pos.x,pos.y, dst.x, dst.y, distance, speed_msg.data);
+        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d steering: %.2f",
+                 pos.x,pos.y, dst.x, dst.y, distance, speed_msg.data, steering);
 #endif
       }
       
