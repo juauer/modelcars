@@ -9,6 +9,13 @@
 #include <opencv2/core/core.hpp>
 #include <math.h> 
 
+static const unsigned point_mode = 0;
+static const unsigned angle_mode = 1;
+// speed range [-1000...1000] direction is inverted
+static const float max_speed = -500.0f; 
+static const float speed_multiplyer = -200.0f;
+static const double max_steering_angle = 50.0f;
+
 class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0), reached(false) {
@@ -39,16 +46,31 @@ class Control {
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
     pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
     subDir_ = n_.subscribe("/localization/cps2/pose",1,&Control::setDirection,this); 
-    subDst_ = n_.subscribe("/localization/cps2/dst",1,&Control::setDestination,this);
+    subDst_ = n_.subscribe("/localization/control/dest",1,&Control::setDestination,this);
+    pubMotor_ = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);    
+    pubSpeed_ = nh.advertise<std_msgs::Int16>("/manual_control/speed", 1);
+
+    msg_stop.data     = 1;
+    msg_start.data    = 0;
+    // enable motors
+    pubMotor_.publish(msg_start);
+
+    if(mode==angle_mode){
+      // set speed
+      speed_msg.data = speed;
+      pubSpeed_.publish(speed_msg);
+    }
+
 #ifdef DEBUG_CONTROL
     pubSteeringPose_ = nh.advertise<visualization_msgs::Marker>(nh.resolveName("/localization/control/SteeringPose"), 1);
-    pubDst_ = nh.advertise<geometry_msgs::PointStamped>(nh.resolveName("/localization/control/destination"), 1);    
+    pubDst_ = nh.advertise<geometry_msgs::PointStamped>(nh.resolveName("/localization/control/destination"), 1);
 #endif
   }
   ~Control(){}
 
   void setDirection(const geometry_msgs::PoseStamped& msg_pose) {
-    if (mode ==0){
+    // point mode
+    if (mode ==point_mode){
       // check for old message
       if (seqNum < msg_pose.header.seq){        
         seqNum = msg_pose.header.seq;
@@ -62,24 +84,23 @@ class Control {
 
         cv::Point3f dir = dst - pos;
         float steering_rad = atan2f(dir.y, dir.x);
-        float steering = std::min(std::max(steering_rad * (180.0/M_PI),-50.0),50.0);
+        float steering = std::min(std::max(steering_rad * (180.0/M_PI),-max_steering_angle),max_steering_angle);
 
         steering_angle_msg.data = steering;
     
         float distance = cv::sqrt(dir.x * dir.x + dir.y * dir.y);
-        // speed_msg.data = distance;
-        // pubSpeed_.publish(speed_msg); // set speed according to distance ?
+        speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
+        pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
         // check if destination is reached with epsilon precision
         // and send message that the destination is reached
         if( (dir.x < epsilon) && (-dir.x < epsilon) &&
             (dir.y < epsilon) && (-dir.y < epsilon)){
+#ifdef DEBUG_CONTROL
           ROS_INFO("control_node setDirection: destination reached");
-
+#endif
           reached_msg.data = true;
           pubDstReached_.publish(reached_msg);
-          // speed_msg.data = 0;
-          // pubSpeed_.publish(speed_msg); // stop the car
         }
 
         pubSteering_.publish(steering_angle_msg);
@@ -106,10 +127,12 @@ class Control {
         steeringPose_msg.scale.x    = distance;//length
         
         pubSteeringPose_.publish(steeringPose_msg);
-        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f)",pos.x,pos.y, dst.x, dst.y);
-#endif        
+        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d",
+                 pos.x,pos.y, dst.x, dst.y, distance, speed_msg.data);
+#endif
       }
-    }else{
+      
+    }else{ // angle_mode
       // just send a const angle
       steering_angle_msg.data = mode-91;
       pubSteering_.publish(steering_angle_msg);
@@ -147,8 +170,12 @@ class Control {
   ros::Publisher pubSteeringPose_;
   ros::Publisher pubDst_;
   ros::Publisher pubDstReached_;
+  ros::Publisher pubSpeed_;
+  ros::Publisher pubMotor_;
   ros::Subscriber subDir_;
   ros::Subscriber subDst_;
+  std_msgs::Int16 msg_stop;
+  std_msgs::Int16 msg_start;
 
 };//End of class auto_stop
 
