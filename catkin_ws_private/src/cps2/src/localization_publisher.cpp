@@ -35,9 +35,11 @@ geometry_msgs::PoseStamped msg_pose;
 ros::Publisher pub;
 
 #ifdef DEBUG_PF
-visualization_msgs::MarkerArray msg_markers;
+visualization_msgs::MarkerArray msg_markers_particles;
+visualization_msgs::MarkerArray msg_markers_mappieces;
 sensor_msgs::ImagePtr msg_best;
-ros::Publisher pub_markers;
+ros::Publisher pub_markers_particles;
+ros::Publisher pub_markers_mappieces;
 image_transport::Publisher pub_best;
 
 #ifndef DEBUG_PF_STATIC
@@ -122,18 +124,18 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   pub.publish(msg_pose);
 
 #ifdef DEBUG_PF
+  // draw particles
   int i = 0;
 
   for(std::vector<cps2::Particle>::iterator it = particleFilter->particles.begin();
       it < particleFilter->particles.end(); ++it) {
-    cv::Point3f p     = it->p;
-    tf::Quaternion q  = tf::createQuaternionFromYaw(p.z);
-    visualization_msgs::Marker *marker = &msg_markers.markers[i];
+    tf::Quaternion q  = tf::createQuaternionFromYaw(it->p.z);
+    visualization_msgs::Marker *marker = &msg_markers_particles.markers[i];
 
     marker->header.seq         = msg->header.seq;
     marker->header.stamp       = msg->header.stamp;
-    marker->pose.position.x    = p.x;
-    marker->pose.position.y    = p.y;
+    marker->pose.position.x    = it->p.x;
+    marker->pose.position.y    = it->p.y;
     marker->pose.orientation.x = q.getX();
     marker->pose.orientation.y = q.getY();
     marker->pose.orientation.z = q.getZ();
@@ -144,8 +146,50 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     ++i;
   }
 
-  pub_markers.publish(msg_markers);
+  pub_markers_particles.publish(msg_markers_particles);
 
+  // draw mappieces
+  msg_markers_mappieces.markers.clear();
+
+  i = 0;
+
+  for(std::vector<std::vector<cps2::MapPiece> >::const_iterator it1 = map->grid.begin();
+      it1 != map->grid.end(); ++it1)
+    for(std::vector<cps2::MapPiece>::const_iterator it2 = it1->begin();
+        it2 != it1->end(); ++it2)
+      if(it2->is_set) {
+        visualization_msgs::Marker marker;
+
+        tf::Quaternion q = tf::createQuaternionFromYaw(it2->pos_world.z);
+
+        marker.header.frame_id    = "base_link";
+        marker.header.seq         = msg->header.seq;
+        marker.header.stamp       = msg->header.stamp;
+        marker.ns                 = "cps2";
+        marker.id                 = i++;
+        marker.type               = visualization_msgs::Marker::ARROW;
+        marker.action             = visualization_msgs::Marker::ADD;
+        marker.pose.position.x    = it2->pos_world.x;
+        marker.pose.position.y    = it2->pos_world.y;
+        marker.pose.position.z    = 0;
+        marker.pose.orientation.x = q.getX();
+        marker.pose.orientation.y = q.getY();
+        marker.pose.orientation.z = q.getZ();
+        marker.pose.orientation.w = q.getW();
+        marker.color.a            = 1.0;
+        marker.color.r            = 0.0;
+        marker.color.g            = 0.8;
+        marker.color.b            = 1.0;
+        marker.scale.x            = 0.4;
+        marker.scale.y            = 0.2;
+        marker.scale.z            = 0.2;
+
+        msg_markers_mappieces.markers.push_back(marker);
+      }
+
+  pub_markers_mappieces.publish(msg_markers_mappieces);
+
+  // publish image of map at localized pos
   std::vector<cv::Mat> mappieces = map->get_map_pieces(best.p);
 
   if(!mappieces.empty() ) {
@@ -239,8 +283,9 @@ int main(int argc, char **argv) {
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
 #ifdef DEBUG_PF
-  pub_markers = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
-  pub_best    = it.advertise("/localization/cps2/pose_image", 1);
+  pub_markers_particles = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
+  pub_markers_mappieces = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/mappieces", 1);
+  pub_best              = it.advertise("/localization/cps2/pose_image", 1);
 
   for(int i = 0; i < particleFilter->particles_num; ++i) {
     visualization_msgs::Marker marker;
@@ -255,7 +300,7 @@ int main(int argc, char **argv) {
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
     marker.color.b = 0.0;
-    msg_markers.markers.push_back(marker);
+    msg_markers_particles.markers.push_back(marker);
   }
 
 #ifndef DEBUG_PF_STATIC
