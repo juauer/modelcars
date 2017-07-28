@@ -108,9 +108,9 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
   float best_th  = pos_now.z - pos_prev.z;
   float best_err = std::numeric_limits<float>::max();
 
-  for(float th = pos_now.z - pos_prev.z - 0.2; th <= pos_now.z - pos_prev.z + 0.2; th += 0.1)
-    for(int dx = shift.x - 30; dx <= shift.x + 30; dx += 10)
-      for(int dy = shift.y - 30; dy <= shift.y + 30; dy += 10) {
+  for(float th = pos_now.z - pos_prev.z - 0.1; th <= pos_now.z - pos_prev.z + 0.1; th += 0.02)
+    for(int dx = shift.x - 10; dx <= shift.x + 10; dx += 2)
+      for(int dy = shift.y - 20; dy <= shift.y + 20; dy += 4) {
         cv::Mat img1_cut = transform(img1,  dx / 2,  dy / 2, 0);
         cv::Mat img2_cut = transform(img2, -dx / 2, -dy / 2, -th);
         float err        = image_evaluator->evaluate(img1_cut, img2_cut);
@@ -240,8 +240,8 @@ inline float Map::dist(const cv::Point3f &p1, const cv::Point3f &p2) {
 cv::Mat Map::transform(const cv::Mat &img, const int dx, const int dy, const float rotation) {
   const int cx1   = img.cols / 2;
   const int cy1   = img.rows / 2;
-  const int dim_x = img.cols - 2 * abs(dx);
-  const int dim_y = img.rows - 2 * abs(dy);
+  const int dim_x = std::min(40, img.cols - 2 * abs(dx) );
+  const int dim_y = std::min(40, img.rows - 2 * abs(dy) );
   const int cx2   = dim_x / 2;
   const int cy2   = dim_y / 2;
   const float phs = sinf(rotation);
