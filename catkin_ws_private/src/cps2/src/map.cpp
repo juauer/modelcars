@@ -138,7 +138,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
       cv::Point2i(best_x + img1.cols / 2, best_y + img1.rows / 2) )
       + cv::Point2f(pos_prev.x, pos_prev.y);
 
-  return cv::Point3f(best_rel.x, best_rel.y, best_th);
+  return cv::Point3f(best_rel.x, best_rel.y, best_th + pos_prev.z);
 }
 
 void Map::update(const cv::Mat &image, const Particle &pos_world,
