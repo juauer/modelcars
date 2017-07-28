@@ -106,7 +106,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
   int best_x     = shift.x;
   int best_y     = shift.y;
   float best_th  = pos_now.z - pos_prev.z;
-  float best_err = std::numeric_limits<float>::max();
+  float best_err = 1;
 
   for(float th = pos_now.z - pos_prev.z - 0.1; th <= pos_now.z - pos_prev.z + 0.1; th += 0.02)
     for(int dx = shift.x - 10; dx <= shift.x + 10; dx += 2)
