@@ -100,7 +100,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
       const cv::Point3f &pos_prev, const cv::Point3f &pos_now) {
 
   // this is a brute force experimental approach!
-  cv::Point2i shift = camera_matrix.relative2image(
+  const cv::Point2i shift = camera_matrix.relative2image(
       cv::Point2f(pos_now.x - pos_prev.x, pos_now.y - pos_prev.y) )
       - cv::Point2i(img1.cols / 2, img1.rows / 2);
   int best_x     = shift.x;
@@ -111,9 +111,9 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
   for(float th = pos_now.z - pos_prev.z - 0.1; th <= pos_now.z - pos_prev.z + 0.1; th += 0.02)
     for(int dx = shift.x - 10; dx <= shift.x + 10; dx += 2)
       for(int dy = shift.y - 20; dy <= shift.y + 20; dy += 4) {
-        cv::Mat img1_cut = transform(img1,  dx / 2,  dy / 2, 0);
-        cv::Mat img2_cut = transform(img2, -dx / 2, -dy / 2, -th);
-        float err        = image_evaluator->evaluate(img1_cut, img2_cut);
+        const cv::Mat img1_cut = transform(img1,  dx / 2,  dy / 2, 0);
+        const cv::Mat img2_cut = transform(img2, -dx / 2, -dy / 2, -th);
+        const float err        = image_evaluator->evaluate(img1_cut, img2_cut);
 
         if(err < best_err) {
           best_x   = dx;
