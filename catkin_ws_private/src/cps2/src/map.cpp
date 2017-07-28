@@ -103,6 +103,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
   const cv::Point2i shift = camera_matrix.relative2image(
       cv::Point2f(pos_now.x - pos_prev.x, pos_now.y - pos_prev.y) )
       - cv::Point2i(img1.cols / 2, img1.rows / 2);
+
   int best_x     = shift.x;
   int best_y     = shift.y;
   float best_th  = pos_now.z - pos_prev.z;
@@ -124,6 +125,9 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
       }
 
 #ifdef DEBUG_IMAGE_DISTANCE
+  printf("correction in image frame      : %d, %d, %.2f\n",
+        best_x - shift.x, best_y - shift.y, best_th - pos_now.z + pos_prev.z);
+
   cv::Mat img1_cut = transform(img1,  best_x / 2,  best_y / 2, 0);
   cv::Mat img2_cut = transform(img2, -best_x / 2, -best_y / 2, -best_th);
   cv::Mat canvas3(img1_cut.rows, 2 * img1_cut.cols + 20, CV_8UC1, cv::Scalar(127) );
@@ -132,6 +136,7 @@ cv::Point3f Map::image_distance(const cv::Mat &img1, const cv::Mat &img2,
   img2_cut.copyTo(canvas3(cv::Rect2i(img1_cut.cols + 20, 0, img1_cut.cols, img1_cut.rows) ) );
 
   cv::imshow("img1 (cut) <-> img2 (corrected, cut)", canvas3);
+  cv::waitKey(0);
 #endif
 
   cv::Point2f best_rel = camera_matrix.image2relative(
