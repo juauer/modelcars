@@ -1,6 +1,32 @@
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <geometry_msgs/Point.h>
+#include <fisheye_camera_matrix/perspective_projection.h>
 #include "fisheye_camera_matrix/camera_matrix.hpp"
+
+fisheye_camera_matrix::CameraMatrix camera_matrix;
+
+bool relative2image(fisheye_camera_matrix::perspective_projection::Request  &req,
+    fisheye_camera_matrix::perspective_projection::Response &res) {
+  cv::Point2i p = camera_matrix.relative2image(cv::Point2f(req.x, req.y) );
+
+  res.p.x = p.x;
+  res.p.y = p.y;
+  res.p.z = 0;
+
+  return true;
+}
+
+bool image2relative(fisheye_camera_matrix::perspective_projection::Request  &req,
+    fisheye_camera_matrix::perspective_projection::Response &res) {
+  cv::Point2f p = camera_matrix.image2relative(cv::Point2f(req.x, req.y) );
+
+   res.p.x = p.x;
+   res.p.y = p.y;
+   res.p.z = 0;
+
+   return true;
+}
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "camera_matrix_publisher");
@@ -24,10 +50,13 @@ int main(int argc, char **argv) {
 
   // TODO add switch to enable auto calibration
 
-  fisheye_camera_matrix::CameraMatrix camera_matrix(path.c_str() );
+  camera_matrix = fisheye_camera_matrix::CameraMatrix(path.c_str() );
+
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<fisheye_camera_matrix_msgs::CameraMatrix>("/usb_cam/camera_matrix", 1);
+  ros::ServiceServer service_r2i = nh.advertiseService("relative2image", relative2image);
+  ros::ServiceServer service_i2r = nh.advertiseService("image2relative", image2relative);
   fisheye_camera_matrix_msgs::CameraMatrix msg = camera_matrix.serialize();
   int seq_nbr = 0;
   ros::Rate r(1);
@@ -42,5 +71,6 @@ int main(int argc, char **argv) {
 
     pub.publish(msg);
     r.sleep();
+    ros::spinOnce();
   }
 }
