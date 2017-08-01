@@ -6,6 +6,9 @@
 
 namespace cps2 {
 
+/*cv::Mat mmm;
+cv::Point2i mc;*/
+
 Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
     float _update_interval_min, float _update_interval_max)
     : grid_size(_grid_size),
@@ -13,6 +16,7 @@ Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
       update_interval_max(_update_interval_max),
       ready(false),
       bbox(0, 0, _grid_size, _grid_size),
+      // bbox(-3, -3, 6, 6),
       image_evaluator(_image_evaluator),
       path_now(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) ),
       path_prev(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) )
@@ -21,6 +25,10 @@ Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
   std::vector<MapPiece> v;
   v.push_back(MapPiece() );
   grid.push_back(v);
+
+  /*mmm = cv::imread("/home/juauer/Schreibtisch/modelcars/captures/map_test_2.png");
+  cv::cvtColor(mmm, mmm, CV_BGR2GRAY);
+  mc = cv::Point2i(mmm.cols/2, mmm.rows/2);*/
 }
 
 Map::~Map() {
@@ -32,6 +40,11 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
 
   if(!ready)
     return map_piece_images;
+
+  /*cv::Point2i p = camera_matrix.relative2image(cv::Point2f(pos_world.x, pos_world.y));
+  cv::Mat mm = image_evaluator->transform(mmm, p + mc-cv::Point2i(320,240), pos_world.z, 0, 480, 640);
+  map_piece_images.push_back(mm);
+  return map_piece_images;*/
 
   // get grid indices and world coords of the grid cells center for pos_world
   const cv::Point2i pos_grid = world2grid(pos_world);
@@ -150,7 +163,8 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &_camera_matrix) {
   // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
   camera_matrix = _camera_matrix;
-
+  /*ready=true;
+  return;*/
   // resize the grid if needed
   if(pos_world.p.x - grid_size < bbox.x) {
     for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)

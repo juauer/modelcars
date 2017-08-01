@@ -21,8 +21,10 @@ class ImageEvaluator {
    * @param ph rotate the original image around this angle
    * @return the transformed image
    */
-  cv::Mat transform(const cv::Mat &img,
-      const cv::Point2i &pos_image, const float th, const float ph);
+  cv::Mat transform(const cv::Mat &img, const cv::Point2i &pos_image,
+      const float th, const float ph, const int rows, const int cols);
+  cv::Mat transform(const cv::Mat &img, const cv::Point2i &pos_image,
+      const float th, const float ph);
 
   float evaluate(const cv::Mat &img1, const cv::Mat &img2);
 
