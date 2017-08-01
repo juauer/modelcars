@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   }
 
   cps2::ImageEvaluator image_evaluator(cps2::IE_MODE_PIXELS, 1, 1, 1);
-  cps2::Map map(&image_evaluator, 1.0, 1, 60);
+  cps2::Map map(&image_evaluator, false, 1.0, 1, 60);
   fisheye_camera_matrix::CameraMatrix camera_matrix(
       (ros::package::getPath("fisheye_camera_matrix")
       + std::string("/config/default.calib") ).c_str()

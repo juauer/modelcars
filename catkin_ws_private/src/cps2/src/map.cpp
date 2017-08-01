@@ -6,29 +6,36 @@
 
 namespace cps2 {
 
-/*cv::Mat mmm;
-cv::Point2i mc;*/
-
-Map::Map(cps2::ImageEvaluator *_image_evaluator, float _grid_size,
-    float _update_interval_min, float _update_interval_max)
-    : grid_size(_grid_size),
+Map::Map(cps2::ImageEvaluator *_image_evaluator, bool _is_big_map,
+    float _grid_size, float _update_interval_min, float _update_interval_max)
+    : is_big_map(_is_big_map),
+      grid_size(_grid_size),
       update_interval_min(_update_interval_min),
       update_interval_max(_update_interval_max),
       ready(false),
       bbox(0, 0, _grid_size, _grid_size),
-      // bbox(-3, -3, 6, 6),
       image_evaluator(_image_evaluator),
       path_now(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) ),
       path_prev(cv::Point3f(_grid_size / 2, _grid_size / 2, 0) )
 {
-  // start with a 1x1 grid
-  std::vector<MapPiece> v;
-  v.push_back(MapPiece() );
-  grid.push_back(v);
+  if(is_big_map) {
+    std::string path_img = ros::package::getPath("cps2")
+        + std::string("/config/map.png");
 
-  /*mmm = cv::imread("/home/juauer/Schreibtisch/modelcars/captures/map_test_2.png");
-  cv::cvtColor(mmm, mmm, CV_BGR2GRAY);
-  mc = cv::Point2i(mmm.cols/2, mmm.rows/2);*/
+    if(access(path_img.c_str(), R_OK ) == -1)
+      ROS_ERROR("Map file not found: %s", path_img.c_str() );
+
+    big_map = cv::imread(path_img);
+    dim_map = cv::Point2i(big_map.cols / 2, big_map.rows / 2);
+
+    cv::cvtColor(big_map, big_map, CV_BGR2GRAY);
+  }
+  else {
+    // start with a 1x1 grid
+    std::vector<MapPiece> v;
+    v.push_back(MapPiece() );
+    grid.push_back(v);
+  }
 }
 
 Map::~Map() {
@@ -41,10 +48,15 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
   if(!ready)
     return map_piece_images;
 
-  /*cv::Point2i p = camera_matrix.relative2image(cv::Point2f(pos_world.x, pos_world.y));
-  cv::Mat mm = image_evaluator->transform(mmm, p + mc-cv::Point2i(320,240), pos_world.z, 0, 480, 640);
-  map_piece_images.push_back(mm);
-  return map_piece_images;*/
+  if(is_big_map) {
+    cv::Point2i pos_img = camera_matrix.relative2image(cv::Point2f(pos_world.x, pos_world.y) );
+    cv::Mat map_piece   = image_evaluator->transform(big_map,
+        pos_img + dim_map - dim_img, pos_world.z, 0, 2 * dim_img.y, 2 * dim_img.x);
+
+    map_piece_images.push_back(map_piece);
+    return map_piece_images;
+  }
+  // ... else:
 
   // get grid indices and world coords of the grid cells center for pos_world
   const cv::Point2i pos_grid = world2grid(pos_world);
@@ -63,8 +75,8 @@ std::vector<cv::Mat> Map::get_map_pieces(const cv::Point3f &pos_world) {
     for(int i = grid_y_lb; i < grid_y_ub; ++i)
       for(int j = grid_x_lb; j < grid_x_ub; ++j) {
         // do not use data from pos_grid itself, to avoid reading and updating the same mappiece
-        if(i == pos_grid.y && j == pos_grid.x)
-          continue;
+        // if(i == pos_grid.y && j == pos_grid.x)
+        //   continue;
 
         // skip unset pieces
         if(!grid.at(i).at(j).is_set)
@@ -163,8 +175,33 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
       const fisheye_camera_matrix::CameraMatrix &_camera_matrix) {
   // update camera_matrix (with respect to auto-calibration, dynamic height, etc.)
   camera_matrix = _camera_matrix;
-  /*ready=true;
-  return;*/
+
+  // initialization (first call to update)
+  if(!ready) {
+    ready = true;
+
+    if(is_big_map) {
+      dim_img = cv::Point2i(image.cols / 2, image.rows / 2);
+
+      // camera_matrix is for fixed size images - to project the upperleft corner
+      // of the map (usually (0, 0) ), shift by the difference of dimensions (a
+      // bit hacky, but least complex)
+      cv::Point2i upperleft_corner = dim_img - dim_map;
+      cv::Point2f c_rel = camera_matrix.image2relative(upperleft_corner);
+      cv::Point2f c_abs = cv::Point2f(fabs(c_rel.x), fabs(c_rel.y) );
+
+      bbox.x      = -0.95 * c_abs.x;
+      bbox.y      = -0.95 * c_abs.y;
+      bbox.width  =   1.9 * c_abs.x;
+      bbox.height =   1.9 * c_abs.y;
+    }
+  }
+
+  // nothing else to update for a big map
+  if(is_big_map)
+    return;
+  // ... else:
+
   // resize the grid if needed
   if(pos_world.p.x - grid_size < bbox.x) {
     for(std::vector<std::vector<MapPiece> >::iterator y = grid.begin(); y != grid.end(); ++y)
@@ -210,7 +247,7 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
   // update the mappiece if needed
   if(
       !map_piece->is_set
-      || dt > update_interval_max
+      //|| dt > update_interval_max
       || (dt > update_interval_min && dist(pos_world.p, center) < dist(map_piece->pos_world, center) )
   ) {
     image.copyTo(map_piece->img);
@@ -230,8 +267,6 @@ void Map::update(const cv::Mat &image, const Particle &pos_world,
     else */
       map_piece->pos_world = pos_world.p;
   }
-
-  ready = true;
 }
 
 inline cv::Point2i Map::world2grid(const cv::Point3f &pos_world) {

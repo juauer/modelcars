@@ -6,6 +6,9 @@
   <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
   <arg name="calib" default="default" />
   
+  <!-- arg <big_map>: 0|1 = off|on. Use a given, big map or create a dynamic map, otherwise. -->
+  <arg name="big_map" default="1" />
+  
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
   <arg name="grid_size" default="3" />
   
@@ -66,7 +69,7 @@
   
   <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
   
-  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug_static" args="$(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug_static" args="$(arg big_map) $(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
   
   <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" />
 </launch>

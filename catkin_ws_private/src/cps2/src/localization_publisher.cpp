@@ -214,39 +214,40 @@ int main(int argc, char **argv) {
 
   if(argc < 18) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[grid_size:=FLOAT] [update_interval_min:=FLOAT] [update_interval_max:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
+              "[big_map:=INT] [grid_size:=FLOAT] [update_interval_min:=FLOAT] [update_interval_max:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
               "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL]'");
     return 1;
   }
 
-  float grid_size               = atof(argv[1]);
-  float update_interval_min     = atof(argv[2]);
-  float update_interval_max     = atof(argv[3]);
+  bool big_map                  = atoi(argv[1]) != 0;
+  float grid_size               = atof(argv[2]);
+  float update_interval_min     = atof(argv[3]);
+  float update_interval_max     = atof(argv[4]);
   std::string path_log          = ros::package::getPath("cps2") + std::string("/../../../logs/")
-                         + std::string(argv[4]);
-  int errorfunction             = atoi(argv[5]);
-  int downscale                 = atoi(argv[6]);
-  int kernel_size               = atoi(argv[7]);
-  float kernel_stddev           = atof(argv[8]);
-  int particles_num             = atoi(argv[9]);
-  float particles_keep          = atof(argv[10]);
-  float particle_belief_scale   = atof(argv[11]);
-  float particle_stddev_lin     = atof(argv[12]);
-  float particle_stddev_ang     = atof(argv[13]);
-  bool hamid_sampling           = atoi(argv[14]) != 0;
-  float bin_size                = atof(argv[15]);
-  float punishEdgeParticlesRate = atof(argv[16]);
-  bool setStartPos              = atoi(argv[17]) != 0;
+                         + std::string(argv[5]);
+  int errorfunction             = atoi(argv[6]);
+  int downscale                 = atoi(argv[7]);
+  int kernel_size               = atoi(argv[8]);
+  float kernel_stddev           = atof(argv[9]);
+  int particles_num             = atoi(argv[10]);
+  float particles_keep          = atof(argv[11]);
+  float particle_belief_scale   = atof(argv[12]);
+  float particle_stddev_lin     = atof(argv[13]);
+  float particle_stddev_ang     = atof(argv[14]);
+  bool hamid_sampling           = atoi(argv[15]) != 0;
+  float bin_size                = atof(argv[16]);
+  float punishEdgeParticlesRate = atof(argv[17]);
+  bool setStartPos              = atoi(argv[18]) != 0;
 
   ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
-  ROS_INFO("localization_cps2_publisher: using grid_size: %f, update_interval_min: %f, "
+  ROS_INFO("localization_cps2_publisher: using big_map: %s, grid_size: %f, update_interval_min: %f, "
       "update_interval_max: %f, errorfunction: %s, downscale: %d, kernel_size: %d, "
       "kernel_stddev: %.2f, particles_num: %d, particles_keep: %.2f, particle_belief_scale: %.2f, "
       "particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
       "punishEdgeParticleRate %.2f, setStartPos: %d",
-           grid_size, update_interval_min, update_interval_max,
+           (big_map ? "yes" : "no"), grid_size, update_interval_min, update_interval_max,
            (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
@@ -255,7 +256,7 @@ int main(int argc, char **argv) {
   pos_start = cv::Point3f(grid_size / 2, grid_size / 2, 0);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
-  map             = new cps2::Map(image_evaluator, grid_size, update_interval_min, update_interval_max);
+  map             = new cps2::Map(image_evaluator, big_map, grid_size, update_interval_min, update_interval_max);
   particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
       particles_num, particles_keep, particle_belief_scale,
       particle_stddev_lin, particle_stddev_ang, hamid_sampling,
