@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   }
 
   cps2::ImageEvaluator image_evaluator(cps2::IE_MODE_PIXELS, 1, 1, 1);
-  cps2::Map map(&image_evaluator, 1.0, 1, 60);
+  cps2::Map map(&image_evaluator, false, 1.0, 1, 60);
   fisheye_camera_matrix::CameraMatrix camera_matrix(
       (ros::package::getPath("fisheye_camera_matrix")
       + std::string("/config/default.calib") ).c_str()
@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
   img1.copyTo(canvas1(cv::Rect2i(0, 0, img1.cols, img1.rows) ) );
   img2_real_img.copyTo(canvas1(cv::Rect2i(img1.cols + 20, 0, img1.cols, img1.rows) ) );
   cv::imshow("img1 <-> img2 (real)", canvas1);
+  cv::waitKey(0);
 
   // image 2 guessed version
   cv::Point3f img2_guess_pos_rel(atof(argv[4]), atof(argv[5]), atof(argv[6]) );

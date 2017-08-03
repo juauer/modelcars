@@ -35,9 +35,11 @@ geometry_msgs::PoseStamped msg_pose;
 ros::Publisher pub;
 
 #ifdef DEBUG_PF
-visualization_msgs::MarkerArray msg_markers;
+visualization_msgs::MarkerArray msg_markers_particles;
+visualization_msgs::MarkerArray msg_markers_mappieces;
 sensor_msgs::ImagePtr msg_best;
-ros::Publisher pub_markers;
+ros::Publisher pub_markers_particles;
+ros::Publisher pub_markers_mappieces;
 image_transport::Publisher pub_best;
 
 #ifndef DEBUG_PF_STATIC
@@ -122,18 +124,18 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   pub.publish(msg_pose);
 
 #ifdef DEBUG_PF
+  // draw particles
   int i = 0;
 
   for(std::vector<cps2::Particle>::iterator it = particleFilter->particles.begin();
       it < particleFilter->particles.end(); ++it) {
-    cv::Point3f p     = it->p;
-    tf::Quaternion q  = tf::createQuaternionFromYaw(p.z);
-    visualization_msgs::Marker *marker = &msg_markers.markers[i];
+    tf::Quaternion q  = tf::createQuaternionFromYaw(it->p.z);
+    visualization_msgs::Marker *marker = &msg_markers_particles.markers[i];
 
     marker->header.seq         = msg->header.seq;
     marker->header.stamp       = msg->header.stamp;
-    marker->pose.position.x    = p.x;
-    marker->pose.position.y    = p.y;
+    marker->pose.position.x    = it->p.x;
+    marker->pose.position.y    = it->p.y;
     marker->pose.orientation.x = q.getX();
     marker->pose.orientation.y = q.getY();
     marker->pose.orientation.z = q.getZ();
@@ -144,8 +146,50 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
     ++i;
   }
 
-  pub_markers.publish(msg_markers);
+  pub_markers_particles.publish(msg_markers_particles);
 
+  // draw mappieces
+  msg_markers_mappieces.markers.clear();
+
+  i = 0;
+
+  for(std::vector<std::vector<cps2::MapPiece> >::const_iterator it1 = map->grid.begin();
+      it1 != map->grid.end(); ++it1)
+    for(std::vector<cps2::MapPiece>::const_iterator it2 = it1->begin();
+        it2 != it1->end(); ++it2)
+      if(it2->is_set) {
+        visualization_msgs::Marker marker;
+
+        tf::Quaternion q = tf::createQuaternionFromYaw(it2->pos_world.z);
+
+        marker.header.frame_id    = "base_link";
+        marker.header.seq         = msg->header.seq;
+        marker.header.stamp       = msg->header.stamp;
+        marker.ns                 = "cps2";
+        marker.id                 = i++;
+        marker.type               = visualization_msgs::Marker::ARROW;
+        marker.action             = visualization_msgs::Marker::ADD;
+        marker.pose.position.x    = it2->pos_world.x;
+        marker.pose.position.y    = it2->pos_world.y;
+        marker.pose.position.z    = 0;
+        marker.pose.orientation.x = q.getX();
+        marker.pose.orientation.y = q.getY();
+        marker.pose.orientation.z = q.getZ();
+        marker.pose.orientation.w = q.getW();
+        marker.color.a            = 1.0;
+        marker.color.r            = 0.0;
+        marker.color.g            = 0.8;
+        marker.color.b            = 1.0;
+        marker.scale.x            = 0.4;
+        marker.scale.y            = 0.2;
+        marker.scale.z            = 0.2;
+
+        msg_markers_mappieces.markers.push_back(marker);
+      }
+
+  pub_markers_mappieces.publish(msg_markers_mappieces);
+
+  // publish image of map at localized pos
   std::vector<cv::Mat> mappieces = map->get_map_pieces(best.p);
 
   if(!mappieces.empty() ) {
@@ -170,39 +214,40 @@ int main(int argc, char **argv) {
 
   if(argc < 18) {
     ROS_ERROR("Please use roslaunch: 'roslaunch cps2 localization_publisher[_debug].launch "
-              "[grid_size:=FLOAT] [update_interval_min:=FLOAT] [update_interval_max:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
+              "[big_map:=INT] [grid_size:=FLOAT] [update_interval_min:=FLOAT] [update_interval_max:=FLOAT] [logfile:=FILE] [errorfunction:=(0|1)] [downscale:=INT] [kernel_size:=INT] "
               "[kernel_stddev:=FLOAT] [particles_num:=INT] [particles_keep:=FLOAT] "
               "[particle_stddev_lin:=FLOAT] [particle_stddev_ang:=FLOAT] [hamid_sampling:=(0|1)] "
               "[bin_size:=FLOAT] [punishEdgeParticlesRate:=FLOAT] [startPos:=BOOL]'");
     return 1;
   }
 
-  float grid_size               = atof(argv[1]);
-  float update_interval_min     = atof(argv[2]);
-  float update_interval_max     = atof(argv[3]);
+  bool big_map                  = atoi(argv[1]) != 0;
+  float grid_size               = atof(argv[2]);
+  float update_interval_min     = atof(argv[3]);
+  float update_interval_max     = atof(argv[4]);
   std::string path_log          = ros::package::getPath("cps2") + std::string("/../../../logs/")
-                         + std::string(argv[4]);
-  int errorfunction             = atoi(argv[5]);
-  int downscale                 = atoi(argv[6]);
-  int kernel_size               = atoi(argv[7]);
-  float kernel_stddev           = atof(argv[8]);
-  int particles_num             = atoi(argv[9]);
-  float particles_keep          = atof(argv[10]);
-  float particle_belief_scale   = atof(argv[11]);
-  float particle_stddev_lin     = atof(argv[12]);
-  float particle_stddev_ang     = atof(argv[13]);
-  bool hamid_sampling           = atoi(argv[14]) != 0;
-  float bin_size                = atof(argv[15]);
-  float punishEdgeParticlesRate = atof(argv[16]);
-  bool setStartPos              = atoi(argv[17]) != 0;
+                         + std::string(argv[5]);
+  int errorfunction             = atoi(argv[6]);
+  int downscale                 = atoi(argv[7]);
+  int kernel_size               = atoi(argv[8]);
+  float kernel_stddev           = atof(argv[9]);
+  int particles_num             = atoi(argv[10]);
+  float particles_keep          = atof(argv[11]);
+  float particle_belief_scale   = atof(argv[12]);
+  float particle_stddev_lin     = atof(argv[13]);
+  float particle_stddev_ang     = atof(argv[14]);
+  bool hamid_sampling           = atoi(argv[15]) != 0;
+  float bin_size                = atof(argv[16]);
+  float punishEdgeParticlesRate = atof(argv[17]);
+  bool setStartPos              = atoi(argv[18]) != 0;
 
   ROS_INFO("localization_cps2_publisher: using logfile: %s", path_log.c_str());
-  ROS_INFO("localization_cps2_publisher: using grid_size: %f, update_interval_min: %f, "
+  ROS_INFO("localization_cps2_publisher: using big_map: %s, grid_size: %f, update_interval_min: %f, "
       "update_interval_max: %f, errorfunction: %s, downscale: %d, kernel_size: %d, "
       "kernel_stddev: %.2f, particles_num: %d, particles_keep: %.2f, particle_belief_scale: %.2f, "
       "particle_stddev_lin: %.2f, particle_stddev_ang: %.2f, hamid_sampling: %s, bin_size: %.2f, "
       "punishEdgeParticleRate %.2f, setStartPos: %d",
-           grid_size, update_interval_min, update_interval_max,
+           (big_map ? "yes" : "no"), grid_size, update_interval_min, update_interval_max,
            (errorfunction == cps2::IE_MODE_CENTROIDS ? "centroids" : "pixels"), downscale,
            kernel_size, kernel_stddev, particles_num, particles_keep, particle_belief_scale,
            particle_stddev_lin, particle_stddev_ang, hamid_sampling ? "on" : "off", bin_size,
@@ -211,7 +256,7 @@ int main(int argc, char **argv) {
   pos_start = cv::Point3f(grid_size / 2, grid_size / 2, 0);
 
   image_evaluator = new cps2::ImageEvaluator(errorfunction, downscale, kernel_size, kernel_stddev);
-  map             = new cps2::Map(image_evaluator, grid_size, update_interval_min, update_interval_max);
+  map             = new cps2::Map(image_evaluator, big_map, grid_size, update_interval_min, update_interval_max);
   particleFilter  = new cps2::ParticleFilter(map, image_evaluator,
       particles_num, particles_keep, particle_belief_scale,
       particle_stddev_lin, particle_stddev_ang, hamid_sampling,
@@ -239,8 +284,9 @@ int main(int argc, char **argv) {
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
 
 #ifdef DEBUG_PF
-  pub_markers = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
-  pub_best    = it.advertise("/localization/cps2/pose_image", 1);
+  pub_markers_particles = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
+  pub_markers_mappieces = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/mappieces", 1);
+  pub_best              = it.advertise("/localization/cps2/pose_image", 1);
 
   for(int i = 0; i < particleFilter->particles_num; ++i) {
     visualization_msgs::Marker marker;
@@ -255,7 +301,7 @@ int main(int argc, char **argv) {
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
     marker.color.b = 0.0;
-    msg_markers.markers.push_back(marker);
+    msg_markers_particles.markers.push_back(marker);
   }
 
 #ifndef DEBUG_PF_STATIC

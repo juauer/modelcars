@@ -73,13 +73,13 @@ ImageEvaluator::~ImageEvaluator() {
 
 }
 
-cv::Mat ImageEvaluator::transform(const cv::Mat &img,
-    const cv::Point2i &pos_image, const float th, const float ph)
+cv::Mat ImageEvaluator::transform(const cv::Mat &img, const cv::Point2i &pos_image,
+    const float th, const float ph, const int rows, const int cols)
 {
   const int cx1   = img.cols / 2;
   const int cy1   = img.rows / 2;
-  const int dim_x = img.cols / resize_scale;
-  const int dim_y = img.rows / resize_scale;
+  const int dim_x = cols / resize_scale;
+  const int dim_y = rows / resize_scale;
   const int cx2   = dim_x / 2;
   const int cy2   = dim_y / 2;
   const float ths = sinf(th);
@@ -107,6 +107,12 @@ cv::Mat ImageEvaluator::transform(const cv::Mat &img,
   }
 
   return img_tf;
+}
+
+cv::Mat ImageEvaluator::transform(const cv::Mat &img,
+    const cv::Point2i &pos_image, const float th, const float ph)
+{
+  return transform(img, pos_image, th, ph, img.rows, img.cols);
 }
 
 float ImageEvaluator::evaluate(const cv::Mat &img1, const cv::Mat &img2) {

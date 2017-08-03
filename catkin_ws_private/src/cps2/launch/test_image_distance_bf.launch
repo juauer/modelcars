@@ -13,10 +13,10 @@
   <arg name="guess_x" default="1.9"/>
   
   <!-- arg <guess_y>: guessed pos y (in m) of a second image in world frame -->
-  <arg name="guess_y" default="2.2"/>
+  <arg name="guess_y" default="2.1"/>
   
   <!-- arg <guess_theta>: guessed rotation (in rad) of a second image in world frame -->
-  <arg name="guess_theta" default="0.1"/>
+  <arg name="guess_theta" default="0.05"/>
   
   <node name="test_image_distance_bf" pkg="cps2" type="test_image_distance_bf" args="$(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta)" output="screen" />
 </launch>

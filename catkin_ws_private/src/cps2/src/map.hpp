@@ -13,8 +13,8 @@ namespace cps2 {
 
 class Map {
 public:
-  Map(cps2::ImageEvaluator *image_evaluator, float grid_size,
-      float update_interval_min, float update_interval_max);
+  Map(cps2::ImageEvaluator *image_evaluator, bool is_big_map,
+      float grid_size, float update_interval_min, float update_interval_max);
 
   virtual ~Map();
 
@@ -46,6 +46,7 @@ public:
       const fisheye_camera_matrix::CameraMatrix &camera_matrix);
 
   cv::Rect2f bbox; //!< Bounding box in world frame covering the yet mapped space
+  std::vector<std::vector<MapPiece> > grid;
 
 private:
   /**
@@ -93,9 +94,14 @@ private:
   bool ready;
   cps2::ImageEvaluator *image_evaluator;
   fisheye_camera_matrix::CameraMatrix camera_matrix;
-  std::vector<std::vector<MapPiece> > grid;
   cv::Point3f path_now;
   cv::Point3f path_prev;
+
+  // stuff for the (not yet obsolete?) big map
+  bool is_big_map;
+  cv::Mat big_map;
+  cv::Point2i dim_img;
+  cv::Point2i dim_map;
 };
 
 } /* namespace cps2 */

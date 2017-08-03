@@ -3,10 +3,16 @@ set( CMAKE_CXX_FLAGS "-std=c++11 -O3 ${CMAKE_CXX_FLAGS}" )
 project( fisheye_camera_matrix )
 
 find_package( catkin REQUIRED COMPONENTS
-  roscpp cv_bridge image_transport message_generation fisheye_camera_matrix_msgs
+  roscpp cv_bridge image_transport geometry_msgs message_generation fisheye_camera_matrix_msgs
 )
 
 find_package( OpenCV REQUIRED )
+
+add_service_files( FILES
+  perspective_projection.srv
+)
+
+generate_messages( DEPENDENCIES std_msgs geometry_msgs )
 
 include_directories(
   include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
@@ -15,7 +21,7 @@ include_directories(
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
-  CATKIN_DEPENDS cv_bridge image_transport message_runtime fisheye_camera_matrix_msgs
+  CATKIN_DEPENDS cv_bridge image_transport geometry_msgs message_runtime fisheye_camera_matrix_msgs
 )
 
 add_executable( offline_calibration_manual src/offline_calibration_manual.cpp src/camera_matrix.cpp )
