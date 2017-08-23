@@ -91,7 +91,7 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find control)/config/config_control.rviz" />
 
-  <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+  <!-- <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" /> -->
   
   <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
 </launch>
