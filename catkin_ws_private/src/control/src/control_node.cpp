@@ -183,7 +183,6 @@ class Control {
   float dstPosX;
   float dstPosY;
   float speed;
-  bool reached;
 
  protected:
   cv::Point3f dst;
