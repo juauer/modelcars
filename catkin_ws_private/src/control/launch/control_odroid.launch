@@ -7,7 +7,7 @@
   <arg name="calib" default="default" />
       
   <!-- arg <big_map>: 0|1 = off|on. Use a given, big map or create a dynamic map, otherwise. -->
-  <arg name="big_map" default="0" />
+  <arg name="big_map" default="1" />
   
   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
   <arg name="grid_size" default="1.0" />
