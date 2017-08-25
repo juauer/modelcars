@@ -76,8 +76,8 @@
   <!-- arg <speed>: speed with which the car should drive 20-1000 -->
   <arg name="speed" default="20" />
 
-  <!-- arg <pathFile>: file to load point list from -->
-  <arg name="pathFile" default="track01.csv" />
+  <!-- arg <trackFile>: file to load point list from -->
+  <arg name="trackFile" default="track01.csv" />
 
   <rosparam> use_sim_time: true </rosparam>  
 
@@ -93,7 +93,7 @@
   
   <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen"> </node>
   
-  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg pathFile)" output="screen"> </node>
+  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg trackFile)" output="screen"> </node>
   
   <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
 
