@@ -79,6 +79,17 @@
   <!-- arg <pathFile>: file to load point list from -->
   <arg name="pathFile" default="track01.csv" />
 
+  <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/usb_cam" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
   <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
     <arg name="calib" value="$(arg calib)" />
   </include>

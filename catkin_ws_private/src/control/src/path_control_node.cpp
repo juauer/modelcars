@@ -75,7 +75,11 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "path_control_node");
   ros::NodeHandle nh; 
   PathControl path(nh);
-  
+ 
+#ifdef DEBUG_CONTROL
+    ROS_INFO("path_control_node DEBUG_MODE");
+#endif
+ 
   ROS_INFO("Path_Control_node initialization pathfile: %s", path.pathFile.c_str());
   
   while(ros::ok()) {

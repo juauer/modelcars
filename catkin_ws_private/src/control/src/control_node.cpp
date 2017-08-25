@@ -212,6 +212,9 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "control_node");
   ros::NodeHandle nh; 
   Control control(nh);
+#ifdef DEBUG_CONTROL
+    ROS_INFO("control_node DEBUG_MODE");
+#endif
   
   ROS_INFO("Control_node: mode: %d epsilon: %.2f desired:(%.2f,%.2f) speed: %.2f",
            control.mode, control.epsilon, control.dstPosX, control.dstPosY, control.speed);
