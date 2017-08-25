@@ -93,7 +93,7 @@
   
   <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen"> </node>
   
-  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg trackFile)" output="screen"> </node>
+  <node pkg="control" type="control_track_node_debug" name="control_track_node" args="$(arg trackFile)" output="screen"> </node>
   
   <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
 

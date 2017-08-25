@@ -20,6 +20,6 @@
   <!-- arg <trackFile>: file to load point list from -->
   <arg name="trackFile" default="track01.csv" />
   
-  <node pkg="control" type="path_control_node" name="path_control_node" args="$(arg trackFile)" output="screen">
+  <node pkg="control" type="control_track_node" name="control_track_node" args="$(arg trackFile)" output="screen">
   </node>
 </launch>

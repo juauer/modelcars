@@ -97,8 +97,8 @@ class Control {
 
         cv::Point3f dir = dst - pos;
         float steering_rad = atan2f(dir.y, dir.x);
-        float steering = std::min(std::max(steering_rad * (180.0/M_PI),min_steering_angle),max_steering_angle);
-
+        //float steering = std::min(std::max(steering_rad * (180.0/M_PI),min_steering_angle),max_steering_angle);
+        float steering = steering_rad * (180.0/M_PI);
         steering_angle_msg.data = steering;
     
         float distance = cv::sqrt(dir.x * dir.x + dir.y * dir.y);
