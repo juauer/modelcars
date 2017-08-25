@@ -14,14 +14,14 @@
 class PathControl {
  public:
   PathControl(ros::NodeHandle nh): current(0) {
-    n_.param<std::string>("pathFile", pathFile, "track01.csv");
+    n_.param<std::string>("trackFile", trackFile, "track02.csv");
     
     subDst_ = n_.subscribe("/localization/control/destination/reached",1,&PathControl::setDestination,this);
     pubDst_ = nh.advertise<geometry_msgs::Point>(nh.resolveName("/localization/control/dest"), 1);
 
     msg_dst.z = 0;
 
-    std::string path = ros::package::getPath("control") + std::string("/config/") + pathFile;
+    std::string path = ros::package::getPath("control") + std::string("/config/") + trackFile;
     
     std::ifstream file;
     std::string line_str;
@@ -42,16 +42,20 @@ class PathControl {
     ROS_INFO("Path_Control_node initialization Num Points: %lu path: %s", point_list.size(), path.c_str());
 
     // send first destination
-    msg_dst.x = point_list[current].x;
-    msg_dst.y = point_list[current].y;
+    msg_dst.x = point_list.begin()->x;
+    msg_dst.y = point_list.begin()->y;
+
+#ifdef DEBUG_CONTROL
+    ROS_INFO("Path_Control_node setDestination current: %d dst(%.2f/%.2f)", current, msg_dst.x, msg_dst.y);
+#endif
 
     pubDst_.publish(msg_dst);
   }
   ~PathControl(){}
 
   void setDestination(const std_msgs::Bool& msg_dst_reached) {
-    msg_dst.x = point_list[current].x;
-    msg_dst.y = point_list[current].y;
+    msg_dst.x = point_list.at(current).x;
+    msg_dst.y = point_list.at(current).y;
 
     current = (current + 1) % point_list.size();
     pubDst_.publish(msg_dst);
@@ -60,7 +64,7 @@ class PathControl {
 #endif
   }
 
-  std::string pathFile;  
+  std::string trackFile;  
  protected:
   ros::Publisher pubDst_;
   geometry_msgs::Point msg_dst;
@@ -80,7 +84,7 @@ int main(int argc, char **argv) {
     ROS_INFO("path_control_node DEBUG_MODE");
 #endif
  
-  ROS_INFO("Path_Control_node initialization pathfile: %s", path.pathFile.c_str());
+  ROS_INFO("Path_Control_node initialization track file: %s", path.trackFile.c_str());
   
   while(ros::ok()) {
     ros::spin();

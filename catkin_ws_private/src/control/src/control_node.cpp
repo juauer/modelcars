@@ -13,7 +13,7 @@ static const unsigned point_mode = 0;
 static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
 static const float max_speed = -200.0f;
-static const float speed_multiplyer = -20.0f;
+static const float speed_multiplyer = -50.0f;
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
 
@@ -21,7 +21,7 @@ class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0), reached(false) {
     n_.param<int>("mode", mode, 0);
-    n_.param<float>("epsilon", epsilon, 0.1);
+    n_.param<float>("epsilon", epsilon, 0.5);
     n_.param<float>("dstPosX", dstPosX, 0);
     n_.param<float>("dstPosY", dstPosY, 0);
     n_.param<float>("speed", speed, 20);

@@ -74,10 +74,10 @@
   <arg name="dstPosY" default="0.03" />
   
   <!-- arg <speed>: speed with which the car should drive 20-1000 -->
-  <arg name="speed" default="20" />
+  <arg name="speed" default="200" />
 
-  <!-- arg <pathFile>: file to load point list from -->
-  <arg name="pathFile" default="track01.csv" />
+  <!-- arg <trackFile>: file to load point list from -->
+  <arg name="trackFile" default="track02.csv" />
 
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
 
@@ -98,11 +98,10 @@
   
   <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg big_map) $(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
 
-
   <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
   </node>
 
-  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg pathFile)" output="screen">
+  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg trackFile)" output="screen">
   </node>
   
 </launch>
