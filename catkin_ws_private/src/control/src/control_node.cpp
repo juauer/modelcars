@@ -90,25 +90,35 @@ class Control {
         reached = false;
 
         // calculate direction
-        cv::Point3f pos;
-    
-        pos.x = msg_pose.pose.position.x;
-        pos.y = msg_pose.pose.position.y;
+        tf::Vector3 pos(msg_pose.pose.position.x, msg_pose.pose.position.y, msg_pose.pose.position.z);
 
-        cv::Point3f dir = dst - pos;
-        float steering_rad = atan2f(dir.y, dir.x);
-        //float steering = std::min(std::max(steering_rad * (180.0/M_PI),min_steering_angle),max_steering_angle);
-        float steering = steering_rad * (180.0/M_PI);
-        steering_angle_msg.data = steering;
-    
-        float distance = cv::sqrt(dir.x * dir.x + dir.y * dir.y);
+        tf::Quaternion orientation(msg_pose.pose.orientation.x, msg_pose.pose.orientation.y,
+                                     msg_pose.pose.orientation.z, msg_pose.pose.orientation.w);
+
+        //float orientation_angle = orientation.getAngle() * (180.0/M_PI);
+        tf::Vector3 orientation_v = orientation.getAxis();
+
+        tf::Vector3 dir(dst.x, dst.y, dst.z);
+        dir -= pos;
+        // calculate steering angle
+        float steering_rad =  std::acos(orientation_v.dot(dir))/(dir.length() * orientation_v.length());
+        // cross product to determin steering direction left or right
+        tf::Vector3 cp = orientation_v.cross(dir);
+        float dir_rad = atan2f(dir.y(), dir.x());
+        float steering = std::min(std::max(steering_rad * (180.0/M_PI),0.0),90.0);
+        //steering = std::max(steering, orientation_angle) - std::min(steering, orientation_angle);
+        // set steering angle according to cp
+        steering_angle_msg.data = std::signbit(cp.z())?(steering*-1)+90:(steering)+90;
+
+        //TODO make speed dependend on belief
+        float distance = cv::sqrt(dir.x() * dir.x() + dir.y() * dir.y());
         speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
         pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
         // check if destination is reached with epsilon precision
         // and send message that the destination is reached
-        if( (dir.x < epsilon) && (-dir.x < epsilon) &&
-            (dir.y < epsilon) && (-dir.y < epsilon)){
+        if( (dir.x() < epsilon) && (-dir.x() < epsilon) &&
+            (dir.y() < epsilon) && (-dir.y() < epsilon)){
 #ifdef DEBUG_CONTROL
           ROS_INFO("control_node setDirection: destination reached");
 #endif
@@ -125,9 +135,10 @@ class Control {
         dstPoint_msg.point.y      = dst.y;
         pubDst_.publish(dstPoint_msg);
 
-        tf::Quaternion direction_q = tf::createQuaternionFromYaw((steering/180.0f)*M_PI);
-        tf::Quaternion steering_q = tf::createQuaternionFromYaw(steering_rad);
-        
+        tf::Quaternion direction_q = tf::createQuaternionFromYaw(dir_rad);
+        tf::Quaternion steering_q = tf::createQuaternionFromYaw(steering);
+        steering_q += orientation; 
+
         steeringPose_msg.header.seq         = msg_pose.header.seq;
         steeringPose_msg.header.stamp       = msg_pose.header.stamp;
         steeringPose_msg.pose.position.x    = msg_pose.pose.position.x;
@@ -138,7 +149,7 @@ class Control {
         steeringPose_msg.pose.orientation.z = steering_q.getZ();
         steeringPose_msg.pose.orientation.w = steering_q.getW();
 
-        steeringPose_msg.scale.x    = distance;//length
+        steeringPose_msg.scale.x    = 1.0;//length
 
         directionPose_msg.header.seq         = msg_pose.header.seq;
         directionPose_msg.header.stamp       = msg_pose.header.stamp;
@@ -150,12 +161,12 @@ class Control {
         directionPose_msg.pose.orientation.z = direction_q.getZ();
         directionPose_msg.pose.orientation.w = direction_q.getW();
 
-        directionPose_msg.scale.x    = 1.0;//length
+        directionPose_msg.scale.x    = distance;//length
         
         pubSteeringPose_.publish(steeringPose_msg);
         pubDirectionPose_.publish(directionPose_msg);
         ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d steering: %.2f",
-                 pos.x,pos.y, dst.x, dst.y, distance, speed_msg.data, steering);
+                 pos.x(),pos.y(), dst.x, dst.y, distance, speed_msg.data, steering - 90);
 #endif
       }
       
