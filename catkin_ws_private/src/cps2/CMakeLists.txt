@@ -4,7 +4,7 @@ add_compile_options(-std=c++11)
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix
+  geometry_msgs message_generation roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix cps2_particle_msgs
 )
 
 roslaunch_add_file_check( launch )
@@ -17,7 +17,7 @@ include_directories(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS cv_bridge image_transport fisheye_camera_matrix
+  CATKIN_DEPENDS cv_bridge image_transport fisheye_camera_matrix cps2_particle_msgs
 )
 
 add_executable( localization_publisher src/localization_publisher.cpp src/image_evaluator.cpp src/map.cpp src/particle_filter.cpp )
@@ -63,3 +63,4 @@ install( DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )
+

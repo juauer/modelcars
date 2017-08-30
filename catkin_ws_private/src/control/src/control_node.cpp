@@ -6,6 +6,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
+#include <cps2_particle_msgs/particle_msgs.h>
 #include <opencv2/core/core.hpp>
 #include <math.h> 
 
@@ -57,7 +58,7 @@ class Control {
     
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
     pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
-    subDir_ = n_.subscribe("/localization/cps2/pose",1,&Control::setDirection,this); 
+    subDir_ = n_.subscribe("/localization/cps2/particle",1,&Control::setDirection,this); 
     subDst_ = n_.subscribe("/localization/control/dest",1,&Control::setDestination,this);
     pubMotor_ = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);    
     pubSpeed_ = nh.advertise<std_msgs::Int16>("/manual_control/speed", 1);
@@ -81,7 +82,7 @@ class Control {
   }
   ~Control(){}
 
-  void setDirection(const geometry_msgs::PoseStamped& msg_pose) {
+  void setDirection(const cps2_particle_msgs::particle_msgs& msg_pose) {
     // point mode
     if (mode == point_mode){
       // check for old message
@@ -104,7 +105,9 @@ class Control {
         // cross product to determin steering direction left or right
         tf::Vector3 cp = orientation_v.cross(dir);
         float dir_rad = atan2f(dir.y(), dir.x());
-        float steering = std::min(std::max(steering_rad * (180.0/M_PI),0.0),90.0);
+        float steering = std::min(std::max(steering_rad * (180.0/M_PI),
+                                           min_steering_angle),
+                                  max_steering_angle/2);
         // set steering angle according to cp
         steering_angle_msg.data = std::signbit(cp.z())?(steering*-1)+90:(steering)+90;
 
