@@ -14,7 +14,7 @@
 class TrackControl {
  public:
   TrackControl(ros::NodeHandle nh): current(0) {
-    n_.param<std::string>("trackFile", trackFile, "track02.csv");
+    n_.param<std::string>("/control_track_node/trackFile", trackFile, "track02.csv");
     
     subDst_ = n_.subscribe("/localization/control/destination/reached",1,&TrackControl::setDestination,this);
     pubDst_ = nh.advertise<geometry_msgs::Point>(nh.resolveName("/localization/control/dest"), 1);

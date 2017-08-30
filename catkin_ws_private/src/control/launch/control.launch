@@ -1,25 +1,17 @@
 <launch>
-  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
-  <arg name="mode" default="0" />
-  
-  <!-- arg <epsilon>: set the precision to match destination -->
-  <arg name="epsilon" default="0.1" />
-
-  <!-- arg <dstPosX>: set X value for the destination to drive to -->
-  <arg name="dstPosX" default="-0.04" />
-  
-  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
-  <arg name="dstPosY" default="0.03" />
-  
-  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
-  <arg name="speed" default="20" />
-
-  <node pkg="control" type="control_node" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
+  <node pkg="control" type="control_node" name="control_node" args="" output="screen">
+    <rosparam>
+      mode: 0
+      epsilon: 0.3
+      dstPosX: -0.04
+      dstPosY: 0.03
+      speed: 200
+    </rosparam>
   </node>
-
-  <!-- arg <trackFile>: file to load point list from -->
-  <arg name="trackFile" default="track01.csv" />
   
-  <node pkg="control" type="control_track_node" name="control_track_node" args="$(arg trackFile)" output="screen">
+  <node pkg="control" type="control_track_node" name="control_track_node" args="" output="screen">
+    <rosparam>
+      trackFile: track01.csv
+    </rosparam>
   </node>
 </launch>

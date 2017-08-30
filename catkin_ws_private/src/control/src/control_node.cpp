@@ -13,18 +13,18 @@ static const unsigned point_mode = 0;
 static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
 static const float max_speed = -200.0f;
-static const float speed_multiplyer = -50.0f;
+static const float speed_multiplyer = -200.0f;
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
 
 class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0), reached(false) {
-    n_.param<int>("mode", mode, 0);
-    n_.param<float>("epsilon", epsilon, 0.5);
-    n_.param<float>("dstPosX", dstPosX, 0);
-    n_.param<float>("dstPosY", dstPosY, 0);
-    n_.param<float>("speed", speed, 20);
+    n_.param<int>("/control_node/mode", mode, 0);
+    n_.param<float>("/control_node/epsilon", epsilon, 0.5);
+    n_.param<float>("/control_node/dstPosX", dstPosX, 0);
+    n_.param<float>("/control_node/dstPosY", dstPosY, 0);
+    n_.param<float>("/control_node/speed", speed, 20);
 
     dst.x = dstPosX;
     dst.y = dstPosY;
@@ -95,7 +95,6 @@ class Control {
         tf::Quaternion orientation(msg_pose.pose.orientation.x, msg_pose.pose.orientation.y,
                                      msg_pose.pose.orientation.z, msg_pose.pose.orientation.w);
 
-        //float orientation_angle = orientation.getAngle() * (180.0/M_PI);
         tf::Vector3 orientation_v = orientation.getAxis();
 
         tf::Vector3 dir(dst.x, dst.y, dst.z);
@@ -106,7 +105,6 @@ class Control {
         tf::Vector3 cp = orientation_v.cross(dir);
         float dir_rad = atan2f(dir.y(), dir.x());
         float steering = std::min(std::max(steering_rad * (180.0/M_PI),0.0),90.0);
-        //steering = std::max(steering, orientation_angle) - std::min(steering, orientation_angle);
         // set steering angle according to cp
         steering_angle_msg.data = std::signbit(cp.z())?(steering*-1)+90:(steering)+90;
 
