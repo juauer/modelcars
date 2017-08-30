@@ -3,7 +3,7 @@ add_compile_options(-std=c++11)
 project( control )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslib roscpp std_msgs sensor_msgs geometry_msgs
+  roslib roscpp std_msgs sensor_msgs geometry_msgs cps2_particle_msgs
 )
 
 find_package( OpenCV REQUIRED )
@@ -14,7 +14,7 @@ include_directories(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs
+  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs cps2_particle_msgs
 )
 
 add_executable( control_wasd src/control_wasd.cpp )
