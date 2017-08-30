@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8.3 )
-set( CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}" )
+add_compile_options(-std=c++11)
 
 project( cps2 )
 
@@ -55,6 +55,11 @@ install( TARGETS localization_publisher localization_publisher_debug
 )
 
 install( DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+)
+
+install( DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )

@@ -65,7 +65,7 @@ void callback_odometry(const nav_msgs::Odometry &msg) {
   tf::quaternionMsgToTF(msg.pose.pose.orientation, q_now);
 
   pos_relative_vel.x  = msg.twist.twist.linear.x;
-  pos_relative_vel.y += tf::getYaw(q_now) - tf::getYaw(q_last);
+  pos_relative_vel.y -= tf::getYaw(q_now) - tf::getYaw(q_last);
   odom_last           = msg;
   has_odom            = true;
 }

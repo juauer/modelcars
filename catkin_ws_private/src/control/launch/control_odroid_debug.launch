@@ -3,17 +3,20 @@
   <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
   <arg name="calib" default="default" />
   
-  <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
-    <arg name="calib" value="$(arg calib)" />
-  </include>
-  
-  <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
-
   <!-- arg <bagfile>: filename of a bag in catkin_ws/../logs/ -->
   <arg name="bagfile" default="test" />
-    
-  <!-- arg <mapfile>: filename of a map image in catkin_ws/../captures/ -->
-  <arg name="mapfile" default="map_test_2.png" />
+      
+  <!-- arg <big_map>: 0|1 = off|on. Use a given, big map or create a dynamic map, otherwise. -->
+  <arg name="big_map" default="1" />
+  
+   <!-- arg <grid_size>: size (in m) of a grid cell of map -->
+  <arg name="grid_size" default="1.0" />
+  
+  <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
+  <arg name="update_interval_min" default="2" />
+  
+  <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
+  <arg name="update_interval_max" default="120" />
   
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
@@ -58,58 +61,39 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
 
-  <!-- arg <startPosX>: start position. -->
-  <arg name="startPosX" default="0" />
+  <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
 
-  <!-- arg <startPosY>: start position. -->
-  <arg name="startPosY" default="0" />
-
-  <!-- arg <startPosTh>: start position. -->
-  <arg name="startPosTh" default="0" />
-  
-  <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
-    <arg name="mapfile" value="$(arg mapfile)" />
-    <arg name="logfile" value="$(arg logfile)" />
-    <arg name="errorfunction" value="$(arg errorfunction)" />
-    <arg name="downscale" value="$(arg downscale)" />
-    <arg name="kernel_size" value="$(arg kernel_size)" />
-    <arg name="kernel_stddev" value="$(arg kernel_stddev)" />
-    <arg name="particles_num" value="$(arg particles_num)" />
-    <arg name="particles_keep" value="$(arg particles_keep)" />
-    <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />
-    <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
-    <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
-    <arg name="hamid_sampling" value="$(arg hamid_sampling)" />
-    <arg name="bin_size" value="$(arg bin_size)" />
-    <arg name="punishEdgeParticlesRate" value="$(arg punishEdgeParticlesRate)" />
-    <arg name="setStartPos" value="$(arg setStartPos)" />
-    <arg name="startPosX" value="$(arg startPosX)" />
-    <arg name="startPosY" value="$(arg startPosY)" />
-    <arg name="startPosTh" value="$(arg startPosTh)" />
-  </include>
-  
-  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
-  <arg name="mode" default="0" />
-  
-  <!-- arg <epsilon>: set the precision to match destination -->
-  <arg name="epsilon" default="0.1" />
-
-  <!-- arg <dstPosX>: set X value for the destination to drive to -->
-  <arg name="dstPosX" default="-0.04" />
-  
-  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
-  <arg name="dstPosY" default="0.03" />
-  
-  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
-  <arg name="speed" default="20" />
-
-  <node pkg="control" type="control_node" name="control_node_debug" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/usb_cam" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
   </node>
 
-  <!-- arg <pathFile>: file to load point list from -->
-  <arg name="pathFile" default="track01.csv" />
+  <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
+    <arg name="calib" value="$(arg calib)" />
+  </include>
   
-  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg pathFile)" output="screen">
+  <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
+  
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg big_map) $(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+
+  <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
+    <rosparam>
+      mode: 0
+      epsilon: 0.5
+      dstPosX: -0.04
+      dstPosY: 0.03
+      speed: 200
+    </rosparam>
+  </node>
+
+  <node pkg="control" type="control_track_node_debug" name="control_track_node" args="" output="screen">
+    <rosparam>
+      trackFile: track02.csv
+    </rosparam>
   </node>
   
 </launch>

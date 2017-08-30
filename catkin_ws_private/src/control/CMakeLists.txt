@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8.3 )
-set( CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" )
+add_compile_options(-std=c++11)
 project( control )
 
 find_package( catkin REQUIRED COMPONENTS
@@ -23,25 +23,30 @@ target_link_libraries( control_wasd ${catkin_LIBRARIES} )
 add_executable( control_node src/control_node.cpp )
 target_link_libraries(control_node ${catkin_LIBRARIES})
 
-add_executable( path_control_node src/path_control_node.cpp )
-target_link_libraries( path_control_node ${catkin_LIBRARIES} )
+add_executable( control_track_node src/control_track_node.cpp )
+target_link_libraries( control_track_node ${catkin_LIBRARIES} )
 
 add_executable( control_node_debug src/control_node.cpp )
 target_compile_definitions( control_node_debug PUBLIC DEBUG_CONTROL )
 target_link_libraries( control_node_debug ${catkin_LIBRARIES} )
 
-add_executable( path_control_node_debug src/path_control_node.cpp )
-target_compile_definitions( path_control_node_debug PUBLIC DEBUG_CONTROL )
-target_link_libraries( path_control_node_debug ${catkin_LIBRARIES} )
+add_executable( control_track_node_debug src/control_track_node.cpp )
+target_compile_definitions( control_track_node_debug PUBLIC DEBUG_CONTROL )
+target_link_libraries( control_track_node_debug ${catkin_LIBRARIES} )
 
 
-install( TARGETS control_wasd control_node path_control_node control_node_debug path_control_node_debug
+install( TARGETS control_wasd control_node control_track_node control_node_debug control_track_node_debug
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install( DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+)
+
+install( DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS
 )

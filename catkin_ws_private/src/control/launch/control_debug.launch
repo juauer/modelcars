@@ -3,6 +3,21 @@
   <!-- arg <bagfile>: filename of a bag in catkin_ws/../logs/ -->
   <arg name="bagfile" default="test" />
     
+  <!-- arg <calib>: filename of a camera calibration file in catkin_ws/src/camera_matrix/config/ -->
+  <arg name="calib" default="default" />
+  
+  <!-- arg <big_map>: 0|1 = off|on. Use a given, big map or create a dynamic map, otherwise. -->
+  <arg name="big_map" default="1" />
+  
+  <!-- arg <grid_size>: size (in m) of a grid cell of map -->
+  <arg name="grid_size" default="1.0" />
+  
+  <!-- arg <update_interval_min>: do not copy over an existing map piece until at least that many s have passed -->
+  <arg name="update_interval_min" default="2" />
+  
+  <!-- arg <update_interval_max>: always copy over an existing map piece if at least that many s have passed -->
+  <arg name="update_interval_max" default="120" />
+  
   <!-- arg <logfile>: filename where to store the track data in catkin_ws/../logs/ -->
   <arg name="logfile" default="test" />
   
@@ -20,7 +35,7 @@
   <arg name="kernel_stddev" default="2.5" />
   
   <!-- arg <particles_num>: Number of particles -->
-  <arg name="particles_num" default="100" />
+  <arg name="particles_num" default="50" />
   
   <!-- arg <particles_keep>: Percent of particles to keep. The rest is resampled randomly -->
   <arg name="particles_keep" default="1.0" />
@@ -46,52 +61,35 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
 
-  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
-  <arg name="mode" default="0" />
-  
-  <!-- arg <epsilon>: set the precision to match destination -->
-  <arg name="epsilon" default="0.1" />
-
-  <!-- arg <dstPosX>: set X value for the destination to drive to -->
-  <arg name="dstPosX" default="-0.04" />
-  
-  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
-  <arg name="dstPosY" default="0.03" />
-  
-  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
-  <arg name="speed" default="20" />
-
-  <!-- arg <pathFile>: file to load point list from -->
-  <arg name="pathFile" default="track01.csv" />
-
-  <include file="$(find cps2)/launch/localization_publisher_debug.launch" >
-    <arg name="logfile" value="$(arg logfile)" />
-    <arg name="errorfunction" value="$(arg errorfunction)" />
-    <arg name="downscale" value="$(arg downscale)" />
-    <arg name="kernel_size" value="$(arg kernel_size)" />
-    <arg name="kernel_stddev" value="$(arg kernel_stddev)" />
-    <arg name="particles_num" value="$(arg particles_num)" />
-    <arg name="particles_keep" value="$(arg particles_keep)" />
-    <arg name="particle_belief_scale" value="$(arg particle_belief_scale)" />
-    <arg name="particle_stddev_lin" value="$(arg particle_stddev_lin)" />
-    <arg name="particle_stddev_ang" value="$(arg particle_stddev_ang)" />
-    <arg name="hamid_sampling" value="$(arg hamid_sampling)" />
-    <arg name="bin_size" value="$(arg bin_size)" />
-    <arg name="punishEdgeParticlesRate" value="$(arg punishEdgeParticlesRate)" />
-    <arg name="setStartPos" value="$(arg setStartPos)" />
-  </include>
-  
-  <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
-  </node>
-  
-  <node pkg="control" type="path_control_node_debug" name="path_control_node" args="$(arg pathFile)" output="screen">
-  </node>
-
   <rosparam> use_sim_time: true </rosparam>  
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find control)/config/config_control.rviz" />
-
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
+
+  <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
+    <arg name="calib" value="$(arg calib)" />
+  </include>
+
+  <include file="$(find fisheye_camera_matrix)/launch/undistorted_image_publisher.launch" />
+  
+  <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg big_map) $(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
+  
+  <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
+    <rosparam>
+      mode: 0
+      epsilon: 0.3
+      dstPosX: -0.04
+      dstPosY: 0.03
+      speed: 200
+    </rosparam>
+  </node>
+  
+  <node pkg="control" type="control_track_node_debug" name="control_track_node" args="" output="screen">
+    <rosparam>
+      trackFile: track01.csv
+    </rosparam>
+  </node>
   
   <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find control)/config/config_control.rviz" />
 </launch>

@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
     case 68:  // arrow left
     case 97:  // a
-      msg_steering.data = std::min(170, msg_steering.data + 10);
+      msg_steering.data = std::min(180, msg_steering.data + 15);
       pub_steering.publish(msg_steering);
       ROS_INFO("steering=%d", msg_steering.data - 90);
       break;
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
     case 67:  // arrow right
     case 100: // d
-      msg_steering.data = std::max(10, msg_steering.data - 10);
+      msg_steering.data = std::max(0, msg_steering.data - 15);
       pub_steering.publish(msg_steering);
       ROS_INFO("steering=%d", msg_steering.data - 90);
       break;
