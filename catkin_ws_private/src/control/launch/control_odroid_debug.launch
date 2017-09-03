@@ -61,24 +61,6 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
 
-  <!-- arg <mode>: 0 set destination dynamicly else constant angle 0-180 -->
-  <arg name="mode" default="0" />
-  
-  <!-- arg <epsilon>: set the precision to match destination -->
-  <arg name="epsilon" default="0.1" />
-
-  <!-- arg <dstPosX>: set X value for the destination to drive to -->
-  <arg name="dstPosX" default="-0.04" />
-  
-  <!-- arg <dstPosy>: set Y value for the destination to drive to -->
-  <arg name="dstPosY" default="0.03" />
-  
-  <!-- arg <speed>: speed with which the car should drive 20-1000 -->
-  <arg name="speed" default="200" />
-
-  <!-- arg <trackFile>: file to load point list from -->
-  <arg name="trackFile" default="track02.csv" />
-
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
 
   <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
@@ -98,10 +80,20 @@
   
   <node name="localization_cp2_publisher" pkg="cps2" type="localization_publisher_debug" args="$(arg big_map) $(arg grid_size) $(arg update_interval_min) $(arg update_interval_max) $(arg logfile) $(arg errorfunction) $(arg downscale) $(arg kernel_size) $(arg kernel_stddev) $(arg particles_num) $(arg particles_keep) $(arg particle_belief_scale) $(arg particle_stddev_lin) $(arg particle_stddev_ang) $(arg hamid_sampling) $(arg bin_size) $(arg punishEdgeParticlesRate) $(arg setStartPos)" output="screen" />
 
-  <node pkg="control" type="control_node_debug" name="control_node" args="$(arg mode) $(arg epsilon) $(arg dstPosX) $(arg dstPosY) $(arg speed)" output="screen">
+  <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
+    <rosparam>
+      mode: 0
+      epsilon: 0.5
+      dstPosX: -0.04
+      dstPosY: 0.03
+      speed: 200
+    </rosparam>
   </node>
 
-  <node pkg="control" type="control_track_node_debug" name="control_track_node" args="$(arg trackFile)" output="screen">
+  <node pkg="control" type="control_track_node_debug" name="control_track_node" args="" output="screen">
+    <rosparam>
+      trackFile: track02.csv
+    </rosparam>
   </node>
   
 </launch>

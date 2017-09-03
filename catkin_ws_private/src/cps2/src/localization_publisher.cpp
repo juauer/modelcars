@@ -15,6 +15,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "map.hpp"
 #include "particle_filter.hpp"
+#include <cps2_particle_msgs/particle_msgs.h>
 
 bool has_odom          = false;
 bool has_camera_matrix = false;
@@ -32,7 +33,9 @@ fisheye_camera_matrix::CameraMatrix camera_matrix;
 ros::Time stamp_last_odom;
 ros::Time stamp_last_image;
 geometry_msgs::PoseStamped msg_pose;
+cps2_particle_msgs::particle_msgs msg_particle;
 ros::Publisher pub;
+ros::Publisher pub_particle;
 
 #ifdef DEBUG_PF
 visualization_msgs::MarkerArray msg_markers_particles;
@@ -122,6 +125,12 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
   msg_pose.pose.orientation.z = best_q.getZ();
   msg_pose.pose.orientation.w = best_q.getW();
   pub.publish(msg_pose);
+
+  msg_particle.header = msg_pose.header;
+  msg_particle.pose = msg_pose.pose;
+  msg_particle.belief = best.belief;
+
+  pub_particle.publish(msg_particle);
 
 #ifdef DEBUG_PF
   // draw particles
@@ -276,12 +285,16 @@ int main(int argc, char **argv) {
   stamp_last_image.nsec    = 0;
   msg_pose.header.frame_id = "base_link";
   msg_pose.pose.position.z = 0;
+  msg_particle.header.frame_id = "base_link";
+  msg_particle.pose.position.z = 0;
 
+  
   ros::Subscriber sub_odo             = nh.subscribe("/odom", 1, &callback_odometry);
   ros::Subscriber sub_camera_matrix   = nh.subscribe("/usb_cam/camera_matrix", 1, &callback_camera_matrix);
   image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
 
   pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
+  pub_particle = nh.advertise<cps2_particle_msgs::particle_msgs>("/localization/cps2/particle", 1);
 
 #ifdef DEBUG_PF
   pub_markers_particles = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);

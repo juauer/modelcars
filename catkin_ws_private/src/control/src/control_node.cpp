@@ -6,6 +6,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
+#include <cps2_particle_msgs/particle_msgs.h>
 #include <opencv2/core/core.hpp>
 #include <math.h> 
 
@@ -13,18 +14,18 @@ static const unsigned point_mode = 0;
 static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
 static const float max_speed = -200.0f;
-static const float speed_multiplyer = -50.0f;
+static const float speed_multiplyer = -200.0f;
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
 
 class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0), reached(false) {
-    n_.param<int>("mode", mode, 0);
-    n_.param<float>("epsilon", epsilon, 0.5);
-    n_.param<float>("dstPosX", dstPosX, 0);
-    n_.param<float>("dstPosY", dstPosY, 0);
-    n_.param<float>("speed", speed, 20);
+    n_.param<int>("/control_node/mode", mode, 0);
+    n_.param<float>("/control_node/epsilon", epsilon, 0.5);
+    n_.param<float>("/control_node/dstPosX", dstPosX, 0);
+    n_.param<float>("/control_node/dstPosY", dstPosY, 0);
+    n_.param<float>("/control_node/speed", speed, 20);
 
     dst.x = dstPosX;
     dst.y = dstPosY;
@@ -57,7 +58,7 @@ class Control {
     
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
     pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
-    subDir_ = n_.subscribe("/localization/cps2/pose",1,&Control::setDirection,this); 
+    subDir_ = n_.subscribe("/localization/cps2/particle",1,&Control::setDirection,this); 
     subDst_ = n_.subscribe("/localization/control/dest",1,&Control::setDestination,this);
     pubMotor_ = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);    
     pubSpeed_ = nh.advertise<std_msgs::Int16>("/manual_control/speed", 1);
@@ -81,34 +82,44 @@ class Control {
   }
   ~Control(){}
 
-  void setDirection(const geometry_msgs::PoseStamped& msg_pose) {
+  void setDirection(const cps2_particle_msgs::particle_msgs& msg_particle) {
     // point mode
     if (mode == point_mode){
       // check for old message
-      if (seqNum < msg_pose.header.seq){        
-        seqNum = msg_pose.header.seq;
+      if (seqNum < msg_particle.header.seq){        
+        seqNum = msg_particle.header.seq;
         reached = false;
 
         // calculate direction
-        cv::Point3f pos;
-    
-        pos.x = msg_pose.pose.position.x;
-        pos.y = msg_pose.pose.position.y;
+        tf::Vector3 pos(msg_particle.pose.position.x, msg_particle.pose.position.y, msg_particle.pose.position.z);
 
-        cv::Point3f dir = dst - pos;
-        float steering_rad = atan2f(dir.y, dir.x);
-        //float steering = std::min(std::max(steering_rad * (180.0/M_PI),min_steering_angle),max_steering_angle);
-        float steering = steering_rad * (180.0/M_PI);
-        steering_angle_msg.data = steering;
-    
-        float distance = cv::sqrt(dir.x * dir.x + dir.y * dir.y);
+        tf::Quaternion orientation(msg_particle.pose.orientation.x, msg_particle.pose.orientation.y,
+                                     msg_particle.pose.orientation.z, msg_particle.pose.orientation.w);
+
+        tf::Vector3 orientation_v = orientation.getAxis();
+
+        tf::Vector3 dir(dst.x, dst.y, dst.z);
+        dir -= pos;
+        // calculate steering angle
+        float steering_rad =  std::acos(orientation_v.dot(dir))/(dir.length() * orientation_v.length());
+        // cross product to determin steering direction left or right
+        tf::Vector3 cp = orientation_v.cross(dir);
+        float dir_rad = atan2f(dir.y(), dir.x());
+        float steering = std::min(std::max(steering_rad * (180.0/M_PI),
+                                           min_steering_angle),
+                                  max_steering_angle/2);
+        // set steering angle according to cp
+        steering_angle_msg.data = std::signbit(cp.z())?(steering*-1)+90:(steering)+90;
+
+        float distance = cv::sqrt(dir.x() * dir.x() + dir.y() * dir.y());
         speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
+        //speed_msg.data = msg_particle.belief > 0.6 ? msg_particle.belief*max_speed: 20;
         pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
         // check if destination is reached with epsilon precision
         // and send message that the destination is reached
-        if( (dir.x < epsilon) && (-dir.x < epsilon) &&
-            (dir.y < epsilon) && (-dir.y < epsilon)){
+        if( (dir.x() < epsilon) && (-dir.x() < epsilon) &&
+            (dir.y() < epsilon) && (-dir.y() < epsilon)){
 #ifdef DEBUG_CONTROL
           ROS_INFO("control_node setDirection: destination reached");
 #endif
@@ -119,43 +130,44 @@ class Control {
         pubSteering_.publish(steering_angle_msg);
 
 #ifdef DEBUG_CONTROL
-        dstPoint_msg.header.seq   = msg_pose.header.seq;
-        dstPoint_msg.header.stamp = msg_pose.header.stamp;
+        dstPoint_msg.header.seq   = msg_particle.header.seq;
+        dstPoint_msg.header.stamp = msg_particle.header.stamp;
         dstPoint_msg.point.x      = dst.x;
         dstPoint_msg.point.y      = dst.y;
         pubDst_.publish(dstPoint_msg);
 
-        tf::Quaternion direction_q = tf::createQuaternionFromYaw((steering/180.0f)*M_PI);
-        tf::Quaternion steering_q = tf::createQuaternionFromYaw(steering_rad);
-        
-        steeringPose_msg.header.seq         = msg_pose.header.seq;
-        steeringPose_msg.header.stamp       = msg_pose.header.stamp;
-        steeringPose_msg.pose.position.x    = msg_pose.pose.position.x;
-        steeringPose_msg.pose.position.y    = msg_pose.pose.position.y;
+        tf::Quaternion direction_q = tf::createQuaternionFromYaw(dir_rad);
+        tf::Quaternion steering_q = tf::createQuaternionFromYaw(steering);
+        steering_q += orientation; 
+
+        steeringPose_msg.header.seq         = msg_particle.header.seq;
+        steeringPose_msg.header.stamp       = msg_particle.header.stamp;
+        steeringPose_msg.pose.position.x    = msg_particle.pose.position.x;
+        steeringPose_msg.pose.position.y    = msg_particle.pose.position.y;
 
         steeringPose_msg.pose.orientation.x = steering_q.getX();
         steeringPose_msg.pose.orientation.y = steering_q.getY();
         steeringPose_msg.pose.orientation.z = steering_q.getZ();
         steeringPose_msg.pose.orientation.w = steering_q.getW();
 
-        steeringPose_msg.scale.x    = distance;//length
+        steeringPose_msg.scale.x    = 1.0;//length
 
-        directionPose_msg.header.seq         = msg_pose.header.seq;
-        directionPose_msg.header.stamp       = msg_pose.header.stamp;
-        directionPose_msg.pose.position.x    = msg_pose.pose.position.x;
-        directionPose_msg.pose.position.y    = msg_pose.pose.position.y;
+        directionPose_msg.header.seq         = msg_particle.header.seq;
+        directionPose_msg.header.stamp       = msg_particle.header.stamp;
+        directionPose_msg.pose.position.x    = msg_particle.pose.position.x;
+        directionPose_msg.pose.position.y    = msg_particle.pose.position.y;
 
         directionPose_msg.pose.orientation.x = direction_q.getX();
         directionPose_msg.pose.orientation.y = direction_q.getY();
         directionPose_msg.pose.orientation.z = direction_q.getZ();
         directionPose_msg.pose.orientation.w = direction_q.getW();
 
-        directionPose_msg.scale.x    = 1.0;//length
+        directionPose_msg.scale.x    = distance;//length
         
         pubSteeringPose_.publish(steeringPose_msg);
         pubDirectionPose_.publish(directionPose_msg);
-        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d steering: %.2f",
-                 pos.x,pos.y, dst.x, dst.y, distance, speed_msg.data, steering);
+        ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d steering: %.2f belief: %.2f",
+                 pos.x(),pos.y(), dst.x, dst.y, distance, speed_msg.data, steering - 90, msg_particle.belief);
 #endif
       }
       
