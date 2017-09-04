@@ -48,6 +48,9 @@ target_link_libraries( test_map_transforms ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 add_executable( trajectory_plotter src/test/trajectory_plotter.cpp )
 target_link_libraries( trajectory_plotter ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
+add_executable( fake_localization src/test/fake_localization.cpp )
+target_link_libraries( fake_localization ${catkin_LIBRARIES} )
+
 install( TARGETS localization_publisher localization_publisher_debug
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
