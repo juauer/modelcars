@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     pub_particle.publish(msg_particle);
 
     // TODO check sign of steering (see above)
-     ROS_INFO("x: %.2f  y: %.2f  yaw: %.2f", msg_particle.pose.position.x, msg_particle.pose.position.y, tf::getYaw(q_new) );
+    // ROS_INFO("x: %.2f  y: %.2f  yaw: %.2f", msg_particle.pose.position.x, msg_particle.pose.position.y, tf::getYaw(q_new) );
   }
 
   return 0;
