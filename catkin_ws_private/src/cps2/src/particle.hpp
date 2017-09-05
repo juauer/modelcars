@@ -5,12 +5,9 @@
 
 namespace cps2 {
 
-class Particle {
-public:
-  Particle(const float x, const float y, const float th) :
-      p(x, y, th), belief(0)
-  {}
-
+struct Particle {
+  Particle(const float x, const float y, const float th):p(x, y, th), belief(0){}
+  Particle(const cps2::Particle& particle):p(particle.p),belief(particle.belief){}
   ~Particle() {}
 
   cv::Point3f p;

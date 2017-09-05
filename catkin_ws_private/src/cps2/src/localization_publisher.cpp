@@ -319,6 +319,7 @@ int main(int argc, char **argv) {
 
 #ifndef DEBUG_PF_STATIC
   file.open(path_log.c_str(), std::ios::out | std::ios::trunc);
+  file << "0.0 0.0 0.0" << std::endl;
 #endif
 #endif
 
