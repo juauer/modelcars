@@ -27,19 +27,12 @@ before_install:
   - pip install empy
   - sudo rosdep init
   - rosdep update
+  - sudo apt-get install -y ros-kinetic-cv-bridge ros-kinetic-message-generation ros-kinetic-geometry-msgs ros-kinetic-message-runtime ros-kinetic-std-msgs ros-kinetic-roscpp ros-kinetic-sensor-msgs ros-kinetic-image-transport
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 addons:
   apt:
     packages:
-      - ros-kinetic-cv-bridge
-      - ros-kinetic-message-generation
-      - ros-kinetic-geometry-msgs
-      - ros-kinetic-message-runtime
-      - ros-kinetic-std-msgs
-      - ros-kinetic-roscpp
-      - ros-kinetic-sensor-msgs
-      - ros-kinetic-image-transport
 script: 
   - source .ci_config/travis.sh
 #  - source ./travis.sh  # Enable this when you have a package-local script
