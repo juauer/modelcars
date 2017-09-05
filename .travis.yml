@@ -37,7 +37,7 @@ before_install:
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
   # source it to set the path variables.
-  - cd ~/catkin_ws_private
+  - cd ~/modelcars/catkin_ws_private
   - catkin_make
   - source devel/setup.bash
   # Add the package under integration to the workspace using a symlink.
