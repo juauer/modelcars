@@ -33,6 +33,7 @@ before_install:
   - sudo apt-get install -y ros-$ROS_DISTRO-cv-bridge ros-$ROS_DISTRO-message-generation ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-message-runtime ros-$ROS_DISTRO-std-msgs ros-$ROS_DISTRO-roscpp ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-image-transport
 
 install:
+  - cd ~
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
   - git clone https://github.com/mauriceAlthoff/modelcars.git
   # source it to set the path variables.
