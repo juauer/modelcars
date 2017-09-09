@@ -31,17 +31,6 @@ class Control {
     dst.y = dstPosY;
     dst.z = 0; // because we move on a 2d plane
 
-    steeringPose_msg.header.frame_id = "base_link";
-    steeringPose_msg.type = visualization_msgs::Marker::ARROW;
-    steeringPose_msg.action = visualization_msgs::Marker::ADD;
-    steeringPose_msg.pose.position.z = 0;
-    steeringPose_msg.scale.y = 0.05; // width
-    steeringPose_msg.scale.z = 0.05; // height
-    steeringPose_msg.color.a = 1.0;
-    steeringPose_msg.color.r = 1.0;
-    steeringPose_msg.color.g = 1.0;
-    steeringPose_msg.color.b = 1.0;
-
     directionPose_msg.header.frame_id = "base_link";
     directionPose_msg.type = visualization_msgs::Marker::ARROW;
     directionPose_msg.action = visualization_msgs::Marker::ADD;
@@ -76,7 +65,6 @@ class Control {
 
 #ifdef DEBUG_CONTROL
     pubDirectionPose_ = nh.advertise<visualization_msgs::Marker>(nh.resolveName("/localization/control/DirectionPose"), 1);
-    pubSteeringPose_ = nh.advertise<visualization_msgs::Marker>(nh.resolveName("/localization/control/SteeringPose"), 1);
     pubDst_ = nh.advertise<geometry_msgs::PointStamped>(nh.resolveName("/localization/control/destination"), 1);
 #endif
   }
@@ -91,35 +79,23 @@ class Control {
         reached = false;
 
         // calculate direction
-        tf::Vector3 pos(msg_particle.pose.position.x, msg_particle.pose.position.y, msg_particle.pose.position.z);
+        const float dx         = dstPosX - msg_particle.pose.position.x;
+        const float dy         = dstPosY - msg_particle.pose.position.y;
+        const float target_yaw = atan2(dy, dx);
+        const float yaw        = target_yaw - tf::getYaw(msg_particle.pose.orientation);
+        const float steering   = std::min(180.0, std::max(0.0, yaw * 180 / M_PI + 90) );
+        const float distance   = sqrtf(dx * dx + dy * dy);
 
-        tf::Quaternion orientation(msg_particle.pose.orientation.x, msg_particle.pose.orientation.y,
-                                     msg_particle.pose.orientation.z, msg_particle.pose.orientation.w);
+        steering_angle_msg.data = steering;
 
-        tf::Vector3 orientation_v = orientation.getAxis();
 
-        tf::Vector3 dir(dst.x, dst.y, dst.z);
-        dir -= pos;
-        // calculate steering angle
-        float steering_rad =  std::acos(orientation_v.dot(dir))/(dir.length() * orientation_v.length());
-        // cross product to determin steering direction left or right
-        tf::Vector3 cp = orientation_v.cross(dir);
-        float dir_rad = atan2f(dir.y(), dir.x());
-        float steering = std::min(std::max(steering_rad * (180.0/M_PI),
-                                           min_steering_angle),
-                                  max_steering_angle/2);
-        // set steering angle according to cp
-        steering_angle_msg.data = std::signbit(cp.z())?(steering*-1)+90:(steering)+90;
-
-        float distance = cv::sqrt(dir.x() * dir.x() + dir.y() * dir.y());
         speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
         //speed_msg.data = msg_particle.belief > 0.6 ? msg_particle.belief*max_speed: 20;
         pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
         // check if destination is reached with epsilon precision
         // and send message that the destination is reached
-        if( (dir.x() < epsilon) && (-dir.x() < epsilon) &&
-            (dir.y() < epsilon) && (-dir.y() < epsilon)){
+        if(distance < epsilon) {
 #ifdef DEBUG_CONTROL
           ROS_INFO("control_node setDirection: destination reached");
 #endif
@@ -136,21 +112,7 @@ class Control {
         dstPoint_msg.point.y      = dst.y;
         pubDst_.publish(dstPoint_msg);
 
-        tf::Quaternion direction_q = tf::createQuaternionFromYaw(dir_rad);
-        tf::Quaternion steering_q = tf::createQuaternionFromYaw(steering);
-        steering_q += orientation; 
-
-        steeringPose_msg.header.seq         = msg_particle.header.seq;
-        steeringPose_msg.header.stamp       = msg_particle.header.stamp;
-        steeringPose_msg.pose.position.x    = msg_particle.pose.position.x;
-        steeringPose_msg.pose.position.y    = msg_particle.pose.position.y;
-
-        steeringPose_msg.pose.orientation.x = steering_q.getX();
-        steeringPose_msg.pose.orientation.y = steering_q.getY();
-        steeringPose_msg.pose.orientation.z = steering_q.getZ();
-        steeringPose_msg.pose.orientation.w = steering_q.getW();
-
-        steeringPose_msg.scale.x    = 1.0;//length
+        tf::Quaternion direction_q = tf::createQuaternionFromYaw(target_yaw);
 
         directionPose_msg.header.seq         = msg_particle.header.seq;
         directionPose_msg.header.stamp       = msg_particle.header.stamp;
@@ -164,10 +126,9 @@ class Control {
 
         directionPose_msg.scale.x    = distance;//length
         
-        pubSteeringPose_.publish(steeringPose_msg);
         pubDirectionPose_.publish(directionPose_msg);
         ROS_INFO("control_node setDirection: pos(%.2f/%.2f) dst(%.2f/%.2f) dist: %.2f speed: %d steering: %.2f belief: %.2f",
-                 pos.x(),pos.y(), dst.x, dst.y, distance, speed_msg.data, steering - 90, msg_particle.belief);
+            msg_particle.pose.position.x, msg_particle.pose.position.y, dst.x, dst.y, distance, speed_msg.data, steering - 90, msg_particle.belief);
 #endif
       }
       
@@ -207,7 +168,6 @@ class Control {
   geometry_msgs::PointStamped dstPoint_msg;
   ros::NodeHandle n_; 
   ros::Publisher pubSteering_;
-  ros::Publisher pubSteeringPose_;
   ros::Publisher pubDirectionPose_;
   ros::Publisher pubDst_;
   ros::Publisher pubDstReached_;
