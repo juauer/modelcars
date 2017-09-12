@@ -61,8 +61,6 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
 
-  <rosparam> use_sim_time: true </rosparam>  
-
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
 
   <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
