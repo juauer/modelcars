@@ -74,6 +74,8 @@ public:
    */
   Particle getBest();
 
+  Particle getBestSignle(){return best_single;}
+  
   const int particles_num;
   const int particles_keep;
   const float particle_belief_scale;

@@ -116,23 +116,24 @@ void callback_image(const sensor_msgs::ImageConstPtr &msg) {
 
   tf::Quaternion best_q = tf::createQuaternionFromYaw(best.p.z);
 
-  msg_pose.header.seq         = msg->header.seq;
-  msg_pose.header.stamp       = msg->header.stamp;
-  msg_pose.pose.position.x    = best.p.x;
-  msg_pose.pose.position.y    = best.p.y;
-  msg_pose.pose.orientation.x = best_q.getX();
-  msg_pose.pose.orientation.y = best_q.getY();
-  msg_pose.pose.orientation.z = best_q.getZ();
-  msg_pose.pose.orientation.w = best_q.getW();
-  pub.publish(msg_pose);
-
-  msg_particle.header = msg_pose.header;
-  msg_particle.pose = msg_pose.pose;
-  msg_particle.belief = best.belief;
-
+  msg_particle.header.seq         = msg->header.seq;
+  msg_particle.header.stamp       = msg->header.stamp;
+  msg_particle.pose.position.x    = best.p.x;
+  msg_particle.pose.position.y    = best.p.y;
+  msg_particle.pose.orientation.x = best_q.getX();
+  msg_particle.pose.orientation.y = best_q.getY();
+  msg_particle.pose.orientation.z = best_q.getZ();
+  msg_particle.pose.orientation.w = best_q.getW();
+  msg_particle.belief = particleFilter->getBestSignle().belief;
   pub_particle.publish(msg_particle);
 
 #ifdef DEBUG_PF
+  // publish pose topic 
+  msg_pose.header = msg_particle.header;
+  msg_pose.pose = msg_particle.pose;
+
+  pub.publish(msg_pose);
+
   // draw particles
   int i = 0;
 
@@ -283,8 +284,6 @@ int main(int argc, char **argv) {
   stamp_last_odom.nsec     = 0;
   stamp_last_image.sec     = 0;
   stamp_last_image.nsec    = 0;
-  msg_pose.header.frame_id = "base_link";
-  msg_pose.pose.position.z = 0;
   msg_particle.header.frame_id = "base_link";
   msg_particle.pose.position.z = 0;
 
@@ -293,10 +292,13 @@ int main(int argc, char **argv) {
   ros::Subscriber sub_camera_matrix   = nh.subscribe("/usb_cam/camera_matrix", 1, &callback_camera_matrix);
   image_transport::Subscriber sub_img = it.subscribe("/usb_cam/image_undistorted", 1, &callback_image);
 
-  pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);
   pub_particle = nh.advertise<cps2_particle_msgs::particle_msgs>("/localization/cps2/particle", 1);
 
 #ifdef DEBUG_PF
+  msg_pose.header.frame_id = "base_link";
+  msg_pose.pose.position.z = 0;
+  pub = nh.advertise<geometry_msgs::PoseStamped>("/localization/cps2/pose", 1);  
+
   pub_markers_particles = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/particles", 1);
   pub_markers_mappieces = nh.advertise<visualization_msgs::MarkerArray>("/localization/cps2/mappieces", 1);
   pub_best              = it.advertise("/localization/cps2/pose_image", 1);
