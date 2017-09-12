@@ -25,6 +25,7 @@ class Control {
     n_.param<float>("/control_node/dstPosX", dstPosX, 0);
     n_.param<float>("/control_node/dstPosY", dstPosY, 0);
     n_.param<float>("/control_node/speed", speed, 20);
+    n_.param<float>("/control_node/min_belief", min_belief, 0.6);
 
     dst.x = dstPosX;
     dst.y = dstPosY;
@@ -79,8 +80,7 @@ class Control {
 
       steering_angle_msg.data = steering;
 
-      speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
-      //speed_msg.data = msg_particle.belief > 0.6 ? msg_particle.belief*max_speed: 20;
+      speed_msg.data = msg_particle.belief > min_belief ? msg_particle.belief*max_speed: 20;
       pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
       // check if destination is reached with epsilon precision
@@ -138,6 +138,7 @@ class Control {
   float dstPosX;
   float dstPosY;
   float speed;
+  float min_belief;
 
  protected:
   cv::Point3f dst;
