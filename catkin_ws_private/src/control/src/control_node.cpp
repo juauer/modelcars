@@ -79,7 +79,6 @@ class Control {
 
       steering_angle_msg.data = steering;
 
-
       speed_msg.data = distance>epsilon ?std::max(max_speed,distance * speed_multiplyer):0;
       //speed_msg.data = msg_particle.belief > 0.6 ? msg_particle.belief*max_speed: 20;
       pubSpeed_.publish(speed_msg); // set speed according to distance ?
@@ -87,13 +86,12 @@ class Control {
       // check if destination is reached with epsilon precision
       // and send message that the destination is reached
       if(distance < epsilon) {
+        reached_msg.data = true;
+        pubDstReached_.publish(reached_msg);
 #ifdef DEBUG_CONTROL
         ROS_INFO("control_node setDirection: destination reached");
 #endif
-        reached_msg.data = true;
-        pubDstReached_.publish(reached_msg);
       }
-
       pubSteering_.publish(steering_angle_msg);
 
 #ifdef DEBUG_CONTROL
