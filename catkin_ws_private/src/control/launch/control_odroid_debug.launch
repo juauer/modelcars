@@ -82,7 +82,6 @@
 
   <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
     <rosparam>
-      mode: 0
       epsilon: 0.5
       dstPosX: -0.04
       dstPosY: 0.03

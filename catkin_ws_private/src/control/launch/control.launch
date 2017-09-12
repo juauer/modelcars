@@ -1,7 +1,7 @@
+<?xml version="1.0"?>
 <launch>
   <node pkg="control" type="control_node" name="control_node" args="" output="screen">
     <rosparam>
-      mode: 0
       epsilon: 0.3
       dstPosX: -0.04
       dstPosY: 0.03
