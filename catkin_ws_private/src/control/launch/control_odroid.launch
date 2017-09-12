@@ -76,7 +76,8 @@
       epsilon: 0.5
       dstPosX: -0.04
       dstPosY: 0.03
-      speed: 200
+      max_speed: -200.0
+      speed_multiplyer: -200.0
       min_belief: 0.6      
     </rosparam>
   </node>

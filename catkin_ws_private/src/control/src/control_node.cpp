@@ -13,8 +13,6 @@
 static const unsigned point_mode = 0;
 static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
-static const float max_speed = -200.0f;
-static const float speed_multiplyer = -200.0f;
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
 
@@ -24,7 +22,8 @@ class Control {
     n_.param<float>("/control_node/epsilon", epsilon, 0.5);
     n_.param<float>("/control_node/dstPosX", dstPosX, 0);
     n_.param<float>("/control_node/dstPosY", dstPosY, 0);
-    n_.param<float>("/control_node/speed", speed, 20);
+    n_.param<float>("/control_node/max_speed", max_speed, -200.f);
+    n_.param<float>("/control_node/speed_multiplyer", speed_multiplyer, -200.0f);
     n_.param<float>("/control_node/min_belief", min_belief, 0.6);
 
     dst.x = dstPosX;
@@ -137,7 +136,8 @@ class Control {
   float epsilon;
   float dstPosX;
   float dstPosY;
-  float speed;
+  float max_speed;
+  float speed_multiplyer;
   float min_belief;
 
  protected:
@@ -171,8 +171,8 @@ int main(int argc, char **argv) {
     ROS_INFO("control_node DEBUG_MODE");
 #endif
   
-  ROS_INFO("Control_node: epsilon: %.2f desired:(%.2f,%.2f) speed: %.2f",
-           control.epsilon, control.dstPosX, control.dstPosY, control.speed);
+  ROS_INFO("Control_node: epsilon: %.2f desired:(%.2f,%.2f) max speed: %.2f speed mult: %.2f",
+           control.epsilon, control.dstPosX, control.dstPosY, control.max_speed, control.speed_multiplyer);
   
   while(ros::ok()) {
     ros::spin();
