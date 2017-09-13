@@ -73,7 +73,11 @@ class Control {
       const float dx         = dstPosX - msg_particle.pose.position.x;
       const float dy         = dstPosY - msg_particle.pose.position.y;
       const float target_yaw = atan2(dy, dx);
-      const float yaw        = target_yaw - tf::getYaw(msg_particle.pose.orientation);
+      float yaw              = target_yaw - tf::getYaw(msg_particle.pose.orientation);
+
+      if(abs(yaw) > M_PI)
+        yaw = (yaw > 0 ? -2 : 2) * M_PI + yaw;
+
       const float steering   = std::min(180.0, std::max(0.0, yaw * 180 / M_PI + 90) );
       const float distance   = sqrtf(dx * dx + dy * dy);
 
