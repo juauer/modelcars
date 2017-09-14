@@ -4,6 +4,8 @@
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Bool.h>
 #include <opencv2/core/core.hpp>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <math.h>
 #include <vector>
 #include <string>
@@ -47,6 +49,8 @@ class TrackControl {
 
 #ifdef DEBUG_CONTROL
     ROS_INFO("control_track_node setDestination current: %d dst(%.2f/%.2f)", current, msg_dst.x, msg_dst.y);
+
+    pub_markers_points = nh.advertise<visualization_msgs::MarkerArray>("/localization/control/track", 1);
 #endif
 
     pubDst_.publish(msg_dst);
@@ -61,6 +65,38 @@ class TrackControl {
     pubDst_.publish(msg_dst);
 #ifdef DEBUG_CONTROL
     ROS_INFO("control_track_node setDestination current: %d dst(%.2f/%.2f)", current, msg_dst.x, msg_dst.y);
+
+    // draw track
+    int i = 0;
+    for(auto it = point_list.begin(); it != point_list.end(); ++it) {
+      tf::Quaternion q  = tf::createQuaternionFromYaw(0);
+      visualization_msgs::Marker marker;
+
+      marker.header.frame_id    = "base_link";
+      marker.header.stamp       = ros::Time();
+      marker.ns                 = "cps2";
+      marker.id                 = i++;
+      marker.type               = visualization_msgs::Marker::SPHERE;
+      marker.action             = visualization_msgs::Marker::ADD;
+      marker.pose.position.x    = it->x;
+      marker.pose.position.y    = it->y;
+      marker.pose.position.z    = 0;
+      marker.pose.orientation.x = q.getX();
+      marker.pose.orientation.y = q.getY();
+      marker.pose.orientation.z = q.getZ();
+      marker.pose.orientation.w = q.getW();
+      marker.color.a            = 1.0;
+      marker.color.r            = 0.0;
+      marker.color.g            = 0.8;
+      marker.color.b            = 1.0;
+      marker.scale.x            = 0.4;
+      marker.scale.y            = 0.2;
+      marker.scale.z            = 0.2;
+      ++i;
+      msg_markers_points.markers.push_back(marker);
+    }
+
+    pub_markers_points.publish(msg_markers_points);
 #endif
   }
 
@@ -71,7 +107,11 @@ class TrackControl {
   unsigned current;
   std::vector<cv::Point3f> point_list;
   ros::Subscriber subDst_;
-  ros::NodeHandle n_; 
+  ros::NodeHandle n_;
+#ifdef DEBUG_CONTROL
+  ros::Publisher pub_markers_points;
+  visualization_msgs::MarkerArray msg_markers_points;
+#endif
 
 };//End of class auto_stop
 
