@@ -12,13 +12,15 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <geometry_msgs/PoseStamped.h>
 
 class TrackControl {
  public:
   TrackControl(ros::NodeHandle nh): current(0) {
     n_.param<std::string>("/control_track_node/trackFile", trackFile, "track02.csv");
+    n_.param<float>("/control_track_node/epsilon", epsilon, 0.1);
     
-    subDst_ = n_.subscribe("/localization/control/destination/reached",1,&TrackControl::setDestination,this);
+    sub_pose = n_.subscribe("/localization/cps2/pose", 1, &TrackControl::setDestination, this);
     pubDst_ = nh.advertise<geometry_msgs::Point>(nh.resolveName("/localization/control/dest"), 1);
 
     msg_dst.z = 0;
@@ -55,13 +57,26 @@ class TrackControl {
 
     pubDst_.publish(msg_dst);
   }
+
   ~TrackControl(){}
 
-  void setDestination(const std_msgs::Bool& msg_dst_reached) {
-    msg_dst.x = point_list.at(current).x;
-    msg_dst.y = point_list.at(current).y;
+  void setDestination(const geometry_msgs::PoseStamped &msg_pose) {
+    // check if destination is reached with epsilon precision
+    // and send message that the destination is reached
+    const float dx         = point_list.at(current).x - msg_pose.pose.position.x;
+    const float dy         = point_list.at(current).y - msg_pose.pose.position.y;
+    const float distance   = sqrtf(dx * dx + dy * dy);
 
-    current = (current + 1) % point_list.size();
+    if(distance < epsilon) {
+      #ifdef DEBUG_CONTROL
+        ROS_INFO("control_node setDirection: destination reached");
+      #endif
+
+      current = (current + 1) % point_list.size();
+      msg_dst.x = point_list.at(current).x;
+      msg_dst.y = point_list.at(current).y;
+    }
+
     pubDst_.publish(msg_dst);
 #ifdef DEBUG_CONTROL
     ROS_INFO("control_track_node setDestination current: %d dst(%.2f/%.2f)", current, msg_dst.x, msg_dst.y);
@@ -101,12 +116,14 @@ class TrackControl {
   }
 
   std::string trackFile;  
+  float epsilon;
+
  protected:
   ros::Publisher pubDst_;
   geometry_msgs::Point msg_dst;
   unsigned current;
   std::vector<cv::Point3f> point_list;
-  ros::Subscriber subDst_;
+  ros::Subscriber sub_pose;
   ros::NodeHandle n_;
 #ifdef DEBUG_CONTROL
   ros::Publisher pub_markers_points;
@@ -124,7 +141,7 @@ int main(int argc, char **argv) {
     ROS_INFO("control_track_node DEBUG_MODE");
 #endif
  
-  ROS_INFO("control_track_node initialization track file: %s", path.trackFile.c_str());
+  ROS_INFO("control_track_node initialization epsilon: %.2f, track file: %s", path.epsilon, path.trackFile.c_str());
   
   while(ros::ok()) {
     ros::spin();

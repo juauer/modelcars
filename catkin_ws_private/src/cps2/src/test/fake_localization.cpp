@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
   cps2_particle_msgs::particle_msgs msg_particle;
 
   msg_pose.header.frame_id     = "base_link";
-  msg_pose.pose.position.x     = 0;
-  msg_pose.pose.position.y     = 0;
+  msg_pose.pose.position.x     = 0.5;
+  msg_pose.pose.position.y     = 0.5;
   msg_pose.pose.position.z     = 0;
   msg_pose.pose.orientation.w  = 1;
   msg_pose.pose.orientation.x  = 0;

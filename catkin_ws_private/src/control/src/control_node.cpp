@@ -18,14 +18,14 @@ static const double min_steering_angle = 0.0f;
 
 class Control {
  public:
-  Control(ros::NodeHandle nh):seqNum(0), reached(false) {
-    n_.param<float>("/control_node/epsilon", epsilon, 0.5);
+  Control(ros::NodeHandle nh):seqNum(0) {
     n_.param<float>("/control_node/dstPosX", dstPosX, 0);
     n_.param<float>("/control_node/dstPosY", dstPosY, 0);
     n_.param<float>("/control_node/max_speed", max_speed, -200.f);
     n_.param<float>("/control_node/speed_multiplyer", speed_multiplyer, -200.0f);
     n_.param<float>("/control_node/min_belief", min_belief, 0.6);
 
+    dstIsSet = false;
     dst.x = dstPosX;
     dst.y = dstPosY;
     dst.z = 0; // because we move on a 2d plane
@@ -45,7 +45,6 @@ class Control {
     dstPoint_msg.point.z = 0;
     
     pubSteering_ = nh.advertise<std_msgs::Int16>(nh.resolveName("manual_control/steering"), 1);
-    pubDstReached_ = nh.advertise<std_msgs::Bool>(nh.resolveName("/localization/control/destination/reached"), 1);
     subDir_ = n_.subscribe("/localization/cps2/particle",1,&Control::setDirection,this); 
     subDst_ = n_.subscribe("/localization/control/dest",1,&Control::setDestination,this);
     pubMotor_ = nh.advertise<std_msgs::Int16>("/manual_control/stop_start", 1);    
@@ -64,10 +63,13 @@ class Control {
   ~Control(){}
 
   void setDirection(const cps2_particle_msgs::particle_msgs& msg_particle) {
+    // don't aim for no target
+    if(!dstIsSet)
+      return;
+
     // check for old message
     if (seqNum < msg_particle.header.seq){        
       seqNum = msg_particle.header.seq;
-      reached = false;
 
       // calculate direction
       const float dx         = dstPosX - msg_particle.pose.position.x;
@@ -86,15 +88,7 @@ class Control {
       speed_msg.data = msg_particle.belief > min_belief ? msg_particle.belief*max_speed: 20;
       pubSpeed_.publish(speed_msg); // set speed according to distance ?
 
-      // check if destination is reached with epsilon precision
-      // and send message that the destination is reached
-      if(distance < epsilon) {
-        reached_msg.data = true;
-        pubDstReached_.publish(reached_msg);
-#ifdef DEBUG_CONTROL
-        ROS_INFO("control_node setDirection: destination reached");
-#endif
-      }
+
       pubSteering_.publish(steering_angle_msg);
 
 #ifdef DEBUG_CONTROL
@@ -126,18 +120,19 @@ class Control {
   }
   
   void setDestination(const geometry_msgs::Point& msg_dst) {
+    dstIsSet = true;
     dstPosX = msg_dst.x;
     dstPosY = msg_dst.y;
     dst.x = msg_dst.x;
     dst.y = msg_dst.y;
     
-#ifdef DEBUG_CONTROL
-    ROS_INFO("control_node setDestination dst(%.2f/%.2f)", dst.x, dst.y);
-#endif
+    #ifdef DEBUG_CONTROL
+      ROS_INFO("control_node setDestination dst(%.2f/%.2f)", dst.x, dst.y);
+    #endif
   }
 
+  bool dstIsSet;
   int seqNum;
-  float epsilon;
   float dstPosX;
   float dstPosY;
   float max_speed;
@@ -146,10 +141,8 @@ class Control {
 
  protected:
   cv::Point3f dst;
-  bool reached;
   std_msgs::Int16 speed_msg;
   std_msgs::Int16 steering_angle_msg;
-  std_msgs::Bool reached_msg;
   visualization_msgs::Marker directionPose_msg;
   visualization_msgs::Marker steeringPose_msg;
   geometry_msgs::PointStamped dstPoint_msg;
@@ -157,7 +150,6 @@ class Control {
   ros::Publisher pubSteering_;
   ros::Publisher pubDirectionPose_;
   ros::Publisher pubDst_;
-  ros::Publisher pubDstReached_;
   ros::Publisher pubSpeed_;
   ros::Publisher pubMotor_;
   ros::Subscriber subDir_;
@@ -175,8 +167,8 @@ int main(int argc, char **argv) {
     ROS_INFO("control_node DEBUG_MODE");
 #endif
   
-  ROS_INFO("Control_node: epsilon: %.2f desired:(%.2f,%.2f) max speed: %.2f speed mult: %.2f",
-           control.epsilon, control.dstPosX, control.dstPosY, control.max_speed, control.speed_multiplyer);
+  ROS_INFO("Control_node: desired:(%.2f,%.2f) max speed: %.2f speed mult: %.2f",
+           control.dstPosX, control.dstPosY, control.max_speed, control.speed_multiplyer);
   
   while(ros::ok()) {
     ros::spin();
