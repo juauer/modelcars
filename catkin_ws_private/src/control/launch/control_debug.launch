@@ -61,8 +61,6 @@
   <!-- arg <setStartPos>: start particle filter with initial position -->
   <arg name="setStartPos" default="1" />
 
-  <rosparam> use_sim_time: true </rosparam>  
-
   <node name="static_tf_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link 100" />
 
   <include file="$(find fisheye_camera_matrix)/launch/camera_matrix_publisher.launch" >
@@ -76,21 +74,20 @@
   
   <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
     <rosparam>
-      mode: 0
       epsilon: 0.3
       dstPosX: -0.04
       dstPosY: 0.03
-      speed: 200
+      max_speed: -200.0
+      speed_multiplyer: -200.0
+      min_belief: 0.6      
     </rosparam>
   </node>
   
   <node pkg="control" type="control_track_node_debug" name="control_track_node" args="" output="screen">
     <rosparam>
-      trackFile: track01.csv
+      trackFile: track03.csv
     </rosparam>
   </node>
   
-  <node name="log_player" pkg="rosbag" type="play" args="--clock $(find cps2)/../../../logs/$(arg bagfile).bag" /> 
-
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find control)/config/config_control.rviz" />
 </launch>

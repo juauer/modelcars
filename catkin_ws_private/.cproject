@@ -26,7 +26,9 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/devel_x86/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/install_x86/include&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.343267829" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.343267829" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="DEBUG_CONTROL=1"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.836553542" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.180263465" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
@@ -47,6 +49,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/control"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cps2"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cps2_particle_msgs"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/fisheye_camera_matrix"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/fisheye_camera_matrix_msgs"/>
 					</sourceEntries>
