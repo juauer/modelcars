@@ -15,15 +15,16 @@ static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
+static const double treshold_belief_min = 0.7;
+static const double treshold_belief_max = 0.9;
+static const double treshold_dist_max = 1.0;
 
 class Control {
  public:
   Control(ros::NodeHandle nh):seqNum(0) {
     n_.param<float>("/control_node/dstPosX", dstPosX, 0);
     n_.param<float>("/control_node/dstPosY", dstPosY, 0);
-    n_.param<float>("/control_node/max_speed", max_speed, -200.f);
-    n_.param<float>("/control_node/speed_multiplyer", speed_multiplyer, -200.0f);
-    n_.param<float>("/control_node/min_belief", min_belief, 0.6);
+    n_.param<float>("/control_node/max_speed", max_speed, 400.f);
 
     dstIsSet = false;
     dst.x = dstPosX;
@@ -85,10 +86,19 @@ class Control {
 
       steering_angle_msg.data = steering;
 
-      speed_msg.data = msg_particle.belief > min_belief ? msg_particle.belief*max_speed: 20;
-      pubSpeed_.publish(speed_msg); // set speed according to distance ?
+      speed_msg.data = -max_speed;
 
+      // scale by belief
+      speed_msg.data *=
+                msg_particle.belief <= treshold_belief_min ? 0
+              : msg_particle.belief >= treshold_belief_max ? 1
+              : (msg_particle.belief - treshold_belief_min) / (treshold_belief_max - treshold_belief_min);
 
+      // scale by distance
+      if(distance < treshold_dist_max)
+        speed_msg.data *= distance / treshold_dist_max;
+
+      pubSpeed_.publish(speed_msg);
       pubSteering_.publish(steering_angle_msg);
 
 #ifdef DEBUG_CONTROL
@@ -136,8 +146,6 @@ class Control {
   float dstPosX;
   float dstPosY;
   float max_speed;
-  float speed_multiplyer;
-  float min_belief;
 
  protected:
   cv::Point3f dst;
@@ -167,8 +175,8 @@ int main(int argc, char **argv) {
     ROS_INFO("control_node DEBUG_MODE");
 #endif
   
-  ROS_INFO("Control_node: desired:(%.2f,%.2f) max speed: %.2f speed mult: %.2f",
-           control.dstPosX, control.dstPosY, control.max_speed, control.speed_multiplyer);
+  ROS_INFO("Control_node: desired:(%.2f,%.2f) max speed: %.2f",
+           control.dstPosX, control.dstPosY, control.max_speed);
   
   while(ros::ok()) {
     ros::spin();
