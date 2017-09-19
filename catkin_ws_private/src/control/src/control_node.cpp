@@ -15,7 +15,7 @@ static const unsigned angle_mode = 1;
 // speed range [-1000...1000] direction is inverted
 static const double max_steering_angle = 180.0f;
 static const double min_steering_angle = 0.0f;
-static const double treshold_belief_min = 0.7;
+static const double treshold_belief_min = 0.5;
 static const double treshold_belief_max = 0.9;
 static const double treshold_dist_max = 1.0;
 
