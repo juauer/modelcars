@@ -21,7 +21,7 @@ env:
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
   - docker pull ros
-  - docker run -d -p 127.0.0.1:80:4567 ros /bin/sh -c "cd /root/; bundle exec foreman start;"
+  - docker run -d -p 127.0.0.1:80:4567 ros /bin/sh -c "cd /root/; bundle exec sudo apt-get install -y ros-$ROS_DISTRO-cv-bridge ros-$ROS_DISTRO-message-generation ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-message-runtime ros-$ROS_DISTRO-std-msgs ros-$ROS_DISTRO-roscpp ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-image-transport;"
   - docker ps -a
   - docker --version
   #- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
