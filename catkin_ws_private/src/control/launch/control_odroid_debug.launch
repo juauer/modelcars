@@ -7,7 +7,7 @@
   <arg name="bagfile" default="test" />
       
   <!-- arg <big_map>: 0|1 = off|on. Use a given, big map or create a dynamic map, otherwise. -->
-  <arg name="big_map" default="1" />
+  <arg name="big_map" default="0" />
   
    <!-- arg <grid_size>: size (in m) of a grid cell of map -->
   <arg name="grid_size" default="1.0" />
@@ -82,18 +82,14 @@
 
   <node pkg="control" type="control_node_debug" name="control_node" args="" output="screen">
     <rosparam>
-      epsilon: 0.5
-      dstPosX: -0.04
-      dstPosY: 0.03
-      max_speed: -200.0
-      speed_multiplyer: -200.0
-      min_belief: 0.6      
+      epsilon: 0.2
+      max_speed: 400.0
     </rosparam>
   </node>
 
   <node pkg="control" type="control_track_node_debug" name="control_track_node" args="" output="screen">
     <rosparam>
-      trackFile: track02.csv
+      trackFile: track03.csv
     </rosparam>
   </node>
   
