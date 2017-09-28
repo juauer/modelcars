@@ -1,21 +1,35 @@
-sudo: required 
-dist: trusty 
-language: generic 
-compiler:
-  - gcc
-notifications:
-  email:
-    on_success: always
-    on_failure: always
-env:
-  matrix:
-    - USE_DEB=true  ROS_DISTRO="kinetic"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - USE_DEB=true  ROS_DISTRO="kinetic"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
-matrix:
-  allow_failures:
-    - env: USE_DEB=true  ROS_DISTRO="kinetic"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
-install:
-  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
-script: 
-  - source .ci_config/travis.sh
-#  - source ./travis.sh  # Enable this when you have a package-local script 
+image: ros:kinetic-robot
+
+variables:
+  ROS_PACKAGES_TO_INSTALL: ""
+
+cache:
+  paths:
+    - ccache/
+
+before_script:
+ - git clone https://gitlab.com/VictorLamoine/ros_gitlab_ci.git
+ - source ros_gitlab_ci/gitlab-ci.bash
+
+# catkin_make
+catkin_make:
+  stage: build
+  script:
+    - catkin_make
+
+catkin_make tests:
+  stage: test
+  script:
+    - catkin_make run_tests
+
+# catkin tools
+catkin_tools:
+  stage: build
+  script:
+    - catkin build --summarize --no-status --force-color
+
+catkin tools_tests:
+  stage: test
+  script:
+    - catkin run_tests --no-status --force-color
+
