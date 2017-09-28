@@ -2,7 +2,7 @@ sudo: required
 dist: xenial 
 services:
   - docker
-language: generic 
+language: cpp 
 cache:
   - apt
 notifications:
@@ -20,19 +20,22 @@ env:
 
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-  - sudo apt-get update -qq
-  - sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
-  - source /opt/ros/$ROS_DISTRO/setup.bash
+  - docker pull ros
+  - docker run -d -p 127.0.0.1:80:4567 ros /bin/sh -c "cd /root/; bundle exec foreman start;"
+  - docker ps -a
+  #- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+  #- sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+  #- sudo apt-get update -qq
+  #- sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
+  #- source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
-  - pip install catkin_pkg
-  - pip install empy
-  - sudo rosdep init
-  - rosdep update
-  - sudo apt-get install -y ros-$ROS_DISTRO-cv-bridge ros-$ROS_DISTRO-message-generation ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-message-runtime ros-$ROS_DISTRO-std-msgs ros-$ROS_DISTRO-roscpp ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-image-transport
+  #- pip install catkin_pkg
+  #- pip install empy
+  #- sudo rosdep init
+  #- rosdep update
+  #- sudo apt-get install -y ros-$ROS_DISTRO-cv-bridge ros-$ROS_DISTRO-message-generation ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-message-runtime ros-$ROS_DISTRO-std-msgs ros-$ROS_DISTRO-roscpp ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-image-transport
 
-install:
+script:
   - cd ~
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
   - git clone https://github.com/mauriceAlthoff/modelcars.git
