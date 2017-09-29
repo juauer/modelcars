@@ -13,12 +13,11 @@ notifications:
     on_failure: change
 env:
   global:
-    - ADDITIONAL_DEBS = 
+    - ADDITIONAL_DEBS = ros-kinetic-roscpp ros-kinetic-geometry-msgs ros-kinetic-std-msgs ros-kinetic-cv-bridge ros-kinetic-message-runtime ros-kinetic-message-generation ros-kinetic-image-transport ros-kinetic-sensor-msgs
     - CATKIN_PARALLEL_TEST_JOBS=-p1
     - ROS_PARALLEL_TEST_JOBS=-j1
   matrix:
-    - ROS_DISTRO="indigo"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    #- ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_DISTRO="kinetic"  PRERELEASE=true ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     #- ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
     #- ROS_DISTRO="kinetic"  UPSTREAM_WORKSPACE=https://raw.githubusercontent.com/ros-controls/ros_control/$ROS_DISTRO-devel/ros_control.rosinstall
 install:
