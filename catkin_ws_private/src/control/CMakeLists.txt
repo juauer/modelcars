@@ -21,16 +21,22 @@ add_executable( control_wasd src/control_wasd.cpp )
 target_link_libraries( control_wasd ${catkin_LIBRARIES} )
 
 add_executable( control_node src/control_node.cpp )
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+add_dependencies(control_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(control_node ${catkin_LIBRARIES})
 
 add_executable( control_track_node src/control_track_node.cpp )
+add_dependencies(control_track_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries( control_track_node ${catkin_LIBRARIES} )
 
 add_executable( control_node_debug src/control_node.cpp )
+add_dependencies(control_node_debug ${catkin_EXPORTED_TARGETS})
 target_compile_definitions( control_node_debug PUBLIC DEBUG_CONTROL )
 target_link_libraries( control_node_debug ${catkin_LIBRARIES} )
 
 add_executable( control_track_node_debug src/control_track_node.cpp )
+add_dependencies(control_track_node ${catkin_EXPORTED_TARGETS})
 target_compile_definitions( control_track_node_debug PUBLIC DEBUG_CONTROL )
 target_link_libraries( control_track_node_debug ${catkin_LIBRARIES} )
 
