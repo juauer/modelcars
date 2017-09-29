@@ -12,7 +12,7 @@ find_package( catkin REQUIRED COMPONENTS
   cv_bridge
   fisheye_camera_matrix
   nav_msgs
-  ycps2_particle_msgs
+  cps2_particle_msgs
 )
 
 roslaunch_add_file_check( launch )
