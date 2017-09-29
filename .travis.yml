@@ -13,7 +13,7 @@ notifications:
     on_failure: change
 env:
   global:
-    - ADDITIONAL_DEBS = ros-kinetic-roscpp ros-kinetic-geometry-msgs ros-kinetic-std-msgs ros-kinetic-cv-bridge ros-kinetic-message-runtime ros-kinetic-message-generation ros-kinetic-image-transport ros-kinetic-sensor-msgs
+    - ADDITIONAL_DEBS = ros-kinetic-roscpp ros-kinetic-geometry-msgs ros-kinetic-std-msgs ros-kinetic-cv-bridge ros-kinetic-message-runtime ros-kinetic-message-generation ros-kinetic-image-transport ros-kinetic-sensor-msgs ros-kinetic-opencv3
     - CATKIN_PARALLEL_TEST_JOBS=-p1
     - ROS_PARALLEL_TEST_JOBS=-j1
   matrix:
