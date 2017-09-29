@@ -48,7 +48,10 @@
   <run_depend>libopencv-dev</run_depend>
   <run_depend>fisheye_camera_matrix</run_depend>
   <run_depend>cps2_particle_msgs</run_depend>
-  
+  <run_depend>tf</run_depend>
+  <run_depend>rosbag</run_depend>
+  <run_depend>rviz</run_depend>  
+  <run_depend>usb_cam</run_depend>
   
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
