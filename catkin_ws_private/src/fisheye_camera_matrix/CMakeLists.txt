@@ -27,15 +27,19 @@ catkin_package(
 )
 
 add_executable( offline_calibration_manual src/offline_calibration_manual.cpp src/camera_matrix.cpp )
+add_dependencies(offline_calibration_manual ${catkin_EXPORTED_TARGETS})
 target_link_libraries( offline_calibration_manual ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( camera_matrix_publisher src/camera_matrix_publisher.cpp src/camera_matrix.cpp )
+add_dependencies( camera_matrix_publisher ${catkin_EXPORTED_TARGETS})
 target_link_libraries( camera_matrix_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( undistorted_image_publisher src/undistorted_image_publisher.cpp src/camera_matrix.cpp )
+add_dependencies( undistorted_image_publisher ${catkin_EXPORTED_TARGETS})
 target_link_libraries( undistorted_image_publisher ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_library( fisheye_camera_matrix src/camera_matrix.cpp )
+add_dependencies( fisheye_camera_matrix ${catkin_EXPORTED_TARGETS})
 target_link_libraries( fisheye_camera_matrix ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 install(
