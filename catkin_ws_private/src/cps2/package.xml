@@ -36,7 +36,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_transport</build_depend>
-  <build_depend>opencv2</build_depend>
+  <build_depend>libopencv-dev</build_depend>
   <build_depend>fisheye_camera_matrix</build_depend>
   <build_depend>cps2_particle_msgs</build_depend>
     
