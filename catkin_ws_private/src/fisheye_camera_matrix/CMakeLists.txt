@@ -1,7 +1,5 @@
 cmake_minimum_required( VERSION 2.8.3 )
-
 add_compile_options( -std=c++11 -O3 )
-
 project( fisheye_camera_matrix )
 
 find_package( catkin REQUIRED COMPONENTS
@@ -27,7 +25,7 @@ catkin_package(
 )
 
 add_executable( offline_calibration_manual src/offline_calibration_manual.cpp src/camera_matrix.cpp )
-add_dependencies(offline_calibration_manual ${catkin_EXPORTED_TARGETS})
+add_dependencies( offline_calibration_manual ${catkin_EXPORTED_TARGETS})
 target_link_libraries( offline_calibration_manual ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
 add_executable( camera_matrix_publisher src/camera_matrix_publisher.cpp src/camera_matrix.cpp )
