@@ -4,7 +4,7 @@ add_compile_options(-std=c++11)
 project( cps2 )
 
 find_package( catkin REQUIRED COMPONENTS
-  geometry_msgs message_generation roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix cps2_particle_msgs
+  geometry_msgs message_generation roslaunch roscpp image_transport cv_bridge fisheye_camera_matrix nav_msgs cps2_particle_msgs
 )
 
 roslaunch_add_file_check( launch )
