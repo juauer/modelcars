@@ -23,5 +23,5 @@
   
   <arg name="treshold" default="122"/>
   
-  <node name="test_image_distance" pkg="cps2" type="test_image_distance" args="$(arg img) $(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta) $(arg treshold)" output="screen" />
+  <node name="test_image_distance_smart" pkg="cps2" type="test_image_distance_smart" args="$(arg img) $(arg pos_x) $(arg pos_y) $(arg pos_theta) $(arg guess_x) $(arg guess_y) $(arg guess_theta) $(arg treshold)" output="screen" />
 </launch>
