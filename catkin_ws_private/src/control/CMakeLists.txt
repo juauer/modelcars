@@ -3,7 +3,7 @@ add_compile_options(-std=c++11)
 project( control )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslib roscpp std_msgs sensor_msgs geometry_msgs cps2_particle_msgs
+  roslib roscpp std_msgs sensor_msgs geometry_msgs message_generation cps2_particle_msgs
 )
 
 find_package( OpenCV REQUIRED )
@@ -14,7 +14,7 @@ include_directories(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs cps2_particle_msgs
+  CATKIN_DEPENDS std_msgs sensor_msgs geometry_msgs message_runtime cps2_particle_msgs
 )
 
 add_executable( control_wasd src/control_wasd.cpp )
@@ -33,7 +33,6 @@ target_link_libraries( control_node_debug ${catkin_LIBRARIES} )
 add_executable( control_track_node_debug src/control_track_node.cpp )
 target_compile_definitions( control_track_node_debug PUBLIC DEBUG_CONTROL )
 target_link_libraries( control_track_node_debug ${catkin_LIBRARIES} )
-
 
 install( TARGETS control_wasd control_node control_track_node control_node_debug control_track_node_debug
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
