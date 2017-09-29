@@ -3,7 +3,7 @@ add_compile_options(-std=c++11)
 project( control )
 
 find_package( catkin REQUIRED COMPONENTS
-  roslib roscpp std_msgs sensor_msgs geometry_msgs message_generation cps2_particle_msgs
+  tf roslib roscpp std_msgs sensor_msgs geometry_msgs message_generation cps2_particle_msgs
 )
 
 find_package( OpenCV REQUIRED )
