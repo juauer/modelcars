@@ -9,8 +9,10 @@ compiler:
   - gcc
 notifications:
   email:
-    on_success: change
-    on_failure: change
+    recipients:
+      - maurice@althoff.me
+    on_success: always
+    on_failure: always
 env:
   global:
     - ADDITIONAL_DEBS = ros-kinetic-roscpp ros-kinetic-geometry-msgs ros-kinetic-std-msgs ros-kinetic-cv-bridge ros-kinetic-message-runtime ros-kinetic-message-generation ros-kinetic-image-transport ros-kinetic-sensor-msgs ros-kinetic-opencv3
