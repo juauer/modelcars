@@ -45,6 +45,10 @@ target_link_libraries( test_image_distance_bf ${catkin_LIBRARIES} ${OpenCV_LIBS}
 add_executable( test_map_transforms src/test/test_map_transforms.cpp src/image_evaluator.cpp )
 target_link_libraries( test_map_transforms ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
+add_executable( test_dbscan src/test/test_dbscan.cpp src/dbscan.hpp )
+target_compile_definitions( test_dbscan PUBLIC DEBUG_DBSCAN )
+target_link_libraries( test_dbscan ${catkin_LIBRARIES} )
+
 add_executable( trajectory_plotter src/test/trajectory_plotter.cpp )
 target_link_libraries( trajectory_plotter ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 

@@ -37,7 +37,7 @@ cps2::Clusters DBScan::dbscan(std::vector<cps2::Particle> &_dataset,
   visited.resize(dataset.size(),false);
   
   uint clusters_index = 0;
-  for( unsigned int i = 0; i <= dataset.size(); i++){
+  for( unsigned int i = 0; i <= dataset.size() -1; i++){
 #ifdef DEBUG_DBSCAN
     std::cout << "loop i: " << i << " p.x: " << dataset.at(i).p.x << std::endl;
 #endif
@@ -70,7 +70,7 @@ bool DBScan::expandCluster(cps2::Particle _p, Point3fList _neighbor_pts,
   //add p to cluster C
   _C.push_back(_p);
 
-  for (int i = 0; i < _neighbor_pts.size(); i++) {
+  for (int i = 0; i < _neighbor_pts.size() -1; i++) {
     if (~visited[i]) {
       //mark p' as visited
       visited[i] = true;

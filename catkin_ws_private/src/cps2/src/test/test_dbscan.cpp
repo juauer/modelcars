@@ -1,11 +1,10 @@
 #include <iostream>
 #include <vector>
 
-#define DEBUG_DBSCAN
+#include "../dbscan.hpp"
 
-#include "dbscan.hpp"
-
-//g++ -g -std=c++11 -I/opt/ros/kinetic/include/opencv-3.2.0-dev dbscan_main.cpp -o dbscan
+//#define DEBUG_DBSCAN
+//g++ -g -std=c++11 -I/opt/ros/kinetic/include/opencv-3.2.0-dev test_dbscan.cpp -o dbscan
 
 int main() {
   std::vector<cps2::Particle> particles;
@@ -39,4 +38,5 @@ int main() {
     std::cout << c.size() << ", ";
   }
 
+  return 0;
 }
