@@ -31,3 +31,5 @@ All parameters are briefly explained in the launchfiles where they are supposed 
 
 // TODO
 
+
+Build Status: ![](https://travis-ci.org/mauriceAlthoff/modelcars.svg?branch=master)
