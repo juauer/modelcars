@@ -2,17 +2,18 @@
 #define SRC_DBSCAN_HPP_
 
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <iomanip>
+#include <math.h>
+
 #include "particle.hpp"
 
 namespace cps2 {
 
-const int NOISE = 2;
-const int TRUE = 1;
-const int FALSE = 0;
-
-typedef std::vector<std::vector<cps2::Particle>> Clusters;
 typedef std::vector<cps2::Particle> Point3fList;
+typedef std::vector<std::size_t> neighborList;
+typedef std::vector<Point3fList> Clusters;
 
 class DBScan {
  public:
@@ -21,43 +22,39 @@ class DBScan {
  protected:
   std::vector<cps2::Particle> dataset;
   cps2::Clusters clusters;
-  std::vector<int> visited;
+  std::unordered_set<int> visited;
+  std::unordered_set<int> clustered;
   
-  bool expandCluster(cps2::Particle _p, Point3fList _neighbor_pts,
-                     Point3fList _C, float _eps, int _min_pts);
+  bool expandCluster(std::size_t _p, neighborList _neighbor_pts,
+                     std::size_t _C, float _eps, int _min_pts);
 
-  Point3fList regionQuery(cps2::Particle _p, float _eps);
+  neighborList regionQuery(std::size_t _p, float _eps);
 };
 
 cps2::Clusters DBScan::dbscan(std::vector<cps2::Particle> &_dataset,
                               float _eps, int _min_pts){
   // https://en.wikipedia.org/wiki/DBSCAN
-  Point3fList C;
   dataset = _dataset;
-  visited.resize(dataset.size(),false);
+  std::size_t clusters_index = 0;
   
-  uint clusters_index = 0;
-  for( unsigned int i = 0; i <= dataset.size(); i++){
-#ifdef DEBUG_DBSCAN
-    std::cout << "loop i: " << i << " p.x: " << dataset.at(i).p.x << std::endl;
-#endif
+  for( unsigned int i = 0; i <= dataset.size() -1; ++i){
     // if point is visited skip to the next point
-    if (visited[i]){
-#ifdef DEBUG_DBSCAN
-      std::cout << "skip: " << i << "\n";
-#endif
+    if (visited.find(i) != std::end(visited)){
       continue;
     }
     // mark point as visited
-    visited[i]= true;
+    visited.insert(i);
     // get neighboring points
-    auto neighbort_pts = regionQuery(dataset.at(i), _eps);
+    auto neighbor_pts = regionQuery(i, _eps);
     // check if cluster is big enough
-    if (neighbort_pts.size() > _min_pts) {
+    if (neighbor_pts.size() >= _min_pts) {
       // create new cluster
-      clusters.push_back(C);
-      C.clear();
-      expandCluster(dataset.at(i), neighbort_pts, C, _eps, _min_pts);
+      clusters.emplace_back();
+      expandCluster(i, neighbor_pts, clusters_index, _eps, _min_pts);
+      clusters_index++;
+    } else {
+      // put into noise list
+      // noise_pts.push_back(dataset.at(i));
     }
   }
 
@@ -65,43 +62,56 @@ cps2::Clusters DBScan::dbscan(std::vector<cps2::Particle> &_dataset,
   return clusters;
 }
 
-bool DBScan::expandCluster(cps2::Particle _p, Point3fList _neighbor_pts,
-                           Point3fList _C, float _eps, int _min_pts){
+bool DBScan::expandCluster(std::size_t _p, neighborList _neighbor_pts,
+                           std::size_t _C, float _eps, int _min_pts){
   //add p to cluster C
-  _C.push_back(_p);
+  clusters.at(_C).push_back(dataset.at(_p));
+  clustered.insert(_p);
 
-  for (int i = 0; i < _neighbor_pts.size(); i++) {
-    if (~visited[i]) {
+  for (int i = 0; i < _neighbor_pts.size() -1; ++i) {
+    if (visited.find(_neighbor_pts.at(i)) == std::end(visited)) {
       //mark p' as visited
-      visited[i] = true;
-      auto exp_neighbor_pts = regionQuery(dataset.at(i), _eps);
+      visited.insert(_neighbor_pts.at(i));
+      auto exp_neighbor_pts = regionQuery(_neighbor_pts.at(i), _eps);
       // merge point neighbors to the cluster point list
       if (exp_neighbor_pts.size() >= _min_pts) {
-        // _neighbor_pts.insert(_neighbor_pts.end()-1,
-        //                      exp_neighbor_pts.begin(),
-        //                      exp_neighbor_pts.end());
+        _neighbor_pts.insert(_neighbor_pts.end(),
+                             exp_neighbor_pts.begin(),
+                             exp_neighbor_pts.end());
       }
+      clusters.at(_C).push_back(dataset.at(_neighbor_pts.at(i)));
+      clustered.insert(_neighbor_pts.at(i));
+      
     } else {
-      //if (np is not yet member of any cluster)
-      // add np to cluster C
-      _C.push_back(_p);
+      //if i is not yet member of any cluster add to cluster
+      if (clustered.find(_neighbor_pts.at(i)) == std::end(clustered)){
+        clusters.at(_C).push_back(dataset.at(_neighbor_pts.at(i)));
+      }
     }
   }
 }
 
-Point3fList DBScan::regionQuery(cps2::Particle _p, float _eps){
-  Point3fList neighbor_pts;
-  neighbor_pts.push_back(_p);
-  
+neighborList DBScan::regionQuery(std::size_t _p, float _eps){
+  cps2::Particle p = dataset.at(_p);
+  neighborList neighbor_pts = {_p}; // add p to list
+  std::size_t i = 0;
+
   for (auto np : dataset) {
-    cps2::Particle diff(np.p.x -_p.p.x, np.p.y -_p.p.y, 0);
-    float dist = cv::sqrt(diff.p.x * diff.p.x + diff.p.y * diff.p.y);
-    if (dist < _eps){
-      // check if particle is part of Cluster
-      //if (map_info_dataset.count(key)) {
-      neighbor_pts.push_back(np);
+
+    // check if particle is part of Cluster
+    if (visited.find(i) == std::end(visited)) {
+
+      const float dx = np.p.x - p.p.x;
+      const float dy = np.p.y - p.p.y;
+      float dist = sqrtf(dx * dx + dy * dy);
+
+      if (dist < _eps){
+        neighbor_pts.push_back(i);
+      }
     }
+    ++i;
   }
+
   //return all points within p's eps-neighborhood (including p)
   return neighbor_pts;
 }

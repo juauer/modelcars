@@ -59,6 +59,11 @@ target_link_libraries( trajectory_plotter ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 add_executable( fake_localization src/test/fake_localization.cpp )
 target_link_libraries( fake_localization ${catkin_LIBRARIES} )
 
+add_compile_options(-g)
+add_executable( test_dbscan src/test/test_dbscan.cpp src/dbscan.hpp )
+target_compile_definitions( test_dbscan PUBLIC DEBUG_DBSCAN )
+target_link_libraries( test_dbscan ${catkin_LIBRARIES} )
+
 install( TARGETS localization_publisher localization_publisher_debug
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
